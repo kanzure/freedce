@@ -18,10 +18,16 @@ noinst_LTLIBRARIES=libnck.la
 
 libnck_la_SOURCES=comfork.c ndrglob.c mgmt.c
 
-libnck_la_LIBADD=com/libcom.la rpc/librpc.la transport/libtrans.la auth/libauth.la naf/libnaf.la $(idlobjs)
+if NAF_IP_STATIC
+naf_ip_modules=naf/libnaf.la
+endif
 
-mgmt_cstub.lo mgmt_sstub.lo mgmt_cstub.c mgmt_sstub.c: $(IDL_INCLUDE_DIR)/mgmt.idl
+
+libnck_la_LIBADD=com/libcom.la rpc/librpc.la transport/libtrans.la $(naf_ip_modules) $(idlobjs)
+
+mgmt_cstub.lo mgmt_sstub.lo: $(IDL_INCLUDE_DIR)/mgmt.idl
 	$(IDL) $(NCK_IDLFLAGS) -cepv -cc_cmd '$(LIBTOOL) --mode=compile $(CC) -c ' $<
 	@rm -f mgmt.h
 
 
+#libnck.la:	mgmt_cstub.lo mgmt_sstub.lo

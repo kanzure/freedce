@@ -1,4 +1,4 @@
-dnl $Revision: 1.4 $
+dnl $Revision: 1.5 $
 AC_DEFUN(RPC_ARG_DEFINE,
 [
 AC_ARG_ENABLE($1,
@@ -6,6 +6,7 @@ dnl $1=option name
 dnl $2=symbol name
 dnl $3=if yes, then enable by default
 dnl $4=help string
+dnl $5=shell code to execute if activated
 [  --enable-$1		$4 (default=$3)],
 [
  case "${enableval}" in
@@ -20,8 +21,10 @@ dnl $4=help string
 		;;
 	esac
 ],
-test x$3 = xyes && { rpc_arg_$1=yes;
-AC_DEFINE($2, 1, [$4]) }
+if test "x$3" = "xyes" ; then
+	rpc_arg_$1=yes;
+	AC_DEFINE($2, 1, [$4])
+fi
 )
 ])
 

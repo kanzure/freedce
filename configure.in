@@ -24,6 +24,7 @@ AC_PROG_YACC
 
 dnl Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
+AC_CHECK_LIB(dl, dlopen)
 
 THREADS_DIRS="/opt/dce"
 
@@ -66,7 +67,6 @@ RPC_ARG_DEFINE(debug, DEBUG, yes,Compile with debugging support)
 
 RPC_ARG_DEFINE(dcom, ENABLE_DCOM, no,Enable experimental DCOM support)
 AM_CONDITIONAL(ENABLE_DCOM, test x$rpc_arg_dcom = yes)
-
 AM_CONDITIONAL(TARGET_OS_LINUX, test x$target_os = xlinux-gnu)
 
 dnl ============= include subdirs here

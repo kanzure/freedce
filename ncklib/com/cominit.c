@@ -215,569 +215,576 @@ PRIVATE void rpc__init(void)
 **/
 
 INTERNAL void init_once(void)
-
 {
-    rpc_naf_id_elt_p_t      naf;
-    rpc_protocol_id_elt_p_t rpc_protocol;
-    rpc_protseq_id_elt_p_t  rpc_protseq;
-    rpc_authn_protocol_id_elt_p_t auth_protocol;
-    unsigned32              ctr;
-    unsigned32              status;
+	rpc_naf_id_elt_p_t      naf;
+	rpc_protocol_id_elt_p_t rpc_protocol;
+	rpc_protseq_id_elt_p_t  rpc_protseq;
+	rpc_authn_protocol_id_elt_p_t auth_protocol;
+	unsigned32              ctr;
+	unsigned32              status;
 
 
-    /*
-     *  Assert that the size of unsigned long is the same as the size of
-     *  a pointer.  This assumption may not be true for all machines.
-     *
-     *  If you are getting this assertion, you will need to change the
-     *  macros RPC_CN_ALIGN_PTR(ptr, boundary) in cnp.h and
-     *  RPC_DG_ALIGN_8(p) in dg.h.  The pointer should be cast to
-     *  the correct scalar data type inorder to make the bitwise-AND
-     *  work.  The bitwise operators do not allow pointers for
-     *  operands.  The following assert will also have to be changed
-     *  to use the new scalar data type.
-     */
-     assert(sizeof(unsigned long) == sizeof(unsigned8 *));
+	/*
+	*  Assert that the size of unsigned long is the same as the size of
+	*  a pointer.  This assumption may not be true for all machines.
+	 *
+	*  If you are getting this assertion, you will need to change the
+	*  macros RPC_CN_ALIGN_PTR(ptr, boundary) in cnp.h and
+	*  RPC_DG_ALIGN_8(p) in dg.h.  The pointer should be cast to
+	*  the correct scalar data type inorder to make the bitwise-AND
+	*  work.  The bitwise operators do not allow pointers for
+	*  operands.  The following assert will also have to be changed
+	*  to use the new scalar data type.
+	*/
+	assert(sizeof(unsigned long) == sizeof(unsigned8 *));
 
 #ifdef APOLLO_GLOBAL_LIBRARY
-    apollo_global_lib_init();
+	apollo_global_lib_init();
 #endif
 
-    /*
-     * Initialize the performance logging service.
-     */
-    RPC_LOG_INITIALIZE;
+	/*
+	 * Initialize the performance logging service.
+	 */
+	RPC_LOG_INITIALIZE;
 
 #ifdef DCE_RPC_SVC
-/*
- * Remove this ifdef when SVC is implemented
- * in the kernel.
- */
-    rpc__svc_init();
+	/*
+	 * Remove this ifdef when SVC is implemented
+	 * in the kernel.
+	 */
+	rpc__svc_init();
 #endif
 #ifndef NO_GETENV
-    init_getenv_debug ();
+	init_getenv_debug ();
 #endif
 
-    /*
-     * These first two operations (and their order) are critical to
-     * creating a deadlock safe environment for the initialization
-     * processing.  This code (in conjunction with rpc__init()) allows
-     * a thread that is executing init_once() to call other runtime
-     * operations that would normally want to ensure that the runtime
-     * is initialized prior to executing (which would typically recursively
-     * call pthread_once for this block and deadlock).
-     * 
-     * While this capability now allows the initializing thread to not
-     * deadlock, it also allows it to *potentially* attempt some operation
-     * that require initialization that hasn't yet been performed.
-     * Unfortunately, this can't be avoided; be warned, be careful, don't
-     * do anything crazy and all will be fine.
-     *
-     * One example of where this type of processing is occuring is in
-     * the nca_dg initialization processing - the dg init code calls
-     * rpc_server_register_if.
-     */
-    init_thread = pthread_self();
-    init_in_progress = true;
+	/*
+	 * These first two operations (and their order) are critical to
+	 * creating a deadlock safe environment for the initialization
+	 * processing.  This code (in conjunction with rpc__init()) allows
+	 * a thread that is executing init_once() to call other runtime
+	 * operations that would normally want to ensure that the runtime
+	 * is initialized prior to executing (which would typically recursively
+	 * call pthread_once for this block and deadlock).
+	 * 
+	 * While this capability now allows the initializing thread to not
+	 * deadlock, it also allows it to *potentially* attempt some operation
+	 * that require initialization that hasn't yet been performed.
+	 * Unfortunately, this can't be avoided; be warned, be careful, don't
+	 * do anything crazy and all will be fine.
+	 *
+	 * One example of where this type of processing is occuring is in
+	 * the nca_dg initialization processing - the dg init code calls
+	 * rpc_server_register_if.
+	 */
+	init_thread = pthread_self();
+	init_in_progress = true;
 
-    /*
-     * Register our fork handler, if such a service is supported.
-     */
+	/*
+	 * Register our fork handler, if such a service is supported.
+	 */
 #ifdef ATFORK_SUPPORTED
-    ATFORK((void *)rpc__fork_handler);
+	ATFORK((void *)rpc__fork_handler);
 #endif
 
-    /*
-     * Initialize the global mutex variable.
-     */
-    RPC_LOCK_INIT (0);
-
-    /*
-     * Initialize the global lookaside list mutex.
-     */
-    RPC_LIST_MUTEX_INIT (0);
-
-    /*
-     * Initialize the global binding handle condition variable.
-     */
-    RPC_BINDING_COND_INIT (0);
-
-    /*
-     * create the per-thread context key
-     */
-    pthread_keycreate (&rpc_g_thread_context_key, 
-            (void (*) _DCE_PROTOTYPE_((pointer_t))) thread_context_destructor);
-
-    /*
-     * Initialize the timer service.
-     */
-    rpc__timer_init();
-
-    /*
-     * Initialize the interface service.
-     */
-    rpc__if_init (&status);    
-    if (status != rpc_s_ok)
-    {
-        dce_error_string_t error_text;
-        int temp_status;
-
-        dce_error_inq_text(status, error_text, &temp_status);
+	/*
+	 * Initialize the global mutex variable.
+	 */
+	RPC_LOCK_INIT (0);
 
 	/*
-	 * rpc_m_call_failed
-	 * "%s failed: %s"
+	 * Initialize the global lookaside list mutex.
 	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed,
-	    "rpc__if_init",
-	    error_text ));
-    }
-
-    /*
-     * Initialize the object service.
-     */
-    rpc__obj_init (&status);    
-    if (status != rpc_s_ok)
-    {
-        dce_error_string_t error_text;
-        int temp_status;
-
-        dce_error_inq_text(status, error_text, &temp_status);
+	RPC_LIST_MUTEX_INIT (0);
 
 	/*
-	 * rpc_m_call_failed
-	 * "%s failed: %s"
+	 * Initialize the global binding handle condition variable.
 	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed,
-	    "rpc__obj_init",
-	    error_text ));
-    }
-
-    /*
-     * Initialize the cthread service (this doesn't do too much
-     * so it doesn't matter if this process never becomes a server).
-     */
-    rpc__cthread_init (&status);    
-    if (status != rpc_s_ok)
-    {
-        dce_error_string_t error_text;
-        int temp_status;
-
-        dce_error_inq_text(status, error_text, &temp_status);
+	RPC_BINDING_COND_INIT (0);
 
 	/*
-	 * rpc_m_call_failed
-	 * "%s failed: %s"
+	 * create the per-thread context key
 	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed,
-	    "rpc__cthread_init",
-	    error_text ));
-    }
+	pthread_keycreate (&rpc_g_thread_context_key, 
+			(void (*) _DCE_PROTOTYPE_((pointer_t))) thread_context_destructor);
 
-    /*
-     * go through the NAF id table and check each Network Address Family
-     * to see if it is supported on this system
-     */
-    for (ctr = 0; ctr < RPC_C_NAF_ID_MAX; ctr++)
-    {
-        naf = (rpc_naf_id_elt_p_t) &(rpc_g_naf_id[ctr]);
+	/*
+	 * Initialize the timer service.
+	 */
+	rpc__timer_init();
 
-        if (supported_naf (naf))
-        {
-            /*
-             * if there is no pointer to the init routine for this NAF
-             * it must be a shared image, so load it
-             */
-            if (naf->naf_init == NULL)
-            {
-                naf->naf_init = rpc__load_naf (naf, &status);
-            }
+	/*
+	 * Initialize the interface service.
+	 */
+	rpc__if_init (&status);    
+	if (status != rpc_s_ok)
+	{
+		dce_error_string_t error_text;
+		int temp_status;
 
-            /*
-             * check it again - shouldn't be NULL now, but if it is
-             * we'll leave it that way (unsupported)
-             */
-            if (naf->naf_init)
-            {
-                (*naf->naf_init) (&(naf->epv), &status);
-                if (status != rpc_s_ok)
-                {
-                    /*
-                     * If the NAF couldn't be intialized make it unsupported.
-                     */
-                    naf->naf_init = NULL;
-                }
-            }
-        }
-        else
-        {
-            /*
-             * network family not supported
-             */
-            naf->naf_init = NULL;
-        }
-    }
-    
-    /*
-     * go through the RPC protocol id table and check each protocol to
-     * see if it is supported on this system
-     */
-    for (ctr = 0; ctr < RPC_C_PROTOCOL_ID_MAX; ctr++)
-    {
-        if (protocol_is_compatible (rpc_protocol =
-            (rpc_protocol_id_elt_p_t) &(rpc_g_protocol_id[ctr])))
-        {
-            /*
-             * if there is no pointer to the init routine for this protocol
-             * it must be a shared image, so load it
-             */
-            if ((rpc_protocol->prot_init) == NULL)
-            {
-                rpc_protocol->prot_init =
-                    rpc__load_prot (rpc_protocol, &status);
-            }
+		dce_error_inq_text(status, error_text, &temp_status);
 
-            /*
-             * check it again - shouldn't be NULL now, but if it is
-             * we'll leave it that way (unsupported)
-             */
-            if (rpc_protocol->prot_init)
-            {
-                (*rpc_protocol->prot_init)
-                    (&(rpc_protocol->call_epv), &(rpc_protocol->mgmt_epv),
-                    &(rpc_protocol->binding_epv), &(rpc_protocol->network_epv),
-                    &(rpc_protocol->prot_fork_handler), &status);
-                if (status != rpc_s_ok)
-                {
-                    dce_error_string_t error_text;
-                    int temp_status;
+		/*
+		 * rpc_m_call_failed
+		 * "%s failed: %s"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed,
+					"rpc__if_init",
+					error_text ));
+	}
 
-                    dce_error_inq_text(status, error_text, &temp_status);
+	/*
+	 * Initialize the object service.
+	 */
+	rpc__obj_init (&status);    
+	if (status != rpc_s_ok)
+	{
+		dce_error_string_t error_text;
+		int temp_status;
 
-		    /*
-		     * rpc_m_call_failed
-		     * "%s failed: %s"
-		     */
-		    RPC_DCE_SVC_PRINTF ((
-		        DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-		        rpc_svc_general,
-		        svc_c_sev_fatal | svc_c_action_abort,
-		        rpc_m_call_failed,
-		        "prot_init",
-		        error_text ));
-                }
-            }
-        }
-        else
-        {
-            /*
-             * protocol family not supported
-             */
-            rpc_protocol->prot_init = NULL;
-        }
-    }
-    
-    /*
-     * go through the RPC protocol sequence table and check each protocol
-     * sequence to see if it is supported on this system
-     */
-    for (ctr = 0; ctr < RPC_C_PROTSEQ_ID_MAX; ctr++)
-    {
-        rpc_protseq = (rpc_protseq_id_elt_p_t) &(rpc_g_protseq_id[ctr]);
+		dce_error_inq_text(status, error_text, &temp_status);
 
-        rpc_protocol = (rpc_protocol_id_elt_p_t)
-            &(rpc_g_protocol_id[RPC_PROTSEQ_INQ_PROT_ID(ctr)]);
+		/*
+		 * rpc_m_call_failed
+		 * "%s failed: %s"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed,
+					"rpc__obj_init",
+					error_text ));
+	}
 
-        naf = (rpc_naf_id_elt_p_t)
-            &(rpc_g_naf_id[RPC_PROTSEQ_INQ_NAF_ID(ctr)]);
+	/*
+	 * Initialize the cthread service (this doesn't do too much
+	 * so it doesn't matter if this process never becomes a server).
+	 */
+	rpc__cthread_init (&status);    
+	if (status != rpc_s_ok)
+	{
+		dce_error_string_t error_text;
+		int temp_status;
 
-        if (rpc_protocol->prot_init != NULL 
-            && naf->naf_init != NULL
-            && supported_interface (rpc_protseq->naf_id,
-                rpc_protseq->network_if_id, rpc_protseq->network_protocol_id))
-        {
-            rpc_protseq->supported = SUPPORTED;
-        }
-        else
-        {
-            rpc_protseq->supported = UNSUPPORTED;
-        }
-    }
+		dce_error_inq_text(status, error_text, &temp_status);
+
+		/*
+		 * rpc_m_call_failed
+		 * "%s failed: %s"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed,
+					"rpc__cthread_init",
+					error_text ));
+	}
+
+
+
+	/*
+	 * go through the NAF id table and check each Network Address Family
+	 * to see if it is supported on this system
+	 */
+
+	/* pre-load modules */
+	rpc__load_modules();
+	
+	for (ctr = 0; ctr < RPC_C_NAF_ID_MAX; ctr++)
+	{
+		naf = (rpc_naf_id_elt_p_t) &(rpc_g_naf_id[ctr]);
+
+		if (supported_naf (naf))
+		{
+			/*
+			 * if there is no pointer to the init routine for this NAF
+			 * it must be a shared image, so load it
+			 */
+			if (naf->naf_init == NULL)
+			{
+				naf->naf_id = ctr;
+				naf->naf_init = rpc__load_naf (naf, &status);
+			}
+
+
+			/*
+			 * check it again - shouldn't be NULL now, but if it is
+			 * we'll leave it that way (unsupported)
+			 */
+			if (naf->naf_init)
+			{
+				(*naf->naf_init) (&(naf->epv), &status);
+				if (status != rpc_s_ok)
+				{
+					/*
+					 * If the NAF couldn't be intialized make it unsupported.
+					 */
+					naf->naf_init = NULL;
+				}
+			}
+		}
+		else
+		{
+			/*
+			 * network family not supported
+			 */
+			naf->naf_init = NULL;
+		}
+	}
+
+	/*
+	 * go through the RPC protocol id table and check each protocol to
+	 * see if it is supported on this system
+	 */
+	for (ctr = 0; ctr < RPC_C_PROTOCOL_ID_MAX; ctr++)
+	{
+		if (protocol_is_compatible (rpc_protocol =
+					(rpc_protocol_id_elt_p_t) &(rpc_g_protocol_id[ctr])))
+		{
+			/*
+			 * if there is no pointer to the init routine for this protocol
+			 * it must be a shared image, so load it
+			 */
+			if ((rpc_protocol->prot_init) == NULL)
+			{
+				rpc_protocol->prot_init =
+					rpc__load_prot (rpc_protocol, &status);
+			}
+
+			/*
+			 * check it again - shouldn't be NULL now, but if it is
+			 * we'll leave it that way (unsupported)
+			 */
+			if (rpc_protocol->prot_init)
+			{
+				(*rpc_protocol->prot_init)
+					(&(rpc_protocol->call_epv), &(rpc_protocol->mgmt_epv),
+					 &(rpc_protocol->binding_epv), &(rpc_protocol->network_epv),
+					 &(rpc_protocol->prot_fork_handler), &status);
+				if (status != rpc_s_ok)
+				{
+					dce_error_string_t error_text;
+					int temp_status;
+
+					dce_error_inq_text(status, error_text, &temp_status);
+
+					/*
+					 * rpc_m_call_failed
+					 * "%s failed: %s"
+					 */
+					RPC_DCE_SVC_PRINTF ((
+								DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+								rpc_svc_general,
+								svc_c_sev_fatal | svc_c_action_abort,
+								rpc_m_call_failed,
+								"prot_init",
+								error_text ));
+				}
+			}
+		}
+		else
+		{
+			/*
+			 * protocol family not supported
+			 */
+			rpc_protocol->prot_init = NULL;
+		}
+	}
+
+	/*
+	 * go through the RPC protocol sequence table and check each protocol
+	 * sequence to see if it is supported on this system
+	 */
+	for (ctr = 0; ctr < RPC_C_PROTSEQ_ID_MAX; ctr++)
+	{
+		rpc_protseq = (rpc_protseq_id_elt_p_t) &(rpc_g_protseq_id[ctr]);
+
+		rpc_protocol = (rpc_protocol_id_elt_p_t)
+			&(rpc_g_protocol_id[RPC_PROTSEQ_INQ_PROT_ID(ctr)]);
+
+		naf = (rpc_naf_id_elt_p_t)
+			&(rpc_g_naf_id[RPC_PROTSEQ_INQ_NAF_ID(ctr)]);
+
+		if (rpc_protocol->prot_init != NULL 
+				&& naf->naf_init != NULL
+				&& supported_interface (rpc_protseq->naf_id,
+					rpc_protseq->network_if_id, rpc_protseq->network_protocol_id))
+		{
+			rpc_protseq->supported = SUPPORTED;
+		}
+		else
+		{
+			rpc_protseq->supported = UNSUPPORTED;
+		}
+	}
 
 #ifndef NO_GETENV
 
-    /*
-     * See if a list of protocol sequences to use was specified in the
-     * RPC_SUPPORTED_PROTSEQS enviroment variable and if one was, process
-     * them appropriately.  Note well that this call must follow the above
-     * loop.  (See comments in init_getenv_protseqs.)
-     */
+	/*
+	 * See if a list of protocol sequences to use was specified in the
+	 * RPC_SUPPORTED_PROTSEQS enviroment variable and if one was, process
+	 * them appropriately.  Note well that this call must follow the above
+	 * loop.  (See comments in init_getenv_protseqs.)
+	 */
 
-    init_getenv_protseqs ();
+	init_getenv_protseqs ();
 
 #endif                                  /* NO_GETENV */
 
-    /*
-     * Initialize the auth info cache.
-     */
-    rpc__auth_info_cache_init (&status);    
-    if (status != rpc_s_ok)
-    {
-        dce_error_string_t error_text;
-        int temp_status;
+	/*
+	 * Initialize the auth info cache.
+	 */
+	rpc__auth_info_cache_init (&status);    
+	if (status != rpc_s_ok)
+	{
+		dce_error_string_t error_text;
+		int temp_status;
 
-        dce_error_inq_text(status, error_text, &temp_status);
+		dce_error_inq_text(status, error_text, &temp_status);
+
+		/*
+		 * rpc_m_call_failed
+		 * "%s failed: %s"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed,
+					"rpc__auth_info_cache_init",
+					error_text ));
+	}
 
 	/*
-	 * rpc_m_call_failed
-	 * "%s failed: %s"
+	 * go through the authentication protocol id table and check each protocol to
+	 * see if it is supported on this system
 	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed,
-	    "rpc__auth_info_cache_init",
-	    error_text ));
-    }
+	for (ctr = 0; ctr < RPC_C_AUTHN_PROTOCOL_ID_MAX; ctr++)
+	{
+		auth_protocol = &rpc_g_authn_protocol_id[ctr];
 
-    /*
-     * go through the authentication protocol id table and check each protocol to
-     * see if it is supported on this system
-     */
-    for (ctr = 0; ctr < RPC_C_AUTHN_PROTOCOL_ID_MAX; ctr++)
-    {
-        auth_protocol = &rpc_g_authn_protocol_id[ctr];
+		/*
+		 * if there is no pointer to the init routine for this protocol
+		 * it must be a shared image, so load it
+		 */
+		if ((auth_protocol->auth_init) == NULL)
+		{
+			auth_protocol->auth_init =
+				rpc__load_auth (auth_protocol, &status);
+		}
 
-        /*
-         * if there is no pointer to the init routine for this protocol
-         * it must be a shared image, so load it
-         */
-        if ((auth_protocol->auth_init) == NULL)
-        {
-            auth_protocol->auth_init =
-                rpc__load_auth (auth_protocol, &status);
-        }
+		/*
+		 * check it again - shouldn't be NULL now, but if it is
+		 * we'll leave it that way (unsupported)
+		 */
+		if (auth_protocol->auth_init)
+		{
+			(*auth_protocol->auth_init)
+				(&(auth_protocol->epv),
+				 (&(auth_protocol->rpc_prot_epv_tbl)),
+				 &status);
+			if (status != rpc_s_ok) return;
+		}
+	}
 
-        /*
-         * check it again - shouldn't be NULL now, but if it is
-         * we'll leave it that way (unsupported)
-         */
-        if (auth_protocol->auth_init)
-        {
-            (*auth_protocol->auth_init)
-                (&(auth_protocol->epv),
-                (&(auth_protocol->rpc_prot_epv_tbl)),
-                &status);
-            if (status != rpc_s_ok) return;
-        }
-    }
+	/*
+	 * make calls to initialize other parts of the RPC runtime
+	 */
 
-    /*
-     * make calls to initialize other parts of the RPC runtime
-     */
-    
 #ifndef PTHREAD_EXC
-    if (pthread_attr_init(&rpc_g_server_pthread_attr) == -1)
-    {
-	/*
-	 * rpc_m_call_failed_errno
-	 * "%s failed, errno = %d"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed_errno,
-	    "pthread_attr_init",
-	    errno ));
-    }
+	if (pthread_attr_init(&rpc_g_server_pthread_attr) == -1)
+	{
+		/*
+		 * rpc_m_call_failed_errno
+		 * "%s failed, errno = %d"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed_errno,
+					"pthread_attr_init",
+					errno ));
+	}
 #else
-    TRY 
-        pthread_attr_create(&rpc_g_server_pthread_attr);
-    CATCH_ALL
-	/*
-	 * rpc_m_call_failed_no_status
-	 * "%s failed"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed_no_status,
-	    "pthread_attr_init" ));
-    ENDTRY
+	TRY 
+		pthread_attr_create(&rpc_g_server_pthread_attr);
+	CATCH_ALL
+		/*
+		 * rpc_m_call_failed_no_status
+		 * "%s failed"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed_no_status,
+					"pthread_attr_init" ));
+	ENDTRY
 #endif
 
 
 
-    /*
-     * We explicitly set the stack size for the threads that
-     * the runtime uses internally.  This size needs to accomodate
-     * deeply nested calls to support authenticated RPC.
-     */
+		/*
+		 * We explicitly set the stack size for the threads that
+		 * the runtime uses internally.  This size needs to accomodate
+		 * deeply nested calls to support authenticated RPC.
+		 */
 #ifndef PTHREAD_EXC
-    if (pthread_attr_init(&rpc_g_default_pthread_attr) == -1)
-    {
-	/*
-	 * rpc_m_call_failed_errno
-	 * "%s failed, errno = %d"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed_errno,
-	    "pthread_attr_init",
-	    errno ));
-    }
-    if (pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
-                                  DEFAULT_STACK_SIZE) == -1) 
-    {
-	/*
-	 * rpc_m_call_failed_errno
-	 * "%s failed, errno = %d"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed_errno,
-	    "pthread_attr_setstacksize",
-	    errno ));
-    }
+		if (pthread_attr_init(&rpc_g_default_pthread_attr) == -1)
+		{
+			/*
+			 * rpc_m_call_failed_errno
+			 * "%s failed, errno = %d"
+			 */
+			RPC_DCE_SVC_PRINTF ((
+						DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
+						rpc_svc_general,
+						svc_c_sev_fatal | svc_c_action_abort,
+						rpc_m_call_failed_errno,
+						"pthread_attr_init",
+						errno ));
+		}
+	if (pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
+				DEFAULT_STACK_SIZE) == -1) 
+	{
+		/*
+		 * rpc_m_call_failed_errno
+		 * "%s failed, errno = %d"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed_errno,
+					"pthread_attr_setstacksize",
+					errno ));
+	}
 
 #else  /* PTHREAD_EXC */
-    TRY 
-        pthread_attr_create(&rpc_g_default_pthread_attr);
-    CATCH_ALL
-	/*
-	 * rpc_m_call_failed_no_status
-	 * "%s failed"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed_no_status,
-	    "pthread_attr_init" ));
-    ENDTRY
+	TRY 
+		pthread_attr_create(&rpc_g_default_pthread_attr);
+	CATCH_ALL
+		/*
+		 * rpc_m_call_failed_no_status
+		 * "%s failed"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed_no_status,
+					"pthread_attr_init" ));
+	ENDTRY
 
-    TRY 
-        pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
-                                  DEFAULT_STACK_SIZE);
-    CATCH_ALL
-	/*
-	 * rpc_m_call_failed_no_status
-	 * "%s failed"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed_no_status,
-	    "pthread_attr_setstacksize" ));
-    ENDTRY
+		TRY 
+		pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
+				DEFAULT_STACK_SIZE);
+	CATCH_ALL
+		/*
+		 * rpc_m_call_failed_no_status
+		 * "%s failed"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%d"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed_no_status,
+					"pthread_attr_setstacksize" ));
+	ENDTRY
 #endif    /* not PTHREAD_EXC */
 
 
-    rpc__network_init (&status);    
-    if (status != rpc_s_ok)
-    {
-        dce_error_string_t error_text;
-        int temp_status;
+		rpc__network_init (&status);    
+	if (status != rpc_s_ok)
+	{
+		dce_error_string_t error_text;
+		int temp_status;
 
-        dce_error_inq_text(status, error_text, &temp_status);
+		dce_error_inq_text(status, error_text, &temp_status);
 
-	/*
-	 * rpc_m_call_failed
-	 * "%s failed: %s"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed,
-	    "rpc__network_init",
-	    error_text ));
-    }
+		/*
+		 * rpc_m_call_failed
+		 * "%s failed: %s"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed,
+					"rpc__network_init",
+					error_text ));
+	}
 
-    status = rpc__mgmt_init();
-    if (status != rpc_s_ok)
-    {
-        dce_error_string_t error_text;
-        int temp_status;
+	status = rpc__mgmt_init();
+	if (status != rpc_s_ok)
+	{
+		dce_error_string_t error_text;
+		int temp_status;
 
-        dce_error_inq_text(status, error_text, &temp_status);
+		dce_error_inq_text(status, error_text, &temp_status);
 
-	/*
-	 * rpc_m_call_failed
-	 * "%s failed: %s"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed,
-	    "rpc__mgmt_init",
-	    error_text ));
-    }
+		/*
+		 * rpc_m_call_failed
+		 * "%s failed: %s"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed,
+					"rpc__mgmt_init",
+					error_text ));
+	}
 
 #ifdef RRPC
-    status = rpc__rrpc_init();
-    if (status != rpc_s_ok)
-    {
-        dce_error_string_t error_text;
-        int temp_status;
+	status = rpc__rrpc_init();
+	if (status != rpc_s_ok)
+	{
+		dce_error_string_t error_text;
+		int temp_status;
 
-        dce_error_inq_text(status, error_text, &temp_status);
+		dce_error_inq_text(status, error_text, &temp_status);
 
-	/*
-	 * rpc_m_call_failed
-	 * "%s failed: %s"
-	 */
-	RPC_DCE_SVC_PRINTF ((
-	    DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
-	    rpc_svc_general,
-	    svc_c_sev_fatal | svc_c_action_abort,
-	    rpc_m_call_failed,
-	    "rpc__rrpc_init",
-	    error_text ));
-    }
+		/*
+		 * rpc_m_call_failed
+		 * "%s failed: %s"
+		 */
+		RPC_DCE_SVC_PRINTF ((
+					DCE_SVC(RPC__SVC_HANDLE, "%s%x"),
+					rpc_svc_general,
+					svc_c_sev_fatal | svc_c_action_abort,
+					rpc_m_call_failed,
+					"rpc__rrpc_init",
+					error_text ));
+	}
 #endif
 
-    /*
-     * initialize (seed) the random number generator using the current
-     * system time
-     */
-    RPC_RANDOM_INIT(time ((int) NULL));
+	/*
+	 * initialize (seed) the random number generator using the current
+	 * system time
+	 */
+	RPC_RANDOM_INIT(time ((int) NULL));
 
 #ifndef NO_GETENV
 
-    /* 
-     * See if there are any protocol sequences which should only bind to 
-     * certain ranges of network endpoints.
-     */
+	/* 
+	 * See if there are any protocol sequences which should only bind to 
+	 * certain ranges of network endpoints.
+	 */
 
-    init_getenv_port_restriction ();
+	init_getenv_port_restriction ();
 
 #endif                                  /* ! NO_GETENV */
 
-    init_in_progress = false;
-    rpc_g_initialized = true;
+	init_in_progress = false;
+	rpc_g_initialized = true;
 }    
 
 /*

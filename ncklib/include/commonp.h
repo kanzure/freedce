@@ -91,6 +91,14 @@
 
 #  include <sysconf.h>
 
+/* For FreeDCE, use these to declare loadable image entry point functions */
+#if HAVE_DLFCN_H
+# define _RPC_MODULE_ENTRY_PTR(func_name)	void * rpc_module_init_func = (void*)func_name
+#else
+# define _RPC_MODULE_ENTRY_PTR(func_name)	/* nothing */
+#endif
+
+
 /* ========================================================================= */
 
 /* ========================================================================= */

@@ -52,7 +52,8 @@
 extern "C" {
 #endif
 
-
+PRIVATE void rpc__load_modules(void);
+	
 PRIVATE rpc_naf_init_fn_t rpc__load_naf _DCE_PROTOTYPE_ ((
         rpc_naf_id_elt_p_t              /*naf*/, 
         unsigned32                      * /*st*/

@@ -270,6 +270,14 @@ INTERNAL void inq_max_frag_size _DCE_PROTOTYPE_ ((
 **--
 **/
 
+#if !NAF_IP_STATIC
+#include <comnafimage.h>
+RPC_MODULE_INIT_NAF_FUNC(
+		RPC_C_NAF_ID_IP,
+		rpc__ip_init,
+		RPC_C_NETWORK_IF_ID_DGRAM);
+#endif
+
 PRIVATE void  rpc__ip_init 
 #ifdef _DCE_PROTO_
 (

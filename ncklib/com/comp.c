@@ -410,7 +410,7 @@ GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] =
 {
     {NULL, 0, 0, NULL},
     {NULL, 0, 0, NULL},
-#ifdef NAF_IP
+#ifdef NAF_IP_STATIC
     {
         rpc__ip_init,
         RPC_C_NAF_ID_IP,
@@ -429,7 +429,7 @@ GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] =
     {NULL, 0, 0, NULL},
     {NULL, 0, 0, NULL},
     {NULL, 0, 0, NULL},
-#ifdef NAF_DNET
+#ifdef NAF_DNET_STATIC
     {
         rpc__dnet_init,
         RPC_C_NAF_ID_DNET,
@@ -439,7 +439,7 @@ GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] =
 #else
     {NULL, 0, 0, NULL},
 #endif
-#ifdef NAF_DDS
+#ifdef NAF_DDS_STATIC
     {
         rpc__dds_init,
         RPC_C_NAF_ID_DDS,
@@ -454,7 +454,7 @@ GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] =
     {NULL, 0, 0, NULL},
     {NULL, 0, 0, NULL},
     {NULL, 0, 0, NULL},
-#ifdef NAF_OSI
+#ifdef NAF_OSI_STATIC
     {
         rpc__osi_init,
         RPC_C_NAF_ID_OSI,
@@ -499,6 +499,8 @@ GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] =
  * "nbase.idl").
  */
 
+/* FreeDCE Note: All auth modules are DSOs loaded via rpc__load_modules by rpc__init */
+
 GLOBAL rpc_authn_protocol_id_elt_t rpc_g_authn_protocol_id[RPC_C_AUTHN_PROTOCOL_ID_MAX] =
 {
 
@@ -510,11 +512,7 @@ GLOBAL rpc_authn_protocol_id_elt_t rpc_g_authn_protocol_id[RPC_C_AUTHN_PROTOCOL_
 		  NULL
     },
     {                               /* 1 */
-#ifdef AUTH_KRB 
-        rpc__krb_init,
-#else
         NULL,
-#endif
         rpc_c_authn_dce_private,
         dce_c_rpc_authn_protocol_krb5,
         NULL,
@@ -528,11 +526,7 @@ GLOBAL rpc_authn_protocol_id_elt_t rpc_g_authn_protocol_id[RPC_C_AUTHN_PROTOCOL_
 		  NULL
     },
     {                               /* 3 */
-#ifdef AUTH_DUMMY
-        rpc__noauth_init,
-#else
         NULL,
-#endif
         rpc_c_authn_dce_dummy,
         dce_c_rpc_authn_protocol_dummy,
         NULL,
