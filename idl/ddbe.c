@@ -156,6 +156,11 @@ static NAMETABLE_id_t
     DDBE_dt_varying_array,
     DDBE_dt_void;
 
+static void DDBE_func_code_vec_entry(
+    DDBE_vec_rep_t  **p_defn_p,     /* [io] Ptr to vec entry to insert after */
+	byte func_code /* function code */
+	);
+
 
 /*
  * Macro to add a string to the stringtable and store the resulting strtab ID.
@@ -2299,6 +2304,32 @@ static void DDBE_op_array_bounds
         tup_p->arg[IR_ARG_INT].int_val, "num dimensions");
 }
 
+static void DDBE_func_code_vec_entry(
+    DDBE_vec_rep_t  **p_defn_p,     /* [io] Ptr to vec entry to insert after */
+	byte func_code /* function code */
+	)
+{
+	char * name = NULL;
+    STRTAB_str_t    name_id;
+
+	switch(func_code)	{
+		case IR_EXP_FC_NONE:	name = "IDL_FC_NONE"; break;
+		case IR_EXP_FC_DIV_2:	name = "IDL_FC_DIV_2"; break;
+		case IR_EXP_FC_MUL_2:	name = "IDL_FC_MUL_2"; break;
+		case IR_EXP_FC_SUB_1:	name = "IDL_FC_SUB_1"; break;
+		case IR_EXP_FC_ADD_1:	name = "IDL_FC_ADD_1"; break;
+		case IR_EXP_FC_ALIGN_2:	name = "IDL_FC_ALIGN_2"; break;
+		case IR_EXP_FC_ALIGN_4:	name = "IDL_FC_ALIGN_4"; break;
+		case IR_EXP_FC_ALIGN_8:	name = "IDL_FC_ALIGN_8"; break;
+								
+		case IR_EXP_FC_CALLBACK:name = "IDL_FC_CALLBACK"; break;
+		default:
+			return;
+	}
+	name_id = STRTAB_add_string(name);
+	DDBE_expr_vec_entry(p_defn_p, DDBE_vec_expr_byte_k, name_id, "bound info");
+}
+
 
 /*
  *  D D B E _ o p _ b o u n d
@@ -2368,6 +2399,7 @@ static void DDBE_op_bound
     case IR_bnd_size_is_k:
         bound_text = "size_is";
         DDBE_tag_vec_entry(&vip->defn_p, DDBE_dt_size_is_bound);
+		DDBE_func_code_vec_entry(&vip->defn_p, tup_p->arg[IR_ARG_BOUND_XTRA].byt_val);
         break;
 
     case IR_bnd_string_k:
@@ -2537,6 +2569,7 @@ static void DDBE_op_limit
     case IR_lim_length_is_k:
         limit_text = "length_is";
         DDBE_tag_vec_entry(&vip->defn_p, DDBE_dt_length_is_limit);
+		DDBE_func_code_vec_entry(&vip->defn_p, tup_p->arg[IR_ARG_BOUND_XTRA].byt_val);
         break;
 
     default:

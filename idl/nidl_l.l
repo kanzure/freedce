@@ -72,7 +72,7 @@ static int yywrap(void)
     * are FLEX interfaces to the internal buffering system.
     */
 
-   nidl_yy_delete_buffer(yy_current_buffer);
+   nidl_yy_delete_buffer(YY_CURRENT_BUFFER_LVALUE);
    nidl_yylineno = 1;
    return 1;
 }
@@ -372,7 +372,7 @@ other           .
     ** Convert to a float to get overflow detection.
     */
     sscanf((char *)yytext, fval_fmt, &fval);
-    nidl_yylval.y_ival = 0;
+    nidl_yylval.y_int_info.int_val = 0;
 
     /*
     ** Throw out integers that are out of range.
@@ -391,7 +391,7 @@ other           .
         log_error(nidl_yylineno, NIDL_INTOVERFLOW,
 		  KEYWORDS_lookup_text(LONG_KW), NULL);
     else {
-        sscanf((char *)yytext, "%ld", &nidl_yylval.y_ival);
+        sscanf((char *)yytext, "%ld", &nidl_yylval.y_int_info.int_val);
     }
 
 
@@ -407,31 +407,37 @@ other           .
 }
 
 {c_hex_integer} {
+     int unsigned_int = true;
     /*
     ** Remove suffix for long and/or unsigned, if present
-    */
+    */ 
     if ((yytext[yyleng-1] == 'L') ||
         (yytext[yyleng-1] == 'l') ||
         (yytext[yyleng-1] == 'U') ||
         (yytext[yyleng-1] == 'u'))
-    {
-        yytext[yyleng-1] = '\0';
-        if ((yytext[yyleng-2] == 'L') ||
-            (yytext[yyleng-2] == 'l') ||
-            (yytext[yyleng-2] == 'U') ||
-            (yytext[yyleng-2] == 'u'))
-        {
-            yytext[yyleng-2] = '\0';
-        }
-    }
+     {
+          if (yytext[yyleng-1] == 'U' || yytext[yyleng-1] == 'u')
+                unsigned_int = true;
+          yytext[yyleng-1] = '\0'; 
+          if ((yytext[yyleng-2] == 'L') ||
+                     (yytext[yyleng-2] == 'l') ||
+                     (yytext[yyleng-2] == 'U') ||
+                     (yytext[yyleng-2] == 'u'))
+          {
+                if (yytext[yyleng-2] == 'U' || yytext[yyleng-2] == 'u')
+                     unsigned_int = true;
+
+                yytext[yyleng-2] = '\0';
+          }
+     }
 
     /*
     ** Scan the hex integer and return the value as an integer
     */
-    sscanf((char *)&yytext[2],"%lx", &nidl_yylval.y_ival);
+    sscanf((char *)&yytext[2],"%lx", &nidl_yylval.y_int_info.int_val);
+     nidl_yylval.y_int_info.int_signed = !unsigned_int;
     return(INTEGER_NUMERIC);
 }
-
 {float} {
     nidl_yylval.y_float = STRTAB_add_string((char *)yytext);
     return(FLOAT_NUMERIC);
@@ -498,7 +504,7 @@ static void read_c_comment()
             if ((c = input()) == '/')
                 break ;
             else
-                unput(c) ;
+                yyunput(c, yytext) ;
         }
     }
 
@@ -711,7 +717,8 @@ get_current_nidl_flexxer_activation()
      *
      */
 
-    p->yy_current_buffer = yy_current_buffer;
+	yyensure_buffer_stack();
+    p->yy_current_buffer = YY_CURRENT_BUFFER_LVALUE;
     p->yy_hold_char = yy_hold_char;
     p->yy_n_chars = yy_n_chars;
     p->yy_c_buf_p = yy_c_buf_p;
@@ -765,7 +772,7 @@ set_current_nidl_flexxer_activation(void * ptr)
 
     // restore the statics
 
-    yy_current_buffer = p->yy_current_buffer;
+    YY_CURRENT_BUFFER_LVALUE = p->yy_current_buffer;
     yy_hold_char = p->yy_hold_char;
     yy_n_chars = p->yy_n_chars;
     yy_c_buf_p = p->yy_c_buf_p;
@@ -819,7 +826,8 @@ init_new_nidl_flexxer_activation(void)
      *
      */
 
-    yy_current_buffer = 0;
+	yyensure_buffer_stack();
+    YY_CURRENT_BUFFER_LVALUE = 0;
     yy_c_buf_p = (char *) 0;
     yy_init = 1;
     yy_start = 0;

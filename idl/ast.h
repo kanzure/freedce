@@ -830,6 +830,39 @@ typedef enum {
     AST_boolean_const_k
 } AST_constant_k_t;
 
+#define AST_EXP_CONSTANT		0x000000000
+#define AST_EXP_SUB_EXP			0x000000001
+#define AST_EXP_UNARY_NOT		0x000000002
+#define AST_EXP_UNARY_TILDE		0x000000004
+#define AST_EXP_UNARY_PLUS		0x000000008
+#define AST_EXP_UNARY_MINUS		0x000000010
+#define AST_EXP_UNARY_STAR		0x000000020
+#define AST_EXP_1_OP_MASK		0x000000fff
+
+#define AST_EXP_BINARY_PERCENT		0x000001000
+#define AST_EXP_BINARY_SLASH		0x000002000
+#define AST_EXP_BINARY_STAR		0x000004000
+#define AST_EXP_BINARY_MINUS		0x000008000
+#define AST_EXP_BINARY_PLUS		0x000010000
+#define AST_EXP_BINARY_RSHIFT		0x000020000
+#define AST_EXP_BINARY_LSHIFT		0x000040000
+#define AST_EXP_BINARY_GE		0x000080000
+#define AST_EXP_BINARY_LE		0x000100000
+#define AST_EXP_BINARY_GT		0x000200000
+#define AST_EXP_BINARY_LT		0x000400000
+#define AST_EXP_BINARY_NE		0x000800000
+#define AST_EXP_BINARY_EQUAL		0x001000000
+#define AST_EXP_BINARY_AND		0x002000000
+#define AST_EXP_BINARY_OR		0x004000000
+#define AST_EXP_BINARY_XOR		0x008000000
+#define AST_EXP_BINARY_LOG_OR		0x010000000
+#define AST_EXP_BINARY_LOG_AND		0x020000000
+#define AST_EXP_2_OP_MASK		0x0fffff000
+
+#define AST_EXP_TERNARY_OP		0x000000001
+#define AST_EXP_3_OP_MASK		0x100000000
+/* bug in gcc doesn't allow 64-bit constants! */
+#define AST_EXP_3_OP_MASK_LOWWORD 0x1
 
 /*
  *  A S T _ c o n s t a n t _ n _ t
@@ -853,6 +886,7 @@ typedef struct AST_constant_n_t {
             unsigned long int low;
         }            hyper_int_val;
     } value;
+	 boolean int_signed;
 } AST_constant_n_t;
 
 
@@ -914,6 +948,7 @@ typedef struct AST_type_n_t {
     struct AST_type_n_t   *array_rep_type;
     IR_info_t           ir_info;
     struct IR_tup_n_t   *data_tups;     /* Intermediate rep tuples */
+	 NAMETABLE_id_t				iid_is_name;	/* name of iis_is */
 } AST_type_n_t;
 
 
@@ -1131,8 +1166,31 @@ typedef struct AST_field_attr_n_t {
     struct AST_field_ref_n_t *max_is_vec;
     struct AST_field_ref_n_t *size_is_vec;
     struct AST_field_ref_n_t *switch_is;
-	 struct AST_field_ref_n_t *iid_is;
+    struct AST_field_ref_n_t *iid_is;
 } AST_field_attr_n_t;
+
+/*
+ * Type used to evaluate expressions
+ */
+typedef struct AST_exp_n_t {
+    unsigned long long exp_type;	/* AST_EXP_xxx flags */
+    union	{
+	struct	{
+	    AST_constant_k_t    type;     /* datatype of the constant */
+	    union {
+		int              integer;         /* Integer value         */
+		AST_constant_n_t *other;          /* Constant node         */
+	    } val;
+	    boolean int_signed;
+	    NAMETABLE_id_t	name;	/* use when "other" is null to resolve binding */
+	} constant;
+	struct	{
+	    struct AST_exp_n_t  * oper1;
+	    struct AST_exp_n_t  * oper2;
+	    struct AST_exp_n_t  * oper3;
+	} expression;
+    } exp;
+} AST_exp_n_t;   /* const expression block */
 
 
 /*
@@ -1149,6 +1207,8 @@ typedef struct AST_field_ref_n_t {
         struct AST_field_n_t     *f_ref;
         struct AST_parameter_n_t *p_ref;
     } ref;
+    unsigned long xtra_opcode;
+    /* expression could go here */
 } AST_field_ref_n_t;
 
 

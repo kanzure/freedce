@@ -45,7 +45,7 @@
 #include <message.h>
 #include <backend.h>
 #include <command.h>
-
+#include <irep.h>
 extern int nidl_yylineno;
 
 /*
@@ -940,6 +940,10 @@ static AST_type_n_t *AST_propagate_type_attrs
      */
     if (attributes != NULL)
     {
+		  /* Copy the iid_is name */
+		 	return_type->iid_is_name = attributes->iid_is_name; 
+
+		  
         /*
          *  If any pointer attrs are set, make sure only one of them is
          *  specified.
@@ -2041,79 +2045,145 @@ AST_field_attr_n_t *AST_set_field_attrs
             attr_ptr = next_attr_ptr;
 
             /* Proceed if reference name was specified */
-            if (attr_ptr->name != NAMETABLE_NIL_ID)
-            {
+            if (attr_ptr->is_expr || attr_ptr->b.simple.name != NAMETABLE_NIL_ID)
+			{
+				AST_exp_n_t * exp = NULL;
 
-                /*
-                 * Set the pointer count.
-                 * (This will need to be a bit more
-                 * sophisicated IF/WHEN IDL supports full
-                 * declarators for array bound references.)
-                 */
-                if (attr_ptr->pointer)
-                {
-                    field_ref_vector->fe_info->pointer_count = 1;
-                }
+				/*
+				 * Set the pointer count.
+				 * (This will need to be a bit more
+				 * sophisicated IF/WHEN IDL supports full
+				 * declarators for array bound references.)
+				 */
+				if (attr_ptr->is_expr)
+				{
+					exp = attr_ptr->b.expr;
 
-                /*
-                 * Lookup binding, output error if invalid type,
-                 * but allow forward references for parameters and fields.
-                 */
-                if ((parent_node->fe_info->node_kind == fe_parameter_n_k) ||
-                    (parent_node->fe_info->node_kind == fe_field_n_k))
-                {
-                    noforward_ref = FALSE;
-                }
+					if (ASTP_expr_is_simple(exp))	{
+						/* chase the dereferences */
+						while(exp->exp_type == AST_EXP_UNARY_STAR)	{
+							field_ref_vector->fe_info->pointer_count++;
+							exp = attr_ptr->b.expr = exp->exp.expression.oper1;
+						}
+						switch(exp->exp_type)	{
+							case AST_EXP_BINARY_SLASH:
+								field_ref_vector->xtra_opcode = IR_EXP_FC_DIV_2;
+								exp = exp->exp.expression.oper1;
+								break;
+							case AST_EXP_BINARY_STAR:
+								field_ref_vector->xtra_opcode = IR_EXP_FC_MUL_2;
+								exp = exp->exp.expression.oper1;
+								break;
+							case AST_EXP_BINARY_PLUS:
+								field_ref_vector->xtra_opcode = IR_EXP_FC_ADD_1;
+								exp = exp->exp.expression.oper1;
+								break;
+							case AST_EXP_BINARY_MINUS:
+								field_ref_vector->xtra_opcode = IR_EXP_FC_SUB_1;
+								exp = exp->exp.expression.oper1;
+								break;
+							case AST_EXP_BINARY_AND:
+								switch(ASTP_expr_integer_value(exp->exp.expression.oper1->exp.expression.oper2))
+								{
+									case 1:
+										field_ref_vector->xtra_opcode = IR_EXP_FC_ALIGN_2;
+										break;
+									case 3:
+										field_ref_vector->xtra_opcode = IR_EXP_FC_ALIGN_4;
+										break;
+									case 7:
+										field_ref_vector->xtra_opcode = IR_EXP_FC_ALIGN_4;
+										break;
+								}
+								exp = exp->exp.expression.oper1->exp.expression.oper1;
+								while(exp->exp_type == AST_EXP_UNARY_STAR)	{
+									field_ref_vector->fe_info->pointer_count++;
+									exp = attr_ptr->b.expr = exp->exp.expression.oper1;
+								}
+								break;
+						}
+						if (exp->exp_type != AST_EXP_CONSTANT ||
+							exp->exp.constant.type != AST_nil_const_k	
+						)
+						{
+							/* dunno how to handle that */
+							log_error(nidl_yylineno, NIDL_ONLYSIMPLEEXP, NULL);
+							return NULL;
+						}
+						attr_ptr->is_expr = false;
+						/* apply the EXP_CONSTANT details to the stuff below
+						 * */
+						attr_ptr->b.simple.name = exp->exp.constant.name;
+					}
+					else
+					{
+						log_error(nidl_yylineno, NIDL_ONLYSIMPLEEXP, NULL) ;
+						return NULL;
+					}
+				}
+				else if (attr_ptr->b.simple.pointer)
+				{
+					field_ref_vector->fe_info->pointer_count = 1;
+				}
 
-                referent_node = (ASTP_node_t *)
-                       ASTP_lookup_binding(attr_ptr->name,
-                                           parent_node->fe_info->node_kind,
-                                           noforward_ref);
+				/*
+				 * Lookup binding, output error if invalid type,
+				 * but allow forward references for parameters and fields.
+				 */
+				if ((parent_node->fe_info->node_kind == fe_parameter_n_k) ||
+						(parent_node->fe_info->node_kind == fe_field_n_k))
+				{
+					noforward_ref = FALSE;
+				}
 
-                /*
-                 * Set valid bit and fill in reference pointer
-                 * if lookup succeeded.
-                 */
-                if (referent_node != NULL)
-                {
-                    field_ref_vector->valid = TRUE;
+				referent_node = (ASTP_node_t *)
+						ASTP_lookup_binding(attr_ptr->b.simple.name,
+								parent_node->fe_info->node_kind,
+								noforward_ref);
+				/*
+				 * Set valid bit and fill in reference pointer
+				 * if lookup succeeded.
+				 */
+				if (referent_node != NULL)
+				{
+					field_ref_vector->valid = TRUE;
 
-                    if (parent_node->fe_info->node_kind == fe_parameter_n_k)
-                    {
-                        field_ref_vector->ref.p_ref =
-                                        (AST_parameter_n_t *)referent_node;
-                    }
-                    else
-                    {
-                        field_ref_vector->ref.f_ref =
-                                        (AST_field_n_t *)referent_node;
-                    }
-                }
-                else
-                {
-                    /*
-                     * If name binding is unknown, save context if
-                     * we're dealing with parameters or fields, otherwise
-                     * output an error.
-                     */
-                    if ((parent_node->fe_info->node_kind == fe_parameter_n_k) ||
-                        (parent_node->fe_info->node_kind == fe_field_n_k))
-                    {
-                        /* Name not bound yet, save context for later */
-                        ASTP_save_field_ref_context(
-                                        attr_ptr->name,
-                                        field_ref_vector,
-                                        parent_node->fe_info);
-                    }
-                    else
-                    {
-			char const *identifier;
-                        NAMETABLE_id_to_string (attr_ptr->name,
-                                                &identifier);
-                        log_error(nidl_yylineno, NIDL_NAMENOTFND, identifier, NULL) ;
-                    }
-                }
-            }
+					if (parent_node->fe_info->node_kind == fe_parameter_n_k)
+					{
+						field_ref_vector->ref.p_ref =
+							(AST_parameter_n_t *)referent_node;
+					}
+					else
+					{
+						field_ref_vector->ref.f_ref =
+							(AST_field_n_t *)referent_node;
+					}
+				}
+				else
+				{
+					/*
+					 * If name binding is unknown, save context if
+					 * we're dealing with parameters or fields, otherwise
+					 * output an error.
+					 */
+					if ((parent_node->fe_info->node_kind == fe_parameter_n_k) ||
+							(parent_node->fe_info->node_kind == fe_field_n_k))
+					{
+						/* Name not bound yet, save context for later */
+						ASTP_save_field_ref_context(
+								attr_ptr->b.simple.name,
+								field_ref_vector,
+								parent_node->fe_info);
+					}
+					else
+					{
+						char const *identifier;
+						NAMETABLE_id_to_string (attr_ptr->b.simple.name,
+								&identifier);
+						log_error(nidl_yylineno, NIDL_NAMENOTFND, identifier, NULL) ;
+					}
+				}
+			}
 
             /*
              * Point to next array bound element
@@ -2628,6 +2698,9 @@ void AST_set_flags
                  case ASTP_REFLECT_DELETIONS:
                       *flags |= AST_REFLECT_DELETIONS; break;
 
+					  case ASTP_LOCAL:
+							 *flags |= AST_LOCAL; break;
+							 
                  case ASTP_IN:
                       *flags |= AST_IN; break;
 
@@ -2890,36 +2963,38 @@ NAMETABLE_id_t AST_generate_name
  */
 
 void ASTP_validate_integer
-#ifdef PROTO
 (
-    ASTP_exp_n_t *exp_node
+    AST_exp_n_t *exp_node
 )
-#else
-(exp_node)
-    ASTP_exp_n_t *exp_node;
-#endif
 {
-    /*
-     *  If not already a long, then must be a constant node, so attempt to
-     *  coerce it to an int.
-     */
-    if (exp_node->type != AST_int_const_k)
-        switch (exp_node->val.other->kind)
-        {
-            case AST_int_const_k:
-                  exp_node->type = AST_int_const_k;
-                  exp_node->val.integer = exp_node->val.other->value.int_val;
-                  break;
-            case AST_char_const_k:
-                  exp_node->type = AST_int_const_k;
-                  exp_node->val.integer = exp_node->val.other->value.char_val;
-                  break;
-            default:
-                  exp_node->type = AST_int_const_k;
-                  exp_node->val.integer = 0;
-                  log_error(nidl_yylineno,NIDL_NONINTEXP, NULL);
-                  break;
-        }
+
+		  if (!ASTP_evaluate_expr(exp_node, true))	{
+				log_error(nidl_yylineno, NIDL_NONINTEXP, NULL);
+				return;
+		  }
+	 /*
+	 *  If not already a long, then must be a constant node, so attempt to
+	 *  coerce it to an int.
+	 */
+	 if (exp_node->exp.constant.type != AST_int_const_k)
+	 {
+		  switch (exp_node->exp.constant.val.other->kind)
+		  {
+				case AST_int_const_k:
+					 exp_node->exp.constant.type = AST_int_const_k;
+					 exp_node->exp.constant.val.integer = exp_node->exp.constant.val.other->value.int_val;
+					 break;
+				case AST_char_const_k:
+					 exp_node->exp.constant.type = AST_int_const_k;
+					 exp_node->exp.constant.val.integer = exp_node->exp.constant.val.other->value.char_val;
+					 break;
+				default:
+					 exp_node->exp.constant.type = AST_int_const_k;
+					 exp_node->exp.constant.val.integer = 0;
+					 log_error(nidl_yylineno,NIDL_NONINTEXP, NULL);
+					 break;
+		  }
+	 }
 }
 /*---------------------------------------------------------------------*/
 
@@ -2967,5 +3042,37 @@ static void ASTP_verify_non_anonymous
 
 }
 
+void ASTP_set_implicit_handle(
+	 AST_interface_n_t   *int_p,
+	 NAMETABLE_id_t type_name,
+	 NAMETABLE_id_t	handle_name
+	 )
+{
+	if (type_name != NAMETABLE_NIL_ID)	{
+		AST_type_n_t * type_p;
+
+		type_p = (AST_type_n_t*)NAMETABLE_lookup_binding(type_name);
+		if (type_p != NULL && type_p->fe_info->node_kind == fe_type_n_k)
+		{
+			int_p->implicit_handle_name = handle_name;
+			int_p->implicit_handle_type = type_p;
+			int_p->implicit_handle_type_name = type_p->name;
+			if (AST_HANDLE_SET(type_p))
+				AST_SET_IMPLICIT_HANDLE_G(int_p);
+		}
+		else	{
+			/* A user-defined type not defined in IDL */
+			int_p->implicit_handle_type_name = type_name;
+			int_p->implicit_handle_type = NULL;
+			int_p->implicit_handle_name = handle_name;
+			AST_SET_IMPLICIT_HANDLE_G(int_p);
+		}
+	}
+	else	{
+		int_p->implicit_handle_name = handle_name;
+		int_p->implicit_handle_type = ASTP_handle_ptr;
+	}
+}
+
 /*---------------------------------------------------------------------*/
-/* preserve coding style vim: set tw=78 sw=4 : */
+/* preserve coding style vim: set tw=78 sw=3 ts=3: */

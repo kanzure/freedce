@@ -94,7 +94,7 @@ static int yywrap(void)
     * are FLEX interfaces to the internal buffering system.
     */
 
-   acf_yy_delete_buffer(yy_current_buffer); /* free the FLEX buffer */
+   acf_yy_delete_buffer(YY_CURRENT_BUFFER_LVALUE); /* free the FLEX buffer */
    acf_yylineno = 1;
    return 1;
 }
@@ -302,7 +302,7 @@ static void acf_read_comment()
             if ( (c = input()) == '/')
                 break;
             else
-                unput(c);
+                yyunput(c, yytext);
         }
         else if (c == 0)
             commenteof();
@@ -472,7 +472,8 @@ get_current_acf_flexxer_activation()
      *
      */
 
-    p->yy_current_buffer = yy_current_buffer;
+	yyensure_buffer_stack();
+    p->yy_current_buffer = YY_CURRENT_BUFFER_LVALUE;
     p->yy_hold_char = yy_hold_char;
     p->yy_n_chars = yy_n_chars;
     p->yy_c_buf_p = yy_c_buf_p;
@@ -524,7 +525,7 @@ set_current_acf_flexxer_activation(void * ptr)
 
     // restore the statics
 
-    yy_current_buffer = p->yy_current_buffer;
+    YY_CURRENT_BUFFER_LVALUE = p->yy_current_buffer;
     yy_hold_char = p->yy_hold_char;
     yy_n_chars = p->yy_n_chars;
     yy_c_buf_p = p->yy_c_buf_p;
@@ -577,7 +578,8 @@ init_new_acf_flexxer_activation()
      *
      */
 
-    yy_current_buffer = 0;
+	yyensure_buffer_stack();
+    YY_CURRENT_BUFFER_LVALUE = 0;
     yy_c_buf_p = (char *) 0;
     yy_init = 1;
     yy_start = 0;

@@ -1713,72 +1713,75 @@ static void array_element_type
 #endif
 
 {
-    AST_type_n_t        *etype_p;       /* Array element presented type */
+	AST_type_n_t        *etype_p;       /* Array element presented type */
 
-    /* If the array element type is anonymous, it must undergo type checks. */
+	/* If the array element type is anonymous, it must undergo type checks. */
 
-    if (type_is_anonymous(type_p))
-        type_check(type_p, (ASTP_node_t *)node_p, int_p);
+	if (type_is_anonymous(type_p))
+		type_check(type_p, (ASTP_node_t *)node_p, int_p);
 
-    etype_p = type_p;
-    type_p = type_xmit_type(type_p);    /* Pick up transmissible type */
+	etype_p = type_p;
+	type_p = type_xmit_type(type_p);    /* Pick up transmissible type */
 
-    /*
-     * Array elements cannot be conformant arrays or structures
-     * Exceptions: Array elements types that are the target of a [transmit_as]
-     * and have determinable size (i.e. either [string] or a struct).
-     */
-    if (AST_CONFORMANT_SET(type_p)
-        && !(etype_p != type_p && AST_STRING_SET(type_p))
-        && !(etype_p != type_p && type_p->kind == AST_structure_k) )
-        CHECKER_error(node_p, NIDL_ARRELEMCFMT);
+	/*
+	 * Array elements cannot be conformant arrays or structures
+	 * Exceptions: Array elements types that are the target of a [transmit_as]
+	 * and have determinable size (i.e. either [string] or a struct).
+	 */
+	if (AST_CONFORMANT_SET(type_p)
+			&& !(etype_p != type_p && AST_STRING_SET(type_p))
+			&& !(etype_p != type_p && type_p->kind == AST_structure_k) )
+		CHECKER_error(node_p, NIDL_ARRELEMCFMT);
 
-    /* Array elements cannot be pipes */
+	/* Array elements cannot be pipes */
 
-    if (type_p->kind == AST_pipe_k)
-        CHECKER_error(node_p, NIDL_ARRELEMPIPE);
+	if (type_p->kind == AST_pipe_k)
+		CHECKER_error(node_p, NIDL_ARRELEMPIPE);
 
-    /* Array elements cannot be context handles */
+	/* Array elements cannot be context handles */
 
-    if (AST_CONTEXT_RD_SET(type_p))
-        CHECKER_error(node_p, NIDL_ARRELEMCTX);
+	if (AST_CONTEXT_RD_SET(type_p))
+		CHECKER_error(node_p, NIDL_ARRELEMCTX);
 
-    /* Function pointers are not valid as elements of conformant arrays */
+	/* Function pointers are not valid as elements of conformant arrays */
 
-    if (!AST_LOCAL_SET(int_p)
-        &&  type_is_function(type_p)
-        &&  (AST_CONFORMANT_SET(arr_type_p) || arrayified))
-        CHECKER_error(node_p, NIDL_FPCFMTARR);
+	if (!AST_LOCAL_SET(int_p)
+			&&  type_is_function(type_p)
+			&&  (AST_CONFORMANT_SET(arr_type_p) || arrayified))
+		CHECKER_error(node_p, NIDL_FPCFMTARR);
 
-    /* Array elements cannot be of type handle_t */
+	/* Array elements cannot be of type handle_t */
 
-    if (!AST_LOCAL_SET(int_p)
-        &&  type_p->kind == AST_handle_k)
+	if (!AST_LOCAL_SET(int_p)
+			&&  type_p->kind == AST_handle_k)
 #if 0   /** Obsolete **/
-        &&  type_p->xmit_as_type == NULL)
+		&&  type_p->xmit_as_type == NULL)
 #endif
-        CHECKER_error(node_p, NIDL_HANARRELEM);
+			CHECKER_error(node_p, NIDL_HANARRELEM);
 
-    /* void is valid only in an operation or pointer declaration */
+	/* void is valid only in an operation or pointer declaration */
 
-    if (type_p->kind == AST_void_k)
-        CHECKER_error(node_p, NIDL_VOIDOPPTR);
+	if (type_p->kind == AST_void_k)
+		CHECKER_error(node_p, NIDL_VOIDOPPTR);
 
-    /* void * must be used in conjunction with the [context_handle] attribute */
+	/* void * must be used in conjunction with the [context_handle] attribute */
 
-    if (!AST_LOCAL_SET(int_p)
+	if (!AST_LOCAL_SET(int_p)
 #if 0   /** Obsolete **/
-        &&  type_p->xmit_as_type == NULL
+			&&  type_p->xmit_as_type == NULL
 #endif
-        &&  type_p->kind == AST_pointer_k
-        &&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
-        &&  !AST_CONTEXT_RD_SET(type_p))
-        CHECKER_error(node_p, NIDL_PTRVOIDCTX);
+			&&  type_p->kind == AST_pointer_k
+			&&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
+			&&  !AST_CONTEXT_RD_SET(type_p)
+			)
+	{
+		CHECKER_error(node_p, NIDL_PTRVOIDCTX);
+	}
 
-    /* The [ignore] attribute is not allowed on array elements */
+	/* The [ignore] attribute is not allowed on array elements */
 
-    if (AST_IGNORE_SET(type_p))
-        CHECKER_error(node_p, NIDL_IGNARRELEM);
+	if (AST_IGNORE_SET(type_p))
+		CHECKER_error(node_p, NIDL_IGNARRELEM);
 }
 
 
@@ -1910,6 +1913,7 @@ static void param_type
         &&  param_p != param_p->uplink->result) /* Not the result param */
         CHECKER_error(param_p, NIDL_VOIDOPPTR);
 
+	 
     /* void * must be used in conjunction with the [context_handle] attr */
 
     if (!AST_LOCAL_SET(int_p)
@@ -1917,7 +1921,9 @@ static void param_type
         &&  type_p->kind == AST_pointer_k
         &&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
         &&  !AST_CONTEXT_RD_SET(type_p)
-        &&  !AST_CONTEXT_SET(param_p))
+        &&  !AST_CONTEXT_SET(param_p)
+		&& !AST_LOCAL_SET(param_p->uplink)
+		  )
         CHECKER_error(param_p, NIDL_PTRVOIDCTX);
 
     /* A type with [transmit_as] may not have other type attributes */
@@ -2395,15 +2401,16 @@ static void param_pointer
         &&  (*(int *)cmd_val[opt_standard] <= opt_standard_dce_1_0))
         CHECKER_warning(param_p, NIDL_NOPORTUNIQUE, OPT_STD_EXTENDED);
 
+#if 0
 	/* if the parameter is a pointer to an interface, then it should ignore
 	 * the pointer attributes REF, UNIQUE or PTR */
 	 if (top_type_p->kind == AST_pointer_k && type_p->kind == AST_interface_k
 			 && AST_REF_SET(param_p))
 		 CHECKER_warning(param_p, NIDL_PTRATTBIGN);
-
 	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
 			 && (AST_UNIQUE_SET(param_p) || AST_PTR_SET(param_p)))
 		 CHECKER_warning(param_p, NIDL_PTRATTBIGN);
+#endif
 	 
     /*
      * If the parameter is a pointer, and it is not a pointer to an array,
@@ -3592,7 +3599,8 @@ static void field_type
         &&  type_p->kind == AST_pointer_k
         &&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
         &&  !AST_CONTEXT_RD_SET(type_p)
-        &&  !AST_CONTEXT_SET(field_p))
+        &&  !AST_CONTEXT_SET(field_p)
+		  )
         CHECKER_error(field_p, NIDL_PTRVOIDCTX);
 
     /*
@@ -3925,10 +3933,11 @@ static void field_pointer
         CHECKER_error(field_p, NIDL_ARRPTRPRM);
 
 	/* ignore REF, UNIQUE, PTR attributes on pointers to interfaces */
+#if 0
 	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
 			 && (AST_UNIQUE_SET(field_p) || AST_REF_SET(field_p) || AST_PTR_SET(field_p)))
 		 CHECKER_warning(field_p, NIDL_PTRATTBIGN);
-	 
+#endif
     /*
      * If the field is a pointer, and it is not a pointer to an array,
      * and it has any of the array attributes, then it is an arrayified
@@ -4463,7 +4472,8 @@ static void ptr_pointee_type
         &&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
         &&  !AST_CONTEXT_RD_SET(type_p)
         &&  !(node_p->fe_info->node_kind == fe_parameter_n_k /* (1) */
-              && AST_CONTEXT_SET((AST_parameter_n_t *)node_p)))
+              && AST_CONTEXT_SET((AST_parameter_n_t *)node_p))
+		  )
         CHECKER_error(node_p, NIDL_PTRVOIDCTX);
 
     /* If this is a function pointer, call routine to check it. */
@@ -4582,7 +4592,8 @@ static void pipe_base_type
         &&  type_p->xmit_as_type == NULL
         &&  type_p->kind == AST_pointer_k
         &&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
-        &&  !AST_CONTEXT_RD_SET(type_p))
+        &&  !AST_CONTEXT_RD_SET(type_p)
+		  )
         CHECKER_error(pipe_p, NIDL_PTRVOIDCTX);
 
     CHK_pipe_base_type_cs(pipe_p, int_p);
@@ -4859,7 +4870,8 @@ static void arm_type
         &&  type_p->kind == AST_pointer_k
         &&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
         &&  !AST_CONTEXT_RD_SET(type_p)
-        &&  !AST_CONTEXT_SET(arm_p))
+        &&  !AST_CONTEXT_SET(arm_p)
+		  )
         CHECKER_error(arm_p, NIDL_PTRVOIDCTX);
 
     /*
@@ -4984,11 +4996,12 @@ static void arm_pointer
     if (AST_REF_SET(arm_p) && !pointer_attr_valid)
         CHECKER_error(arm_p, NIDL_REFATTRPTR);
 
+#if 0
 	/* ignore REF, UNIQUE or PTR for pointers to interfaces */
 	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
 			 && (AST_UNIQUE_SET(arm_p) || AST_REF_SET(arm_p) || AST_PTR_SET(arm_p)))
 		 CHECKER_warning(arm_p, NIDL_PTRATTBIGN);
-	 
+#endif
     /* An arm of a union can't be or contain a [unique] pointer */
 
     if (FE_TEST(type_p->fe_info->flags, FE_HAS_UNIQUE_PTR) ||
@@ -5591,11 +5604,12 @@ static void type_pointer
 
     if (AST_UNIQUE_SET(type_p) && !pointer_attr_valid)
         CHECKER_error(type_p, NIDL_UNIQATTRPTR);
+#if 0
 	/* ignore REF, UNIQUE or PTR for pointers to interfaces */
 	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
 			 && (AST_UNIQUE_SET(type_p) || AST_REF_SET(type_p) || AST_PTR_SET(type_p)))
 		 CHECKER_warning(type_p, NIDL_PTRATTBIGN);
-
+#endif
     /* [ptr] attribute valid only for pointer or array types */
 
     if (AST_PTR_SET(type_p) && !pointer_attr_valid)
@@ -6425,7 +6439,7 @@ static void int_inherit(AST_interface_n_t * int_p)
 		/* WEZ:TODO only valid for ORPC */
 		if (!NAMETABLE_lookup_local(int_p->inherited_interface_name))	{
 			NAMETABLE_id_to_string(int_p->inherited_interface_name, &id_name);
-			CHECKER_error(int_p, NIDL_INHERITNOTDEF, id_name);
+			//CHECKER_error(int_p, NIDL_INHERITNOTDEF, id_name);
 		}
 	}
 }

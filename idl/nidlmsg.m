@@ -3278,7 +3278,15 @@ $ parameter.
 
 365 Only objects can inherit interfaces
 
+366 Interface ref not allowed
+
 367 Ptr att bign
 
 368 Inherited interface not defined/imported
+
+369 Expression must be constant
+
+370 exp is null??
+
+371 Only simple expressions allowed for now
 

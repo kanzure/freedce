@@ -100,15 +100,36 @@ ASTP_type_attr_n_t *AST_array_bound_info
 
     attr_node_p = NEW (ASTP_type_attr_n_t);
 
+	attr_node_p->is_expr = false;
+	 
     attr_node_p->kind = kind ;
-    attr_node_p->name = name;
-    attr_node_p->pointer = is_pointer;
+    attr_node_p->b.simple.name = name;
+    attr_node_p->b.simple.pointer = is_pointer;
 
     attr_node_p->source_line = nidl_yylineno ;
 
     return attr_node_p ;
 }
 
+ASTP_type_attr_n_t * AST_array_bound_from_expr(
+		  AST_exp_n_t * exp,
+		  ASTP_attr_k_t kind
+)
+{
+	 ASTP_type_attr_n_t *attr_node_p;
+	 
+	 attr_node_p = NEW (ASTP_type_attr_n_t);
+
+	 attr_node_p->is_expr = true;
+
+	 attr_node_p->kind = kind ;
+	 attr_node_p->b.expr = exp;
+
+	 attr_node_p->source_line = nidl_yylineno ;
+
+	 return attr_node_p ;
+
+}
 
 /*---------------------------------------------------------------------*/
 
@@ -430,7 +451,10 @@ AST_parameter_n_t  *AST_declarator_to_param
      */
     AST_set_flags(&new_parameter->flags, (ASTP_node_t *)new_parameter, attributes);
 
-
+	/* set the iid_is name if specified */
+	 if (attributes)
+		  new_type->iid_is_name = attributes->iid_is_name;
+	 
     /* Now bind the new parameter name to the parameter node */
     ASTP_add_name_binding (new_parameter->name, new_parameter);
 
@@ -629,6 +653,7 @@ AST_constant_n_t *AST_finish_constant_node
     /* Propagate the declarator to a type node */
     no_attrs.bounds = NULL;
     no_attrs.attr_flags = ASTP_PTR;
+	 no_attrs.iid_is_name = NAMETABLE_NIL_ID;
     result_type = AST_propagate_type(type_ptr, declarator,
                                         &no_attrs,
                                         (ASTP_node_t *)constant_ptr);
@@ -1214,14 +1239,9 @@ AST_type_n_t *AST_lookup_integer_type_node
  */
 
 AST_type_n_t *AST_lookup_named_type
-#ifdef PROTO
 (
     NAMETABLE_id_t type_name
 )
-#else
-(type_name)
-    NAMETABLE_id_t type_name;
-#endif
 {
     AST_type_n_t *type_node_ptr;
 
@@ -2159,39 +2179,40 @@ static void AST_synthesize_param_to_oper_attr
  */
 
 AST_constant_n_t *AST_enum_constant
-#ifdef PROTO
 (
-    NAMETABLE_id_t identifier
+    NAMETABLE_id_t identifier,
+	 AST_exp_n_t * exp
 )
-#else
-(identifier)
-    NAMETABLE_id_t identifier;
-#endif
 {
-    AST_constant_n_t    *constant_node_ptr;
+	 AST_constant_n_t    *constant_node_ptr;
 
-    /*
-     * Allocate and initialize a constant node.
-     */
-     constant_node_ptr = AST_constant_node(AST_int_const_k);
-     constant_node_ptr->name = identifier;
+	 /*
+	  * Allocate and initialize a constant node.
+	  */
+	 constant_node_ptr = AST_constant_node(AST_int_const_k);
+	 constant_node_ptr->name = identifier;
 
-    /*
-     * Qualify the constant type for Checker
-     */
-    constant_node_ptr->fe_info->fe_type_id = fe_const_info;
-    constant_node_ptr->fe_info->type_specific.const_kind = fe_enum_const_k;
+	 /*
+	  * Qualify the constant type for Checker
+	  */
+	 constant_node_ptr->fe_info->fe_type_id = fe_const_info;
+	 constant_node_ptr->fe_info->type_specific.const_kind = fe_enum_const_k;
 
-    /*
-     * Bind the name to the constant value
-     */
-     ASTP_add_name_binding (identifier, constant_node_ptr);
+	 /*
+	  * Bind the name to the constant value
+	  */
+	 ASTP_add_name_binding (identifier, constant_node_ptr);
 
 
-    /*
-     * Return the new constant node
-     */
-     return constant_node_ptr;
+	 /* set the value */
+
+	 constant_node_ptr->value.int_val = exp->exp.constant.val.integer;
+	 constant_node_ptr->int_signed = exp->exp.constant.int_signed;
+	 
+	 /*
+	  * Return the new constant node
+	  */
+	 return constant_node_ptr;
 }
 
 

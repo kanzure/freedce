@@ -1699,6 +1699,7 @@ static void PROP_type_info
                 break;
 				default:
 					 /* do nothing */
+				break;
             }
         }
         else if (inst_p->field_attrs != NULL)
@@ -2934,6 +2935,7 @@ static void type_prop_to_instance
     }
 	 default:
 	 /* do nothing */
+		return;
     }
 }
 

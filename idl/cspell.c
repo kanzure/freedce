@@ -254,6 +254,7 @@ boolean CSPELL_scalar_type_suffix
 			fprintf (fid, "u");
 		default:
 			/* nothing */
+			break;
 	}
 
 	switch (tp->kind) {

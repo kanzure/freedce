@@ -937,7 +937,7 @@ AST_field_n_t *AST_declarators_to_fields
                  attr_ptr != NULL;
                  attr_ptr = attr_ptr->next)
             {
-                if (attr_ptr->pointer)
+                if (attr_ptr->is_expr && attr_ptr->b.simple.pointer)
                     log_error(attr_ptr->source_line, NIDL_ATTRVALIND, NULL);
             }
         }
@@ -1516,6 +1516,7 @@ static void AST_find_self_reference
             break;
 		  default:
 				/* do nothing */
+			break;
     }
 
 }

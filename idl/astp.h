@@ -77,6 +77,7 @@
  *  maybe,              - operation
  *  idempotent,         - operation
  *  reflect_deletions,  - operation
+ *  local               - operation
  *  in,                 - parameter
  *  out,                - parameter
  *  mutable,            - parameter
@@ -107,6 +108,7 @@
 #define ASTP_BROADCAST      0x00000001
 #define ASTP_MAYBE          0x00000002
 #define ASTP_IDEMPOTENT     0x00000004
+#define ASTP_LOCAL			 0x08000000
 #define ASTP_REFLECT_DELETIONS 0x04000000
 
 /* Parameter-only Attributes */
@@ -145,7 +147,7 @@
  * NOTE: This bit must correspond to the Highest Attribute bit used
  * above.  It is used to check which attributes are applicable.
  */
-#define ASTP_MAX_ATTRIBUTE  0x04000000
+#define ASTP_MAX_ATTRIBUTE  0x08000000
 
 /*
  * Sets of valid flags for each node type.  Note, these are the flags that can
@@ -156,7 +158,7 @@
  * are not specified below, but handled explicity in the builder routines.
  */
 #define ASTP_OPERATION_FLAGS ASTP_BROADCAST | ASTP_MAYBE | ASTP_IDEMPOTENT | \
-            ASTP_REFLECT_DELETIONS
+            ASTP_REFLECT_DELETIONS | ASTP_LOCAL
 
 #define ASTP_PARAMETER_FLAGS ASTP_STRING | ASTP_STRING0 |   \
             ASTP_SMALL | ASTP_CONTEXT |       \
@@ -235,6 +237,8 @@ typedef struct ASTP_attributes_t
     struct ASTP_type_attr_n_t       *bounds;
     ASTP_attr_flag_t                attr_flags; /* values are the ASTP_xxx  */
                                                 /* flags above              */
+    NAMETABLE_id_t  	iid_is_name;	/* name for iid_is */
+
 } ASTP_attributes_t;
 
 
@@ -309,8 +313,14 @@ typedef struct ASTP_type_attr_n_t
     struct ASTP_type_attr_n_t *last;
     int             source_line;
     ASTP_attr_k_t   kind;
-    NAMETABLE_id_t  name;
-    boolean         pointer;
+    boolean is_expr;
+    union	{
+	struct {
+	    NAMETABLE_id_t  name;
+	    boolean         pointer;
+	} simple;
+	struct AST_exp_n_t * expr;
+    } b;
 } ASTP_type_attr_n_t;
 
 /*
@@ -403,17 +413,18 @@ typedef struct ASTP_parameter_count_t
 } ASTP_parameter_count_t;
 
 
-/*
- * Type used to evaluate integer constant expressions
- */
-typedef struct ASTP_exp_n_t {
-    AST_constant_k_t    type;     /* datatype of the expression */
-    union {
-        int              integer;         /* Integer value         */
-        AST_constant_n_t *other;          /* Constant node         */
-    } val;
-} ASTP_exp_n_t;   /* const expression block */
-
+extern boolean ASTP_expr_is_simple(AST_exp_n_t * exp);
+extern AST_exp_n_t * AST_expression(unsigned long long exp_type, AST_exp_n_t * oper1, AST_exp_n_t * oper2, AST_exp_n_t * oper3);
+extern AST_exp_n_t * AST_exp_boolean_constant(boolean value);
+extern AST_exp_n_t * AST_exp_null_constant(void);
+extern AST_exp_n_t * AST_exp_string_constant(STRTAB_str_t string);
+extern AST_exp_n_t * AST_exp_identifier(NAMETABLE_id_t name);
+extern AST_exp_n_t * AST_exp_char_constant(char value);
+extern AST_exp_n_t * AST_exp_integer_constant(long value, int int_signed);
+extern AST_constant_n_t * AST_constant_from_exp(AST_exp_n_t * exp);
+extern boolean ASTP_evaluate_expr(AST_exp_n_t * exp_node, boolean constant_only);
+extern void ASTP_free_exp(AST_exp_n_t * exp);
+extern long ASTP_expr_integer_value(AST_exp_n_t * exp);
 
 
 /*
@@ -492,7 +503,10 @@ ASTP_type_attr_n_t *AST_array_bound_info(
     boolean is_pointer
 #endif
 );
-
+extern ASTP_type_attr_n_t * AST_array_bound_from_expr(
+		  AST_exp_n_t * exp,
+		  ASTP_attr_k_t kind
+);
 void AST_capture_operation_attrs(
 #ifdef PROTO
     void
@@ -745,9 +759,8 @@ AST_type_n_t *AST_enumerator_node(
 );
 
 AST_constant_n_t *AST_enum_constant(
-#ifdef PROTO
-    NAMETABLE_id_t identifier
-#endif
+    NAMETABLE_id_t identifier,
+	 AST_exp_n_t * exp
 );
 
 
@@ -1015,7 +1028,7 @@ NAMETABLE_id_t AST_generate_name(
 
 void ASTP_validate_integer(
 #ifdef PROTO
-      ASTP_exp_n_t *expression
+      AST_exp_n_t *expression
 #endif
 );
 
@@ -1045,6 +1058,11 @@ void ASTP_set_array_rep_type
     AST_type_n_t        *array_base_type,
     boolean             is_varying
 #endif
+);
+void ASTP_set_implicit_handle(
+	 AST_interface_n_t   *int_p,
+	 NAMETABLE_id_t type_name,
+	 NAMETABLE_id_t	handle_name
 );
 
 #endif

@@ -16,7 +16,7 @@ bin_PROGRAMS = dceidl
 pkgdata_DATA=idl.cat
 
 dceidl_SOURCES = acf_y.y acf_l.l nidl_y.y nidl_l.l astp_com.c astp_cpx.c \
-	astp_gbl.c astp_sim.c astp_dmp.c checker.c chkichar.c command.c \
+	astp_exp.c astp_gbl.c astp_sim.c astp_dmp.c checker.c chkichar.c command.c \
 	driver.c errors.c files.c frontend.c getflags.c keywds.c main.c \
 	message.c nametbl.c namdump.c propagat.c sysdep.c mtsbacke.c \
 	ddbe.c ddspell.c cspeldcl.c cspell.c cstubmts.c hdgen.c clihamts.c \

@@ -91,7 +91,8 @@ typedef enum            /* AST node kinds */
     fe_operation_n_k,
     fe_include_n_k,
     fe_exception_n_k,
-    fe_cs_char_n_k
+    fe_cs_char_n_k,
+    fe_expression_n_k
 } fe_node_k_t;
 
 /*

@@ -153,8 +153,9 @@ void add_param_to_list(acf_param_t *, acf_param_t **);
 static void append_parameter(AST_operation_n_t *, char const *, acf_attrib_t *);
 static void process_rep_as_type(AST_interface_n_t *, AST_type_n_t *, char const *);
 static void process_cs_char_type(AST_interface_n_t *, AST_type_n_t *, char const *);
+#ifdef DUMPERS
 static void dump_attributes(char *, char const *, acf_attrib_t *);
-
+#endif
 /*
  * Warning and Error stuff
  */
@@ -287,9 +288,7 @@ acf_interface_header:
         acf_interface_attr_list INTERFACE_KW acf_interface_name
     {
         char const      *ast_int_name;  /* Interface name in AST node */
-        NAMETABLE_id_t  type_id;        /* Nametable id of impl_handle type */
         NAMETABLE_id_t  impl_name_id;   /* Nametable id of impl_handle var */
-        AST_type_n_t    *type_p;        /* Ptr to implicit_handle type node */
 
 #ifdef DUMPERS
         if (cmd_opt[opt_dump_acf])
@@ -360,38 +359,11 @@ acf_interface_header:
             {
                 /* Store the [implicit_handle] variable name in nametbl. */
                 impl_name_id = NAMETABLE_add_id(impl_name);
+		
+					 ASTP_set_implicit_handle(the_interface,
+					 	named_type ? NAMETABLE_add_id(type_name) : NAMETABLE_NIL_ID,
+						impl_name_id);
 
-                /*
-                 * Store the type and name information in the AST.  If a
-                 * named type, determine whether it is an IDL-defined type
-                 * and process accordingly.  Otherwise the type is handle_t.
-                 */
-                if (named_type)
-                {
-                    if (lookup_type(type_name, FALSE, &type_id, &type_p))
-                    {
-                        the_interface->implicit_handle_name = impl_name_id;
-                        the_interface->implicit_handle_type = type_p;
-                        the_interface->implicit_handle_type_name = type_p->name;
-                        if (AST_HANDLE_SET(type_p))
-                            AST_SET_IMPLICIT_HANDLE_G(the_interface);
-                    }
-                    else    /* A user-defined type, not defined in IDL */
-                    {
-                        /* Store the user type name in nametbl. */
-                        the_interface->implicit_handle_type_name
-                            = NAMETABLE_add_id(type_name);
-
-                        the_interface->implicit_handle_name = impl_name_id;
-                        the_interface->implicit_handle_type = NULL;
-                        AST_SET_IMPLICIT_HANDLE_G(the_interface);
-                    }
-                }
-                else
-                {
-                    the_interface->implicit_handle_name = impl_name_id;
-                    the_interface->implicit_handle_type = ASTP_handle_ptr;
-                }
             }
         }
 

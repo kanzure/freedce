@@ -104,6 +104,7 @@ static keyword_attrib_t keywords [] = {
 
 {0, 1, "boolean", BOOLEAN_KW},
 {0, 1, "byte", BYTE_KW},
+{0, 1, "call_as", CALL_AS_KW},
 {0, 1, "case", CASE_KW},
 {0, 1, "char", CHAR_KW},
 {0, 1, "const", CONST_KW},
@@ -114,6 +115,7 @@ static keyword_attrib_t keywords [] = {
 {0, 1, "float", FLOAT_KW},
 {0, 1, "handle_t", HANDLE_T_KW},
 {0, 1, "hyper", HYPER_KW},
+{0, 1, "implicit_handle", IMPLICIT_HANDLE_KW},
 {0, 1, "import", IMPORT_KW},
 {0, 1, "int", INT_KW},
 {0, 1, "interface", INTERFACE_KW},
@@ -126,6 +128,7 @@ static keyword_attrib_t keywords [] = {
  */
 {0, 0, "ref", REF_KW},
 
+{0, 1, "library", LIBRARY_KW},
 {0, 1, "long", LONG_KW},
 {0, 1, "NULL", NULL_KW},
 {0, 1, "pipe", PIPE_KW},

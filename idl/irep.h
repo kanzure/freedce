@@ -48,7 +48,7 @@ typedef unsigned char byte;
  * Define maximum arguments to an intermediate rep. tuple and the standard
  * argument numbers of particular types of arguments.
  */
-#define IR_MAX_ARG      3           /* Maximum args to tuple                  */
+#define IR_MAX_ARG      4           /* Maximum args to tuple                  */
 #define IR_ARG_BOUND    0           /* standard arg# for bound kind           */
 #define IR_ARG_EXPR     0           /* standard arg# for expression           */
 #define IR_ARG_INTFC    0           /* standard arg# for interface node ptr   */
@@ -67,7 +67,7 @@ typedef unsigned char byte;
 #define IR_ARG_REP_AS   2           /* standard arg# for rep_as node ptr      */
 #define IR_ARG_TYPE2    2           /* standard arg# for second type node ptr */
 #define IR_ARG_CS_CHAR  2           /* standard arg# for cs_char node ptr     */
-
+#define IR_ARG_BOUND_XTRA 3         /* standard arg# for xtra bound info */
 
 /*
  * Each tuple has an opcode in addition to its arguments.
@@ -155,7 +155,6 @@ typedef unsigned short IR_flags_t;
                                     /*  non-fixed array of [cs_char] type    */
 #define IR_IN_ONLY          0x1000  /* [in]-only tuple */
 #define IR_OUT_ONLY         0x2000  /* [out]-only tuple */
-
 /*
  * IR_bound_k_t defines the kinds of array bounds.
  */
@@ -191,6 +190,16 @@ typedef enum {
 typedef struct IR_expr_n_t {
     long            dummy;
 } IR_expr_n_t;
+#define IR_EXP_FC_NONE		0
+#define IR_EXP_FC_DIV_2	1
+#define IR_EXP_FC_MUL_2	2
+#define IR_EXP_FC_ADD_1	3
+#define IR_EXP_FC_SUB_1	4
+#define IR_EXP_FC_ALIGN_2	5
+#define IR_EXP_FC_ALIGN_4	6
+#define IR_EXP_FC_ALIGN_8	7
+#define IR_EXP_FC_CALLBACK	8
+	
 
 typedef IR_expr_n_t *IR_expr_t;
 

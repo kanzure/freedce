@@ -55,23 +55,13 @@
 extern int nidl_yylineno;
 extern boolean search_attributes_table ;
 
-int yyparse (
-#ifdef PROTO
-    void
-#endif
-);
-
-int yylex (
-#ifdef PROTO
-    void
-#endif
-);
+int yyparse(void);
+int yylex(void);
 
 /*
 **  Local cells used for inter-production communication
 */
 static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
-
 
 %}
 
@@ -79,33 +69,47 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
         /*   Declaration of yylval, yyval                   */
 %union
 {
-    NAMETABLE_id_t         y_id ;          /* Identifier           */
-    STRTAB_str_t           y_string ;      /* String               */
-    STRTAB_str_t           y_float ;       /* Float constant       */
-    long                   y_ival ;        /* Integer constant     */
-    AST_export_n_t*        y_export ;      /* an export node       */
-    AST_import_n_t*        y_import ;      /* Import node          */
-    AST_exception_n_t*     y_exception ;   /* Exception node       */
-    AST_constant_n_t*      y_constant;     /* Constant node        */
-    AST_parameter_n_t*     y_parameter ;   /* Parameter node       */
-    AST_type_n_t*          y_type ;        /* Type node            */
-    AST_type_p_n_t*        y_type_ptr ;    /* Type pointer node    */
-    AST_field_n_t*         y_field ;       /* Field node           */
-    AST_arm_n_t*           y_arm ;         /* Union variant arm    */
-    AST_operation_n_t*     y_operation ;   /* Routine node         */
-    AST_interface_n_t*     y_interface ;   /* Interface node       */
-    AST_case_label_n_t*    y_label ;       /* Union tags           */
-    ASTP_declarator_n_t*   y_declarator ;  /* Declarator info      */
-    ASTP_array_index_n_t*  y_index ;       /* Array index info     */
-    nidl_uuid_t            y_uuid ;        /* Universal UID        */
-    char                   y_char;         /* character constant   */
-    ASTP_attributes_t      y_attributes;   /* attributes flags     */
-    struct {
-        AST_type_k_t    int_size;
-        int             int_signed;
-        }                  y_int_info;     /* int size and signedness */
-    ASTP_exp_n_t           y_exp;          /* constant expression info */
+	 NAMETABLE_id_t         y_id ;          /* Identifier           */
+	 long                   y_ptrlevels;	 /* levels of * for pointers */
+	 long							y_ptrclass;		 /* class of pointer */
+	 STRTAB_str_t           y_string ;      /* String               */
+	 STRTAB_str_t           y_float ;       /* Float constant       */
+	 AST_export_n_t*        y_export ;      /* an export node       */
+	 AST_import_n_t*        y_import ;      /* Import node          */
+	 AST_exception_n_t*     y_exception ;   /* Exception node       */
+	 AST_constant_n_t*      y_constant;     /* Constant node        */
+	 AST_parameter_n_t*     y_parameter ;   /* Parameter node       */
+	 AST_type_n_t*          y_type ;        /* Type node            */
+	 AST_type_p_n_t*        y_type_ptr ;    /* Type pointer node    */
+	 AST_field_n_t*         y_field ;       /* Field node           */
+	 AST_arm_n_t*           y_arm ;         /* Union variant arm    */
+	 AST_operation_n_t*     y_operation ;   /* Routine node         */
+	 AST_interface_n_t*     y_interface ;   /* Interface node       */
+	 AST_case_label_n_t*    y_label ;       /* Union tags           */
+	 ASTP_declarator_n_t*   y_declarator ;  /* Declarator info      */
+	 ASTP_array_index_n_t*  y_index ;       /* Array index info     */
+	 nidl_uuid_t            y_uuid ;        /* Universal UID        */
+	 char                   y_char;         /* character constant   */
+	 ASTP_attributes_t      y_attributes;   /* attributes flags     */
+	 struct {
+		  long            int_val ;        /* Integer constant     */
+		  AST_type_k_t    int_size;
+		  int             int_signed;
+	 }                  y_int_info;     /* int size and signedness */
+	 AST_exp_n_t           * y_exp;          /* constant expression info */
 }
+
+%{
+#if YYDEBUG
+extern char const *current_file;
+static void yyprint(FILE * stream, int token, YYSTYPE lval)	{
+	fprintf(stream, " %s:%d", current_file, *yylineno_p);
+}
+#define YYPRINT yyprint
+#endif
+
+
+%}
 
 /********************************************************************/
 /*                                                                  */
@@ -127,6 +131,7 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 %token INT_KW
 %token INTERFACE_KW
 %token IMPORT_KW
+%token LIBRARY_KW
 %token LONG_KW
 %token PIPE_KW
 %token REF_KW
@@ -152,6 +157,7 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 %token HANDLE_KW
 %token IDEMPOTENT_KW
 %token IGNORE_KW
+%token CALL_AS_KW
 %token IID_IS_KW
 %token IMPLICIT_HANDLE_KW
 %token IN_KW
@@ -229,11 +235,11 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 
 /*  Tokens setting yylval   */
 
-%token <y_id>      IDENTIFIER
-%token <y_string>  STRING
-%token <y_ival>    INTEGER_NUMERIC
-%token <y_char>    CHAR
-%token <y_float>   FLOAT_NUMERIC
+%token <y_id>      		IDENTIFIER
+%token <y_string>  		STRING
+%token <y_int_info>		INTEGER_NUMERIC
+%token <y_char>			CHAR
+%token <y_float>			FLOAT_NUMERIC
 %start grammar_start
 
 %%
@@ -245,13 +251,22 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 /********************************************************************/
 
 grammar_start:
-			optional_imports interface
+			interfaces
+			|
+			optional_imports
 			{
-				 /* support multiple interfaces */
-				 global_imports = (AST_import_n_t*)AST_concat_element(
-				 	(ASTP_node_t*)global_imports, (ASTP_node_t*)$<y_import>1);
+#if 0
+	 			global_imports = (AST_import_n_t*)AST_concat_element(
+	 				 (ASTP_node_t*)global_imports, (ASTP_node_t*)$<y_import>1);
+#endif
 			}
 		;
+
+interfaces:
+	interfaces interface
+	|
+	interface
+	;
 
 interface:
         interface_init interface_start interface_ancestor interface_tail
@@ -431,10 +446,10 @@ const_dcl:
 
 const_exp:  expression
         {
-            if ($<y_exp>1.type == AST_int_const_k)
-                $<y_constant>$ = AST_integer_constant ($<y_exp>1.val.integer) ;
-            else
-                $<y_constant>$ = $<y_exp>1.val.other;
+				$<y_constant>$ = AST_constant_from_exp($<y_exp>1);
+				if ($<y_constant>$ == NULL)	{
+					 log_error(nidl_yylineno, NIDL_EXPNOTCONST, NULL);
+				}
         }
     ;
 
@@ -512,8 +527,8 @@ extraneous_semi:
     ;
 
 optional_unsigned_kw:
-        UNSIGNED_KW     { $<y_ival>$ = false; }
-    |   /* Nothing */   { $<y_ival>$ = true; }
+        UNSIGNED_KW     { $<y_int_info>$.int_signed = false; }
+    |   /* Nothing */   { $<y_int_info>$.int_signed = true; }
     ;
 
 integer_size_spec:
@@ -562,7 +577,7 @@ integer_type_spec:
     |   optional_unsigned_kw INT_KW
         {
             log_warning(nidl_yylineno,NIDL_INTSIZEREQ, NULL);
-            $<y_type>$ = AST_lookup_integer_type_node(AST_long_integer_k,$<y_ival>1);
+            $<y_type>$ = AST_lookup_integer_type_node(AST_long_integer_k,$<y_int_info>1.int_signed);
         }
     ;
 
@@ -858,8 +873,7 @@ enum_ids:
 enum_id:
         IDENTIFIER optional_value
         {
-            $<y_constant>$  = AST_enum_constant($<y_id>1) ;
-				$<y_constant>$->value.int_val = $<y_exp>2.val.integer;
+            $<y_constant>$ = AST_enum_constant($<y_id>1, $<y_exp>2) ;
         }
     ;
 
@@ -873,11 +887,11 @@ pipe_type_spec:
 optional_value:
 	/* Nothing */
 		{
-			 $<y_exp>$.type = AST_int_const_k;
-			 $<y_exp>$.val.integer = 0;
+			 $<y_exp>$ = AST_exp_integer_constant(0, true);
 		}
 	| EQUAL expression
 		{
+	 		 ASTP_validate_integer($<y_exp>2);
 			 $<y_exp>$ = $<y_exp>2;
 		}
 	;
@@ -909,15 +923,15 @@ declarator1:
             {
                 $<y_declarator>$ = $<y_declarator>2;
                 AST_declarator_operation($<y_declarator>$, AST_pointer_k,
-                        (ASTP_node_t *)NULL, $<y_ival>1 );
+                        (ASTP_node_t *)NULL, $<y_ptrlevels>1 );
             };
 
 
 pointer :
             STAR
-            { $<y_ival>$ = 1;}
+            { $<y_ptrlevels>$ = 1;}
        |    STAR pointer
-            { $<y_ival>$ = $<y_ival>2 + 1; };
+            { $<y_ptrlevels>$ = $<y_ptrlevels>2 + 1; };
 
 
 direct_declarator:
@@ -1229,27 +1243,51 @@ interface_attr:
         {
             if (the_interface->pointer_default != 0)
                     log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
-            the_interface->pointer_default = $<y_ival>3;
+            the_interface->pointer_default = $<y_ptrclass>3;
         }
+	 /* extensions to osf */
 	 |	  OBJECT_KW
 	 		{
 				if (AST_OBJECT_SET(the_interface))
 					 log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
 				AST_SET_OBJECT(the_interface);
 			}
+	 |		acf_interface_attr
+	 		{
+				/* complain about compat here */
+			}
     ;
 
+acf_interface_attr:
+	IMPLICIT_HANDLE_KW LPAREN HANDLE_T_KW IDENTIFIER RPAREN
+	{
+		if (the_interface->implicit_handle_name != NAMETABLE_NIL_ID)
+			 log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+
+		ASTP_set_implicit_handle(the_interface, NAMETABLE_NIL_ID, $<y_id>4);
+	}
+	|
+	IMPLICIT_HANDLE_KW LPAREN IDENTIFIER IDENTIFIER RPAREN
+	{
+		/*AST_type_n_t * type_p;*/
+		if (the_interface->implicit_handle_name != NAMETABLE_NIL_ID)
+			log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+	
+		ASTP_set_implicit_handle(the_interface, $<y_id>3, $<y_id>4);
+	}
+	;
+
 pointer_class:
-        REF_KW { $<y_ival>$ = ASTP_REF; }
-    |   PTR_KW { $<y_ival>$ = ASTP_PTR; }
-    |   UNIQUE_KW { $<y_ival>$ = ASTP_UNIQUE; }
+        REF_KW { $<y_ptrclass>$ = ASTP_REF; }
+    |   PTR_KW { $<y_ptrclass>$ = ASTP_PTR; }
+    |   UNIQUE_KW { $<y_ptrclass>$ = ASTP_UNIQUE; }
     ;
 
 version_number:
         INTEGER_NUMERIC
         {
-            the_interface->version = $<y_ival>1;
-            if ($<y_ival>1 > /*(unsigned int)*/ASTP_C_USHORT_MAX)
+            the_interface->version = $<y_int_info>1.int_val;
+            if (the_interface->version > /*(unsigned int)*/ASTP_C_USHORT_MAX)
                 log_error(nidl_yylineno, NIDL_MAJORTOOLARGE,
 			  ASTP_C_USHORT_MAX, NULL);
         }
@@ -1283,7 +1321,7 @@ excep_list:
         {
             $<y_exception>$ = (AST_exception_n_t *) AST_concat_element(
                                 (ASTP_node_t *) the_interface->exceptions,
-                                (ASTP_node_t *) $<y_exception>4 );
+                                (ASTP_node_t *) $<y_exception>3 );
         }
     ;
 
@@ -1363,15 +1401,12 @@ array_bound_id_list:
         }
     ;
 
+/* expression conflicts with identifier here */
 array_bound_id:
-        IDENTIFIER
-        {
-        $<y_attributes>$.bounds = AST_array_bound_info ($<y_id>1, ASTP_bound_type, FALSE);
-        }
-    |   STAR IDENTIFIER
-        {
-        $<y_attributes>$.bounds = AST_array_bound_info ($<y_id>2, ASTP_bound_type, TRUE);
-        }
+	  expression
+			{
+				 $<y_attributes>$.bounds = AST_array_bound_from_expr($<y_exp>1, ASTP_bound_type);
+			}
     |   /* nothing */
         {
         $<y_attributes>$.bounds = AST_array_bound_info (NAMETABLE_NIL_ID, ASTP_bound_type, FALSE);
@@ -1388,11 +1423,11 @@ neu_switch_type:
 neu_switch_id:
         IDENTIFIER
         {
-        $<y_attributes>$.bounds = AST_array_bound_info ($<y_id>1, ASTP_bound_type, FALSE);
+        $<y_attributes>$.bounds = AST_array_bound_info($<y_id>1, ASTP_bound_type, FALSE);
         }
     |   STAR IDENTIFIER
         {
-        $<y_attributes>$.bounds = AST_array_bound_info ($<y_id>2, ASTP_bound_type, TRUE);
+        $<y_attributes>$.bounds = AST_array_bound_info($<y_id>2, ASTP_bound_type, TRUE);
         }
     ;
 
@@ -1470,6 +1505,9 @@ attribute:
                                   $<y_attributes>$.bounds = NULL;       }
     |   REFLECT_DELETIONS_KW    { $<y_attributes>$.attr_flags = ASTP_REFLECT_DELETIONS;
                                   $<y_attributes>$.bounds = NULL;       }
+	 |   LOCAL_KW                { $<y_attributes>$.attr_flags = ASTP_LOCAL;
+	                               $<y_attributes>$.bounds = NULL;       }
+	 |   CALL_AS_KW LPAREN IDENTIFIER RPAREN	{	}
 
         /* Parameter-only Attributes */
     |   PTR_KW                  { $<y_attributes>$.attr_flags = ASTP_PTR;
@@ -1487,16 +1525,15 @@ attribute:
                                         ASTP_OUT | ASTP_OUT_SHAPE;
                                   $<y_attributes>$.bounds = NULL;       }
 	 |	  IID_IS_KW LPAREN IDENTIFIER RPAREN
-											{ $<y_attributes>$.bounds =
-												 AST_array_bound_info($<y_id>2, iid_is_k,
-															FALSE);
+											{ $<y_attributes>$.iid_is_name = $<y_id>3; 
+                                   $<y_attributes>$.bounds = NULL;
+                                   $<y_attributes>$.attr_flags = 0;
 											}
 	 |	  IID_IS_KW LPAREN STAR IDENTIFIER RPAREN
-											{ $<y_attributes>$.bounds =
-												 AST_array_bound_info($<y_id>2, iid_is_k,
-															TRUE);
+											{ $<y_attributes>$.iid_is_name = $<y_id>4; 
+                                   $<y_attributes>$.bounds = NULL;
+                                   $<y_attributes>$.attr_flags = 0;
 											}
-
 
         /* Type, Field, Parameter Attributes */
     |   V1_ARRAY_KW             { $<y_attributes>$.attr_flags = ASTP_SMALL;
@@ -1578,11 +1615,7 @@ conditional_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    logical_OR_expression QUESTION expression COLON conditional_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            ASTP_validate_integer(&$<y_exp>5);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer ? $<y_exp>3.val.integer : $<y_exp>5.val.integer;
+	 			$<y_exp>$ = AST_expression(AST_EXP_TERNARY_OP, $<y_exp>1, $<y_exp>3, $<y_exp>5);
         }
    ;
 
@@ -1591,10 +1624,7 @@ logical_OR_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    logical_OR_expression BARBAR logical_AND_expression
         {
-           ASTP_validate_integer(&$<y_exp>1);
-           ASTP_validate_integer(&$<y_exp>3);
-           $<y_exp>$.type = AST_int_const_k;
-           $<y_exp>$.val.integer = $<y_exp>1.val.integer || $<y_exp>3.val.integer;
+	 			$<y_exp>$ = AST_expression(AST_EXP_BINARY_LOG_OR, $<y_exp>1, $<y_exp>3, NULL);
         }
    ;
 
@@ -1603,10 +1633,7 @@ logical_AND_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    logical_AND_expression AMPAMP inclusive_OR_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>2.val.integer && $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_LOG_AND, $<y_exp>1, $<y_exp>3, NULL);
         }
    ;
 
@@ -1615,10 +1642,7 @@ inclusive_OR_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    inclusive_OR_expression BAR exclusive_OR_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer | $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_OR, $<y_exp>1, $<y_exp>3, NULL);
         }
    ;
 
@@ -1627,10 +1651,7 @@ exclusive_OR_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    exclusive_OR_expression CARET AND_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer ^ $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_XOR, $<y_exp>1, $<y_exp>3, NULL);
         }
    ;
 
@@ -1639,10 +1660,7 @@ AND_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    AND_expression AMP equality_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer & $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_AND, $<y_exp>1, $<y_exp>3, NULL);
         }
    ;
 
@@ -1651,17 +1669,12 @@ equality_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    equality_expression EQUALEQUAL relational_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer == $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_EQUAL, $<y_exp>1, $<y_exp>3, NULL);
         }
    |    equality_expression NOTEQUAL relational_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer != $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_NE, $<y_exp>1, $<y_exp>3, NULL);
+
         }
    ;
 
@@ -1670,31 +1683,20 @@ relational_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    relational_expression LANGLE shift_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer < $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_LT, $<y_exp>1, $<y_exp>3, NULL);
         }
    |    relational_expression RANGLE shift_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer > $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_GT, $<y_exp>1, $<y_exp>3, NULL);
         }
    |    relational_expression LESSEQUAL shift_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer <= $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_LE, $<y_exp>1, $<y_exp>3, NULL);
         }
    |    relational_expression GREATEREQUAL shift_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer >= $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_GE, $<y_exp>1, $<y_exp>3, NULL);
+
         }
    ;
 
@@ -1703,17 +1705,12 @@ shift_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    shift_expression LANGLEANGLE additive_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer << $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_LSHIFT, $<y_exp>1, $<y_exp>3, NULL);
         }
    |    shift_expression RANGLEANGLE additive_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer >> $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_RSHIFT, $<y_exp>1, $<y_exp>3, NULL);
+
         }
    ;
 
@@ -1722,21 +1719,12 @@ additive_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    additive_expression PLUS multiplicative_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer + $<y_exp>3.val.integer;
-            if (($<y_exp>$.val.integer < $<y_exp>1.val.integer) &&
-                ($<y_exp>$.val.integer < $<y_exp>3.val.integer))
-                log_error (nidl_yylineno, NIDL_INTOVERFLOW,
-			   KEYWORDS_lookup_text(LONG_KW), NULL);
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_PLUS, $<y_exp>1, $<y_exp>3, NULL);
+
         }
    |    additive_expression MINUS multiplicative_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer - $<y_exp>3.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_MINUS, $<y_exp>1, $<y_exp>3, NULL);
         }
    ;
 
@@ -1745,34 +1733,22 @@ multiplicative_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    multiplicative_expression STAR cast_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>1.val.integer * $<y_exp>3.val.integer;
-            if (($<y_exp>$.val.integer < $<y_exp>1.val.integer) &&
-                ($<y_exp>$.val.integer < $<y_exp>3.val.integer))
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_STAR, $<y_exp>1, $<y_exp>3, NULL);
+				/*
+            if (($<y_exp>$.exp.constant.val.integer < $<y_exp>1.exp.constant.val.integer) &&
+                ($<y_exp>$.exp.constant.val.integer < $<y_exp>3.exp.constant.val.integer))
                 log_error (nidl_yylineno, NIDL_INTOVERFLOW,
 			   KEYWORDS_lookup_text(LONG_KW), NULL);
+					*/
         }
    |    multiplicative_expression SLASH cast_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            if ($<y_exp>3.val.integer != 0)
-                $<y_exp>$.val.integer = $<y_exp>1.val.integer / $<y_exp>3.val.integer;
-            else
-                log_error (nidl_yylineno, NIDL_INTDIVBY0, NULL);
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_SLASH, $<y_exp>1, $<y_exp>3, NULL);
         }
    |    multiplicative_expression PERCENT cast_expression
         {
-            ASTP_validate_integer(&$<y_exp>1);
-            ASTP_validate_integer(&$<y_exp>3);
-            $<y_exp>$.type = AST_int_const_k;
-            if ($<y_exp>3.val.integer != 0)
-                $<y_exp>$.val.integer = $<y_exp>1.val.integer % $<y_exp>3.val.integer;
-            else
-                log_error (nidl_yylineno, NIDL_INTDIVBY0, NULL);
+				$<y_exp>$ = AST_expression(AST_EXP_BINARY_PERCENT, $<y_exp>1, $<y_exp>3, NULL);
+            /*    log_error (nidl_yylineno, NIDL_INTDIVBY0, NULL); */
         }
    ;
 
@@ -1785,28 +1761,24 @@ unary_expression:
         {$<y_exp>$ = $<y_exp>1;}
    |    PLUS primary_expression
         {
-            ASTP_validate_integer(&$<y_exp>2);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_exp>2.val.integer;
-        }
+				$<y_exp>$ = AST_expression(AST_EXP_UNARY_PLUS, $<y_exp>2, NULL, NULL);
+		  }
    |    MINUS primary_expression
         {
-            ASTP_validate_integer(&$<y_exp>2);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = -$<y_exp>2.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_UNARY_MINUS, $<y_exp>2, NULL, NULL);
         }
    |    TILDE primary_expression
         {
-            ASTP_validate_integer(&$<y_exp>2);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = ~$<y_exp>2.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_UNARY_TILDE, $<y_exp>2, NULL, NULL);
         }
    |    NOT primary_expression
         {
-            ASTP_validate_integer(&$<y_exp>2);
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = !$<y_exp>2.val.integer;
+				$<y_exp>$ = AST_expression(AST_EXP_UNARY_NOT, $<y_exp>2, NULL, NULL);
         }
+	|	  STAR primary_expression
+		  {
+			  $<y_exp>$ = AST_expression(AST_EXP_UNARY_STAR, $<y_exp>2, NULL, NULL);
+		  }
    ;
 
 primary_expression:
@@ -1814,49 +1786,42 @@ primary_expression:
         { $<y_exp>$ = $<y_exp>2; }
     |   INTEGER_NUMERIC
         {
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = $<y_ival>1;
+				$<y_exp>$ = AST_exp_integer_constant(
+					$<y_int_info>1.int_val,
+					$<y_int_info>1.int_signed);
         }
     |   CHAR
         {
-            $<y_exp>$.type = AST_nil_const_k;
-            $<y_exp>$.val.other = AST_char_constant ($<y_char>1) ;
+				$<y_exp>$ = AST_exp_char_constant($<y_char>1);
         }
     |   IDENTIFIER
         {
-            $<y_exp>$.type = AST_nil_const_k;
-            $<y_exp>$.val.other  = AST_named_constant($<y_id>1) ;
+			  	$<y_exp>$ = AST_exp_identifier($<y_id>1);
         }
     |   STRING
         {
-            $<y_exp>$.type = AST_nil_const_k;
-            $<y_exp>$.val.other = AST_string_constant ($<y_string>1) ;
+            $<y_exp>$ = AST_exp_string_constant($<y_string>1);
         }
     |   NULL_KW
         {
-            $<y_exp>$.type = AST_nil_const_k;
-            $<y_exp>$.val.other = AST_null_constant() ;
+            $<y_exp>$ = AST_exp_null_constant();
         }
 
     |   TRUE_KW
         {
-            $<y_exp>$.type = AST_nil_const_k;
-            $<y_exp>$.val.other = AST_boolean_constant(true) ;
+            $<y_exp>$ = AST_exp_boolean_constant(true);
         }
 
     |   FALSE_KW
         {
-            $<y_exp>$.type = AST_nil_const_k;
-            $<y_exp>$.val.other = AST_boolean_constant(false) ;
+            $<y_exp>$ = AST_exp_boolean_constant(false);
         }
    |    FLOAT_NUMERIC
         {
-            $<y_exp>$.type = AST_int_const_k;
-            $<y_exp>$.val.integer = 0;
+				$<y_exp>$ = AST_exp_integer_constant(0,0);
             log_error(nidl_yylineno, NIDL_FLOATCONSTNOSUP, NULL);
         }
    ;
-
 %%
 
 /*****************************************************************
@@ -1970,4 +1935,4 @@ init_new_nidl_bisonparser_activation()
 
   }
 
-/* preserve coding style vim: set tw=78 sw=4 : */
+/* preserve coding style vim: set tw=78 sw=3 ts=3 : */
