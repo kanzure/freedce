@@ -102,8 +102,8 @@ NCK_IDLFLAGS = -keep object -no_cpp -v -no_mepv -I$(IDL_INCLUDE_DIR)/.. -I$(top_
 noinst_LTLIBRARIES = libnaf.la
 
 common_files = ipnaf.c twr_ip.c
-@NAF_IP_TRUE@@TARGET_OS_AT386_TRUE@osdep_files = ipnaf_bsd.c
-@NAF_IP_TRUE@@TARGET_OS_AT386_FALSE@@TARGET_OS_LINUX_TRUE@osdep_files = ipnaf_linux.c
+
+@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@osdep_files = ipnaf_linux.c
 
 libnaf_la_SOURCES = $(common_files) $(osdep_files)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -117,33 +117,14 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libnaf_la_LDFLAGS = 
 libnaf_la_LIBADD = 
-@TARGET_OS_AT386_TRUE@@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_TRUE@@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@ipnaf.lo \
-@TARGET_OS_AT386_TRUE@@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@twr_ip.lo
-@TARGET_OS_AT386_FALSE@@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_FALSE@@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@ipnaf.lo \
-@TARGET_OS_AT386_FALSE@@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@twr_ip.lo
-@TARGET_OS_AT386_FALSE@@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_FALSE@@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@ipnaf.lo \
-@TARGET_OS_AT386_FALSE@@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@twr_ip.lo
-@TARGET_OS_AT386_FALSE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_FALSE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@ipnaf.lo \
-@TARGET_OS_AT386_FALSE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@twr_ip.lo \
-@TARGET_OS_AT386_FALSE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@ipnaf_linux.lo
-@TARGET_OS_AT386_TRUE@@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_TRUE@@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@ipnaf.lo \
-@TARGET_OS_AT386_TRUE@@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@twr_ip.lo
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@ipnaf.lo \
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@twr_ip.lo \
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@ipnaf_bsd.lo
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@ipnaf.lo \
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@twr_ip.lo \
-@TARGET_OS_AT386_TRUE@@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@ipnaf_bsd.lo
-@TARGET_OS_AT386_FALSE@@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@libnaf_la_OBJECTS =  \
-@TARGET_OS_AT386_FALSE@@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@ipnaf.lo \
-@TARGET_OS_AT386_FALSE@@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@twr_ip.lo
+@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@libnaf_la_OBJECTS =  ipnaf.lo \
+@NAF_IP_FALSE@@TARGET_OS_LINUX_FALSE@twr_ip.lo
+@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@libnaf_la_OBJECTS =  ipnaf.lo \
+@NAF_IP_TRUE@@TARGET_OS_LINUX_TRUE@twr_ip.lo ipnaf_linux.lo
+@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@libnaf_la_OBJECTS =  ipnaf.lo \
+@NAF_IP_TRUE@@TARGET_OS_LINUX_FALSE@twr_ip.lo
+@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@libnaf_la_OBJECTS =  ipnaf.lo \
+@NAF_IP_FALSE@@TARGET_OS_LINUX_TRUE@twr_ip.lo
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -155,8 +136,7 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/ipnaf.P .deps/ipnaf_bsd.P .deps/ipnaf_linux.P \
-.deps/twr_ip.P
+DEP_FILES =  .deps/ipnaf.P .deps/ipnaf_linux.P .deps/twr_ip.P
 SOURCES = $(libnaf_la_SOURCES)
 OBJECTS = $(libnaf_la_OBJECTS)
 
@@ -164,7 +144,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .idl .lo .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/include.mk $(top_srcdir)/ncklib/ncklib.mk
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu ncklib/naf/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign ncklib/naf/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -253,7 +233,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu ncklib/naf/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign ncklib/naf/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -373,11 +353,8 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-# The return code of the IDL compiler is ignored so that we can "build" in the
-# include directory on pass 1 (this creates osdep symlinks) and on pass 2
-# (after the IDL compiler has been built) we can generate headers.
 %.h: %.idl
-	-$(IDL) $(IDLFLAGS) -no_mepv $<
+	$(IDL) $(IDLFLAGS) -no_mepv $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

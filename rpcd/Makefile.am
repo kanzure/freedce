@@ -12,7 +12,7 @@ rpcd_SOURCES= dsm.c dsm_unix.c rpcd.c rpcddb.c rpcdep.c \
 
 noinst_HEADERS=dsm_p.h rpcddb.h rpcdepdb.h rpcdepdbp.h rpcdp.h rpcdutil.h dsm.idl 
 
-rpcd_LDADD=ep_sstub.o ../dcelib/libdcerpc.la
+rpcd_LDADD=ep_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la
 rpcd_LDFLAGS=-lstdc++
 
 BUILT_SOURCES=dsm.h

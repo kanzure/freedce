@@ -105,7 +105,7 @@ rpcd_SOURCES = dsm.c dsm_unix.c rpcd.c rpcddb.c rpcdep.c  rpcdepdb.c rpcdsliv.c 
 
 noinst_HEADERS = dsm_p.h rpcddb.h rpcdepdb.h rpcdepdbp.h rpcdp.h rpcdutil.h dsm.idl 
 
-rpcd_LDADD = ep_sstub.o ../dcelib/libdcerpc.la
+rpcd_LDADD = ep_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la
 rpcd_LDFLAGS = -lstdc++
 
 BUILT_SOURCES = dsm.h
@@ -122,7 +122,8 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 rpcd_OBJECTS =  dsm.o dsm_unix.o rpcd.o rpcddb.o rpcdep.o rpcdepdb.o \
 rpcdsliv.o rpcdutil.o
-rpcd_DEPENDENCIES =  ep_sstub.o ../dcelib/libdcerpc.la
+rpcd_DEPENDENCIES =  ep_sstub.o ../dcelib/libdcerpc.la \
+../uuid/libuuid.la
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -145,7 +146,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .idl .lo .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/include.mk
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu rpcd/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign rpcd/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -251,7 +252,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu rpcd/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign rpcd/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -373,11 +374,8 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-# The return code of the IDL compiler is ignored so that we can "build" in the
-# include directory on pass 1 (this creates osdep symlinks) and on pass 2
-# (after the IDL compiler has been built) we can generate headers.
 %.h: %.idl
-	-$(IDL) $(IDLFLAGS) -no_mepv $<
+	$(IDL) $(IDLFLAGS) -no_mepv $<
 
 ep_sstub.o: $(IDL_INCLUDE_DIR)/ep.idl
 	$(IDL) -keep object -no_cpp -v -no_mepv -cepv -client none \

@@ -3,9 +3,14 @@
 
 include $(top_srcdir)/include.mk
 
+# any libraries specified will be listed as dependencies; avoid this
+# as is means that a loop is present when we build libdcerpc
+LIBS:=
+
 # Build the UUID shared library
-noinst_LTLIBRARIES = libuuid.la
+lib_LTLIBRARIES = libuuid.la
 libuuid_la_SOURCES = uuid.c uuid-cpp.cpp uuidsys.c get_ether_addr.c
+libuuid_la_LDFLAGS=-lstdc++
 
 noinst_HEADERS= uuid_i.h uuid.hpp
 
