@@ -49,11 +49,6 @@
  *  Interface Attributes
  */
 
-int             interface_pointer_class = 0;    /* Default class for          */
-                                                /* undecorated pointers       */
-                                                /* Values are 0, ASTP_REF,    */
-                                                /* ASTP_UNIQUE, or ASTP_PTR   */
-
 /*
  *  Operation, Parameter, Type Attributes
  */
@@ -67,6 +62,7 @@ AST_case_label_n_t  *ASTP_case = NULL;
  *  Interface just parsed
  */
 AST_interface_n_t *the_interface = NULL;
+AST_import_n_t * global_imports = NULL;
 
 /*
  * List head for saved context for field

@@ -259,6 +259,7 @@ static void acf_warning(msgid, arg1, arg2, arg3, arg4, arg5)
 %token RBRACKET
 %token RPAREN
 %token SEMI
+%token TILDE
 %token UNKNOWN  /* Unrecognized by LEX */
 
 /* Tokens setting yylval */

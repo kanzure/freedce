@@ -152,6 +152,7 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 %token HANDLE_KW
 %token IDEMPOTENT_KW
 %token IGNORE_KW
+%token IID_IS_KW
 %token IMPLICIT_HANDLE_KW
 %token IN_KW
 %token LAST_IS_KW
@@ -223,6 +224,7 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 %token SLASH
 %token PERCENT
 %token TILDE
+%token POUND
 %token UNKNOWN  /* Something that doesn't fit in any other token class */
 
 /*  Tokens setting yylval   */
@@ -232,7 +234,7 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 %token <y_ival>    INTEGER_NUMERIC
 %token <y_char>    CHAR
 %token <y_float>   FLOAT_NUMERIC
-%start interface
+%start grammar_start
 
 %%
 
@@ -242,8 +244,17 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 /*                                                                  */
 /********************************************************************/
 
+grammar_start:
+			optional_imports interface
+			{
+				 /* support multiple interfaces */
+				 global_imports = (AST_import_n_t*)AST_concat_element(
+				 	(ASTP_node_t*)global_imports, (ASTP_node_t*)$<y_import>1);
+			}
+		;
+
 interface:
-        interface_init interface_start interface_tail
+        interface_init interface_start interface_ancestor interface_tail
         {
             AST_finish_interface_node(the_interface);
         }
@@ -252,11 +263,24 @@ interface:
 interface_start:
         interface_attributes INTERFACE_KW IDENTIFIER
         {
+				AST_type_n_t * interface_type = AST_type_node(AST_interface_k);
+				interface_type->type_structure.interface = the_interface;
+				interface_type->name = $<y_id>3;
             the_interface->name = $<y_id>3;
-	    /* FIXME cast */
-            ASTP_add_name_binding (the_interface->name, the_interface);
+            ASTP_add_name_binding (the_interface->name, interface_type);
         }
     ;
+
+interface_ancestor:
+	/* Nothing */
+	{
+		 the_interface->inherited_interface_name = NAMETABLE_NIL_ID;
+	}
+	 | COLON IDENTIFIER
+	{
+		 the_interface->inherited_interface_name = $<y_id>2;
+	}
+	;
 
 interface_init:
         /* Always create the interface node and auto-import the system idl */
@@ -264,6 +288,7 @@ interface_init:
             STRTAB_str_t nidl_idl_str;
             nidl_idl_str = STRTAB_add_string (AUTO_IMPORT_FILE);
             the_interface = AST_interface_node();
+				the_interface->exports = NULL;
             the_interface->imports = AST_import_node(nidl_idl_str);
             the_interface->imports->interface = FE_parse_import (nidl_idl_str);
             if (the_interface->imports->interface != NULL)
@@ -296,7 +321,9 @@ interface_body:
             the_interface->imports = (AST_import_n_t *) AST_concat_element(
                                         (ASTP_node_t *) the_interface->imports,
                                         (ASTP_node_t *) $<y_import>1);
-            the_interface->exports = $<y_export>2;
+            the_interface->exports = (AST_export_n_t*)AST_concat_element(
+													(ASTP_node_t*)the_interface->exports,
+													(ASTP_node_t*)$<y_export>2);
         }
   ;
 
@@ -420,9 +447,9 @@ type_dcl:
     ;
 
 type_declarator:
-        attributes type_spec declarators
+        attributes type_spec declarators extraneous_comma
         {
-            $<y_type_ptr>$  = AST_declarators_to_types($<y_type>2,
+            $<y_type_ptr>$  = AST_declarators_to_types(the_interface, $<y_type>2,
                         $<y_declarator>3, &$<y_attributes>1) ;
             ASTP_free_simple_list((ASTP_node_t *)$<y_attributes>1.bounds);
         }
@@ -798,14 +825,21 @@ member:
     ;
 
 enum_type_spec:
-        ENUM_KW enum_body
+        ENUM_KW optional_tag enum_body
         {
-             $<y_type>$ = AST_enumerator_node($<y_constant>2, AST_short_integer_k);
+             $<y_type>$ = AST_enumerator_node($<y_constant>3, AST_short_integer_k);
         }
     ;
 
+optional_tag:
+	IDENTIFIER
+		{
+		}
+	| /* Nothing */
+	;
+
 enum_body:
-        LBRACE enum_ids RBRACE
+        LBRACE enum_ids extraneous_comma RBRACE
         {
             $<y_constant>$ = $<y_constant>2 ;
         }
@@ -813,18 +847,19 @@ enum_body:
 
 enum_ids:
         enum_id
-    |   enum_ids COMMA extraneous_comma enum_id
+    |   enum_ids COMMA enum_id
         {
             $<y_constant>$ = (AST_constant_n_t *) AST_concat_element(
                                     (ASTP_node_t *) $<y_constant>1,
-                                    (ASTP_node_t *) $<y_constant>4) ;
+                                    (ASTP_node_t *) $<y_constant>3) ;
         }
     ;
 
 enum_id:
-        IDENTIFIER
+        IDENTIFIER optional_value
         {
             $<y_constant>$  = AST_enum_constant($<y_id>1) ;
+				$<y_constant>$->value.int_val = $<y_exp>2.val.integer;
         }
     ;
 
@@ -835,19 +870,39 @@ pipe_type_spec:
         }
     ;
 
+optional_value:
+	/* Nothing */
+		{
+			 $<y_exp>$.type = AST_int_const_k;
+			 $<y_exp>$.val.integer = 0;
+		}
+	| EQUAL expression
+		{
+			 $<y_exp>$ = $<y_exp>2;
+		}
+	;
+
 declarators:
         declarator
-    |   declarators COMMA extraneous_comma declarator
+		  {
+				$<y_declarator>$ =  $<y_declarator>1;
+		  }
+    |   declarators COMMA declarator
         {
             $<y_declarator>$ = (ASTP_declarator_n_t *) AST_concat_element(
                                             (ASTP_node_t *) $<y_declarator>1,
-                                            (ASTP_node_t *) $<y_declarator>4) ;
+                                            (ASTP_node_t *) $<y_declarator>3) ;
         }
     ;
 
 
 
 declarator:
+	declarator1
+		{ $<y_declarator>$ = $<y_declarator>1; }
+		;
+
+declarator1:
         direct_declarator
             { $<y_declarator>$ = $<y_declarator>1; }
        |    pointer direct_declarator
@@ -945,7 +1000,7 @@ array_bounds:
 
 
 operation_dcl:
-        attributes type_spec declarators
+        attributes type_spec declarators extraneous_comma
         {
             if (ASTP_parsing_main_idl)
                 $<y_operation>$ = AST_operation_node (
@@ -962,7 +1017,7 @@ operation_dcl:
     ;
 
 parameter_dcls:
-        param_names param_list end_param_names
+        param_names param_list extraneous_comma end_param_names
         {
             $<y_parameter>$ = $<y_parameter>2;
         }
@@ -976,7 +1031,7 @@ param_names:
     ;
 
 end_param_names:
-        extraneous_comma RPAREN
+        RPAREN
         {
         ASTP_patch_field_reference ();
         NAMETABLE_pop_level ();
@@ -985,12 +1040,12 @@ end_param_names:
 
 param_list:
         param_dcl
-    |   param_list COMMA extraneous_comma param_dcl
+    |   param_list COMMA param_dcl
         {
             if (ASTP_parsing_main_idl)
                 $<y_parameter>$ = (AST_parameter_n_t *) AST_concat_element(
                                     (ASTP_node_t *) $<y_parameter>1,
-                                    (ASTP_node_t *) $<y_parameter>4);
+                                    (ASTP_node_t *) $<y_parameter>3);
         }
     |   /* nothing */
         {
@@ -1112,7 +1167,7 @@ old_attribute_syntax:
  * attributes and other attributes (for instance on fields or types.
  */
 interface_attributes:
-        attribute_opener interface_attr_list attribute_closer
+        attribute_opener interface_attr_list extraneous_comma attribute_closer
     |   attribute_opener error attribute_closer
         {
             log_error(nidl_yylineno,NIDL_ERRINATTR, NULL);
@@ -1123,7 +1178,7 @@ interface_attributes:
 
 interface_attr_list:
         interface_attr
-    |   interface_attr_list COMMA extraneous_comma interface_attr
+    |   interface_attr_list COMMA interface_attr
     |   /* nothing */
     ;
 
@@ -1141,13 +1196,13 @@ interface_attr:
                 the_interface->uuid = $<y_uuid>2;
             }
         }
-    |   ENDPOINT_KW LPAREN port_list RPAREN
+    |   ENDPOINT_KW LPAREN port_list extraneous_comma RPAREN
         {
             if (ASTP_IF_AF_SET(the_interface,ASTP_IF_PORT))
                     log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
             ASTP_SET_IF_AF(the_interface,ASTP_IF_PORT);
         }
-    |   EXCEPTIONS_KW LPAREN excep_list RPAREN
+    |   EXCEPTIONS_KW LPAREN excep_list extraneous_comma RPAREN
         {
             if (ASTP_IF_AF_SET(the_interface, ASTP_IF_EXCEPTIONS))
                 log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
@@ -1172,10 +1227,16 @@ interface_attr:
         }
     |   POINTER_DEFAULT_KW LPAREN pointer_class RPAREN
         {
-            if (interface_pointer_class != 0)
+            if (the_interface->pointer_default != 0)
                     log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
-            interface_pointer_class = $<y_ival>3;
+            the_interface->pointer_default = $<y_ival>3;
         }
+	 |	  OBJECT_KW
+	 		{
+				if (AST_OBJECT_SET(the_interface))
+					 log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
+				AST_SET_OBJECT(the_interface);
+			}
     ;
 
 pointer_class:
@@ -1210,7 +1271,7 @@ version_number:
 
 port_list:
         port_spec
-    |   port_list COMMA extraneous_comma port_spec
+    |   port_list COMMA port_spec
     ;
 
 excep_list:
@@ -1218,7 +1279,7 @@ excep_list:
         {
             the_interface->exceptions = $<y_exception>1;
         }
-    |   excep_list COMMA extraneous_comma excep_spec
+    |   excep_list COMMA excep_spec
         {
             $<y_exception>$ = (AST_exception_n_t *) AST_concat_element(
                                 (ASTP_node_t *) the_interface->exceptions,
@@ -1351,7 +1412,7 @@ attributes:
 
 
 rest_of_attribute_list:
-        attribute_list attribute_closer
+        attribute_list extraneous_comma attribute_closer
      |  error attribute_closer
         {
         /*
@@ -1379,19 +1440,19 @@ attribute_list:
         attribute
         { $<y_attributes>$ = $<y_attributes>1; }
      |
-        attribute_list COMMA extraneous_comma attribute
+        attribute_list COMMA attribute
         {
           /*
            * If the same bit has been specified more than once, then issue
            * a message.
            */
-          if (($<y_attributes>1.attr_flags & $<y_attributes>4.attr_flags) != 0)
+          if (($<y_attributes>1.attr_flags & $<y_attributes>3.attr_flags) != 0)
                 log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
           $<y_attributes>$.attr_flags = $<y_attributes>1.attr_flags |
-                                        $<y_attributes>4.attr_flags;
+                                        $<y_attributes>3.attr_flags;
           $<y_attributes>$.bounds = (ASTP_type_attr_n_t *) AST_concat_element (
                                 (ASTP_node_t*) $<y_attributes>1.bounds,
-                                (ASTP_node_t*) $<y_attributes>4.bounds);
+                                (ASTP_node_t*) $<y_attributes>3.bounds);
         }
      ;
 
@@ -1425,6 +1486,17 @@ attribute:
                                 { $<y_attributes>$.attr_flags =
                                         ASTP_OUT | ASTP_OUT_SHAPE;
                                   $<y_attributes>$.bounds = NULL;       }
+	 |	  IID_IS_KW LPAREN IDENTIFIER RPAREN
+											{ $<y_attributes>$.bounds =
+												 AST_array_bound_info($<y_id>2, iid_is_k,
+															FALSE);
+											}
+	 |	  IID_IS_KW LPAREN STAR IDENTIFIER RPAREN
+											{ $<y_attributes>$.bounds =
+												 AST_array_bound_info($<y_id>2, iid_is_k,
+															TRUE);
+											}
+
 
         /* Type, Field, Parameter Attributes */
     |   V1_ARRAY_KW             { $<y_attributes>$.attr_flags = ASTP_SMALL;

@@ -436,7 +436,8 @@ static void CSPELL_manager_call
                    ((pp->type->kind == AST_pointer_k) && AST_REF_SET(pp)
                     && !(BE_Is_Arrayified(pp,pp->type))) )
             {
-                /* non-arrayified parameter passed by reference */
+                /* non-arrayified parameter passed by reference, but not for interfaces */
+					if (!(pp->type->kind == AST_pointer_k && pp->type->type_structure.pointer->pointee_type->kind == AST_interface_k))
                 fprintf(fid, "&");
             }
             spell_name(fid, pp->name);
@@ -886,7 +887,7 @@ void BE_gen_sstub
      *  Set up interpreter data structures
      */
     DDBE_spell_offset_vec( fid, dd_vip, cmd_opt, cmd_val );
-    DDBE_spell_rtn_vec( fid, dd_vip, cmd_opt, cmd_val );
+    DDBE_spell_rtn_vec( fid, dd_vip, cmd_opt, cmd_val, FALSE );
     DDBE_spell_type_vec( fid, dd_vip, cmd_opt, cmd_val );
 
 

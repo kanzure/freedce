@@ -306,6 +306,7 @@ other           .
 }
 
 "/*"    { read_c_comment(); }
+"//".*\n	{ /* read_cpp_comment */ }
 
 {id}    {
     int token;

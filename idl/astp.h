@@ -296,8 +296,9 @@ typedef enum
     max_is_k,
     min_is_k,
     length_is_k,
-    size_is_k
-    ,switch_is_k
+    size_is_k,
+	 switch_is_k,
+	 iid_is_k
 } ASTP_attr_k_t;
 
 typedef struct ASTP_type_attr_n_t
@@ -433,6 +434,8 @@ extern AST_case_label_n_t   *ASTP_case;
  *  Interface just parsed
  */
 extern AST_interface_n_t *the_interface;
+/* list of imports that occurred outside of interfaces */
+extern AST_import_n_t * global_imports;
 
 /*
  * List head for saved context for field
@@ -540,6 +543,7 @@ AST_parameter_n_t *AST_declarator_to_param(
 
 AST_type_p_n_t *AST_declarators_to_types(
 #ifdef PROTO
+ AST_interface_n_t * ifp,
     AST_type_n_t        *type_ptr,
     ASTP_declarator_n_t *declarators_ptr,
     ASTP_attributes_t   *attributes

@@ -153,11 +153,14 @@ typedef enum DDBE_vec_kind_t {
     DDBE_vec_long_k,        /* Long value for previous entry                */
     DDBE_vec_long_bool_k,   /* Long value to be spelt using symbolic name   */
     DDBE_vec_name_k,        /* Name to be spelled as vector element         */
+    DDBE_vec_name_client_k, /* Client-only DDBE_vec_name_k                  */
+    DDBE_vec_name_server_k, /* Server-only DDBE_vec_name_k                  */
     DDBE_vec_noop_k,        /* No-operation - useful as placeholder         */
     DDBE_vec_offset_begin_k,/* Beginning of offset expressions              */
     DDBE_vec_offset_end_k,  /* End of offset expressions                    */
     DDBE_vec_pad_k,         /* Pad metadata with N filler bytes             */
     DDBE_vec_reference_k,   /* Reference to another vector entry            */
+    DDBE_vec_short_k,       /* Short value                                  */
     DDBE_vec_sizeof_k,      /* Entry for size of data type                  */
     DDBE_vec_tag_k,         /* An interpreter 'tag' entry                   */
     DDBE_vec_type_kind_k    /* Interpreter tag for scalar data type         */
@@ -171,6 +174,7 @@ typedef enum DDBE_vec_kind_t {
 typedef struct DDBE_vec_rep_t {
     union {                         /* Arm valid for kind ==            */
         byte            byte_val;   /* byte*_k, pad_k                   */
+        short           short_val;  /* short*_k                         */
         long            long_val;   /* long*_k                          */
         NAMETABLE_id_t  name;       /* name_k, tag_k                    */
         STRTAB_str_t    expr;       /* expr*_k                          */
@@ -546,7 +550,8 @@ extern void DDBE_spell_rtn_vec(
     FILE                *fid,       /* [in] output file handle */
     DDBE_vectors_t      *vip,       /* [in] vector information pointer */
     boolean             *cmd_opt,   /* [in] array of cmd option flags */
-    void                **cmd_val   /* [in] array of cmd option values */
+    void                **cmd_val,   /* [in] array of cmd option values */
+    boolean         client_side     /* [in] T=>client only, F=>server only */
 #endif
 );
 

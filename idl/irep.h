@@ -51,6 +51,7 @@ typedef unsigned char byte;
 #define IR_MAX_ARG      3           /* Maximum args to tuple                  */
 #define IR_ARG_BOUND    0           /* standard arg# for bound kind           */
 #define IR_ARG_EXPR     0           /* standard arg# for expression           */
+#define IR_ARG_INTFC    0           /* standard arg# for interface node ptr   */
 #define IR_ARG_LIMIT    0           /* standard arg# for data limit kind      */
 #define IR_ARG_NAME     0           /* standard arg# for nametable ID         */
 #define IR_ARG_TUP      0           /* standard arg# for ptr to another tuple */
@@ -122,6 +123,7 @@ typedef unsigned short IR_opcode_k_t;
 #define IR_op_cs_char_end_k     43  /* tup          type        cs_char       */
 #define IR_op_codeset_shadow_k  44  /*                          [int_val]     */
 #define IR_op_release_shadow_k  45  /*                                        */
+#define IR_op_interface_k       46  /* interface    type        instance      */
 
 
 /*
@@ -207,6 +209,7 @@ typedef union IR_arg_t {
     struct AST_case_label_n_t   *label;
     struct AST_rep_as_n_t       *rep_as;
     struct AST_cs_char_n_t      *cs_char;
+    struct AST_interface_n_t    *intfc;
     struct IR_tup_n_t           *tup;
     NAMETABLE_id_t              name;
     IR_expr_t                   expr;

@@ -830,9 +830,9 @@ AST_interface_n_t *FE_parse_import
   AST_interface_n_t *int_p;
 
   /* Saved interface attributes */
-  int             saved_interface_pointer_class;
   AST_interface_n_t *saved_interface;
-  
+ 	int saved_op_count;
+	
   /*
    * Return now, if the file is already imported.
    */
@@ -866,15 +866,13 @@ AST_interface_n_t *FE_parse_import
    */
 
   saved_interface                             = the_interface;
-  saved_interface_pointer_class               = interface_pointer_class;
-
+	saved_op_count = the_interface ? the_interface->op_count : 0;
   
   /*
    * Initialize interface attributes
    */
     
     the_interface = NULL;
-    interface_pointer_class = 0;
 
 
    /*
@@ -883,7 +881,8 @@ AST_interface_n_t *FE_parse_import
     * parse.
     */
 
-    ASTP_parsing_main_idl = false;
+	 if (saved_interface && saved_interface->inherited_interface_name == NAMETABLE_NIL_ID)
+		  ASTP_parsing_main_idl = false;
 
     /*
      * Create new, empty and initialized parser context to
@@ -923,13 +922,38 @@ AST_interface_n_t *FE_parse_import
 
     parse(saved_cmd_opt, saved_cmd_val, new_input, true, &int_p);
 
+	 if (saved_interface && saved_interface->inherited_interface_name == the_interface->name)	{
+		  AST_export_n_t * ep = the_interface->exports;
+		  AST_export_n_t * op;
+
+		  if (AST_OBJECT_SET(the_interface))	{
+				/* ORPC inheritance by pulling in the base class interface's
+				 * operations */
+				saved_interface->op_count = the_interface->op_count;
+
+				for (; ep != NULL; ep = ep->next)	{
+					 if (ep->kind != AST_operation_k)
+						  continue;
+					 op = AST_export_node((ASTP_node_t*)ep->thing_p.exported_operation,
+								AST_operation_k);
+					 /* Assign the operation number to this operation relative to any
+					  * inherited operations */
+					 op->thing_p.exported_operation->op_number = saved_op_count++;
+					 saved_interface->exports = (AST_export_n_t*)AST_concat_element(
+								(ASTP_node_t*)saved_interface->exports,
+								(ASTP_node_t*)op
+								);
+				}
+				/* update the operation count to include base class operations */
+				saved_interface->op_count = saved_op_count;
+		  }
+	 }
 
 
 /*
  * Restore interface information
  */
     the_interface                         = saved_interface;
-    interface_pointer_class               = saved_interface_pointer_class;
 
 
 /*

@@ -117,6 +117,7 @@ static NAMETABLE_id_t
     DDBE_dt_full_ptr,
     DDBE_dt_hyper,
     DDBE_dt_ignore,
+	 DDBE_dt_interface,
     DDBE_dt_in_context,
     DDBE_dt_in_out_context,
     DDBE_dt_last_is_limit,
@@ -425,6 +426,33 @@ static void DDBE_byte_vec_entry
     new_p->kind         = entry_kind;
     new_p->val.byte_val = value;
 }
+/*
+ *  D D B E _ s h o r t _ v e c _ e n t r y
+ *
+ *  Insert a short vector entry into a vector list.
+ */
+static void DDBE_short_vec_entry
+#ifdef PROTO
+(
+    DDBE_vec_rep_t  **p_defn_p,     /* [io] Ptr to vec entry to insert after */
+    DDBE_vec_kind_t entry_kind,     /* [in] Kind of short value entry */
+    short           value,          /* [in] Short value */
+    char            *comment  __attribute__((unused))      /* [in] Comment string for entry */
+)
+#else
+(p_defn_p, entry_kind, value, comment)
+    DDBE_vec_rep_t  **p_defn_p;     /* [io] Ptr to vec entry to insert after */
+    DDBE_vec_kind_t entry_kind;     /* [in] Kind of short value entry */
+    short           value;          /* [in] Short value */
+    char            *comment;       /* [in] Comment string for entry */
+#endif
+{
+    DDBE_vec_rep_t  *new_p;
+
+    DDBE_NEW_ENTRY(new_p, p_defn_p, comment);
+    new_p->kind         = entry_kind;
+    new_p->val.short_val= value;
+}
 
 /*
  *  D D B E _ l o n g _ v e c _ e n t r y
@@ -559,7 +587,36 @@ static void DDBE_name_vec_entry
     new_p->kind     = DDBE_vec_name_k;
     new_p->val.name = name;
 }
+/*
+ *  D D B E _ o p t _ n a m e _ v e c _ e n t r y
+ *
+ *  Insert an name vector entry into a vector list.  Same as above routine
+ *  expect has a flag which makes it only used on the client xor server side.
+ */
+#if 0
+static void DDBE_opt_name_vec_entry
+#ifdef PROTO
+(
+    DDBE_vec_rep_t  **p_defn_p,     /* [io] Ptr to vec entry to insert after */
+    NAMETABLE_id_t  name,           /* [in] Name ID */
+    char            *comment  __attribute__((unused)),       /* [in] Comment string for entry */
+    boolean         client_side     /* [in] T=>client only, F=>server only */
+)
+#else
+(p_defn_p, name, comment, client_side)
+    DDBE_vec_rep_t  **p_defn_p;     /* [io] Ptr to vec entry to insert after */
+    NAMETABLE_id_t  name;           /* [in] Name ID */
+    char            *comment;       /* [in] Comment string for entry */
+    boolean         client_side;    /* [in] T=>client only, F=>server only */
+#endif
+{
+    DDBE_vec_rep_t  *new_p;
 
+    DDBE_NEW_ENTRY(new_p, p_defn_p, comment);
+    new_p->kind = (client_side ? DDBE_vec_name_client_k : DDBE_vec_name_server_k);
+    new_p->val.name = name;
+}
+#endif
 /*
  *  D D B E _ p a d _ v e c _ e n t r y
  *
@@ -785,6 +842,20 @@ static unsigned long DDBE_compute_vec_offsets
             vec_p->index = offset;
             offset++;
             break;
+        case DDBE_vec_short_k:
+            /* Assumed to only be used in byte-based arrays */
+            save_offset = offset;
+            offset = (offset + 1) & ~1;
+            if (offset != save_offset)
+            {
+                DDBE_pad_vec_entry(&prev_vec_p, (byte)(offset-save_offset));
+                /* prev_vec_p now points at the new pad entry */
+                prev_vec_p->index = save_offset;
+            }
+            vec_p->index = offset;
+            offset += 2;
+            break;
+
 
         case DDBE_vec_expr_arr_k:
         case DDBE_vec_expr_k:
@@ -793,6 +864,8 @@ static unsigned long DDBE_compute_vec_offsets
         case DDBE_vec_long_k:
         case DDBE_vec_long_bool_k:
         case DDBE_vec_name_k:
+        case DDBE_vec_name_client_k:
+        case DDBE_vec_name_server_k:
         case DDBE_vec_reference_k:
         case DDBE_vec_sizeof_k:
             /*
@@ -806,7 +879,7 @@ static unsigned long DDBE_compute_vec_offsets
                 offset = (offset + align_val) & ~align_val;
                 if (offset != save_offset)
                 {
-                    DDBE_pad_vec_entry(&prev_vec_p, (byte)offset-save_offset);
+                    DDBE_pad_vec_entry(&prev_vec_p, (byte)(offset-save_offset));
                     /* prev_vec_p now points at the new pad entry */
                     prev_vec_p->index = save_offset;
                 }
@@ -1044,6 +1117,7 @@ static void DDBE_init_tags
     DDBE_dt_full_ptr            = NAMETABLE_add_id("IDL_DT_FULL_PTR");
     DDBE_dt_hyper               = NAMETABLE_add_id("IDL_DT_HYPER");
     DDBE_dt_ignore              = NAMETABLE_add_id("IDL_DT_IGNORE");
+    DDBE_dt_interface           = NAMETABLE_add_id("IDL_DT_INTERFACE");
     DDBE_dt_in_context          = NAMETABLE_add_id("IDL_DT_IN_CONTEXT");
     DDBE_dt_in_out_context      = NAMETABLE_add_id("IDL_DT_IN_OUT_CONTEXT");
     DDBE_dt_last_is_limit       = NAMETABLE_add_id("IDL_LIMIT_LAST_IS");
@@ -2775,6 +2849,9 @@ static void DDBE_op_transmit_as
     type_p = tup_p->arg[IR_ARG_TYPE].type;  /* -> transmissible type */
     pres_p = tup_p->arg[IR_ARG_TYPE2].type; /* -> presented type */
 
+    if (pres_p->name == NAMETABLE_NIL_ID)
+        NAMETABLE_id_to_string(pres_p->type_structure.pointer->pointee_type->name, &pres_name);
+		else
     NAMETABLE_id_to_string(pres_p->name, &pres_name);
 
     /*
@@ -3319,6 +3396,119 @@ static void DDBE_op_cs_char
      */
 }
 
+/*
+ *  D D B E _ o p _ i n t e r f a c e
+ *
+ *  Process IREP tuple for an interface reference.
+ */
+static void DDBE_op_interface
+#ifdef PROTO
+(
+    IR_tup_n_t      *tup_p,         /* [in] ptr to intermediate rep tuple */
+    DDBE_vectors_t  *vip            /* [io] vector information */
+)
+#else
+(tup_p, vip)
+    IR_tup_n_t      *tup_p;         /* [in] ptr to intermediate rep tuple */
+    DDBE_vectors_t  *vip;           /* [io] vector information */
+#endif
+{
+	AST_interface_n_t *int_p;       /* Ptr to interface node */
+	AST_type_n_t    *type_p;        /* Ptr to interface type node */
+	DDBE_type_i_t   *type_i_p;      /* Ptr to backend type info node */
+	char const           *type_name;     /* Type name */
+	int             i;
+	char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
+
+	int_p = tup_p->arg[IR_ARG_INTFC].intfc;
+	type_p = tup_p->arg[IR_ARG_TYPE].type;
+	NAMETABLE_id_to_string(type_p->name, &type_name);
+
+	/*
+	 * Create a DDBE info node for the type if not yet done.
+	 */
+	if (type_p->be_info.dd_type == NULL)
+		DDBE_type_info(type_p, tup_p->flags);
+
+	type_i_p = type_p->be_info.dd_type;
+	if (!type_i_p->defn_done)
+	{
+		/* Push indirection scope to add definition/routine vector entries */
+		DDBE_push_indirection_scope(vip);
+
+		/*
+		 * definition vector entries:
+		*  a number of fields for the interface UUID
+		*/
+		sprintf(comment, "interface %s type definition", type_name);
+		DDBE_comment_vec_entry(&vip->defn_p, comment);
+		/* Store definition vector pointer for this type */
+		type_i_p->type_vec_p = vip->defn_p;
+		DDBE_long_vec_entry(&vip->defn_p, DDBE_vec_long_k,
+				int_p->uuid.time_low, NULL);
+		DDBE_short_vec_entry(&vip->defn_p, DDBE_vec_short_k,
+				int_p->uuid.time_mid, NULL);
+		DDBE_short_vec_entry(&vip->defn_p, DDBE_vec_short_k,
+				int_p->uuid.time_hi_and_version, NULL);
+		DDBE_byte_vec_entry(&vip->defn_p, DDBE_vec_byte_k,
+				int_p->uuid.clock_seq_hi_and_reserved, NULL);
+		DDBE_byte_vec_entry(&vip->defn_p, DDBE_vec_byte_k,
+				int_p->uuid.clock_seq_low, NULL);
+		for (i = 0; i < 6; i++)
+		{
+			DDBE_byte_vec_entry(&vip->defn_p, DDBE_vec_byte_k,
+					int_p->uuid.node[i], NULL);
+		}
+
+		/*
+		 * routine vector entries:
+		*  addr: object ref to wire rep routine
+		*  addr: wire rep to object ref routine
+		*/
+		DDBE_name_vec_entry(&vip->rtn_p,
+				NAMETABLE_add_id("rpc_ss_ndr_oref_to_wire_rep"), "");
+		/* Store routine vector pointer for this type */
+		type_i_p->rtn_vec_p = vip->rtn_p;
+
+		DDBE_name_vec_entry(&vip->rtn_p,
+				NAMETABLE_add_id("rpc_ss_ndr_wire_rep_to_oref"), "");
+
+		sprintf(comment, "interface %s routines", type_name);
+		DDBE_reference_vec_entry(&vip->defn_p, type_i_p->rtn_vec_p, comment);
+
+		DDBE_pop_indirection_scope(vip);
+		type_i_p->defn_done = TRUE;
+	}
+
+	/*
+	 * offset vector entry (if interface reference in struct):
+	*  long: offset to interface reference field
+	*/
+	if (IR_cur_scope(vip->ir_ctx_p) == IR_SCP_STRUCT)
+	{
+		AST_field_n_t   *field_p;       /* Ptr to AST field node */
+		char  const          *field_name;    /* Field name */
+
+		field_p = tup_p->arg[IR_ARG_FIELD].field;
+		NAMETABLE_id_to_string(field_p->name, &field_name);
+		sprintf(comment, "field %s offset", field_name);
+
+		DDBE_expr_vec_entry(&vip->offset_p, DDBE_vec_expr_k,
+				IR_field_expr(vip->ir_ctx_p, field_p), comment);
+	}
+
+	/*
+	 * type/definition vector entries:
+	*  byte: interface tag
+	*  byte: properties byte
+	*  long: definition vector location of interface description
+	*/
+	DDBE_tag_vec_entry(vip->p_cur_p, DDBE_dt_interface);
+	DDBE_properties_byte(type_p, vip->p_cur_p);
+
+	sprintf(comment, "interface %s index", type_name);
+	DDBE_reference_vec_entry(vip->p_cur_p, type_i_p->type_vec_p, comment);
+}
 
 /*
  *  D D B E _ g e n _ p a r a m _ r e p s
@@ -3638,6 +3828,10 @@ static DDBE_vec_rep_t *DDBE_gen_param_reps
             DDBE_op_pointer(&tup_p, vip, DDBE_dt_full_ptr);
             break;
 
+		  case IR_op_interface_k:
+				DDBE_op_interface(tup_p, vip);
+				break;
+				
         case IR_op_limit_k:
             DDBE_op_limit(tup_p, vip);
             break;

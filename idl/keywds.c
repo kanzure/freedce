@@ -148,6 +148,7 @@ static keyword_attrib_t keywords [] = {
 {0, 0, "handle", HANDLE_KW},
 {0, 0, "idempotent", IDEMPOTENT_KW},
 {0, 0, "ignore", IGNORE_KW},
+{0, 0, "iid_is", IID_IS_KW},
 {0, 0, "in", IN_KW},
 {0, 0, "last_is", LAST_IS_KW},
 {0, 0, "length_is", LENGTH_IS_KW},

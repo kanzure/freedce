@@ -965,20 +965,13 @@ void DDBE_init_offset_vec
  *  Spells the routine vector definition.
  */
 void DDBE_spell_rtn_vec
-#ifdef PROTO
 (
     FILE                *fid,       /* [in] output file handle */
     DDBE_vectors_t      *vip,       /* [in] vector information pointer */
     boolean             *cmd_opt __attribute__((__unused__)),   /* [in] array of cmd option flags */
-    void                **cmd_val __attribute__((__unused__))  /* [in] array of cmd option values */
+    void                **cmd_val __attribute__((__unused__)),  /* [in] array of cmd option values */
+    boolean         client_side    /* [in] T=>client only, F=>server only */
 )
-#else
-(fid, vip, cmd_opt, cmd_val)
-    FILE                *fid;       /* [in] output file handle */
-    DDBE_vectors_t      *vip;       /* [in] vector information pointer */
-    boolean             *cmd_opt;   /* [in] array of cmd option flags */
-    void                **cmd_val;  /* [in] array of cmd option values */
-#endif
 {
     DDBE_vec_rep_t      *vec_p;     /* Ptr to routine vector entry list */
     char const *rtn_name;
@@ -994,19 +987,23 @@ void DDBE_spell_rtn_vec
     fprintf(fid, "\n");
 
     for ( ; vec_p != NULL; vec_p = vec_p->next)
-    {
-        if (vec_p->kind == DDBE_vec_noop_k)
-            continue;
-        if (vec_p->kind == DDBE_vec_comment_k)
-        {
-            DDBE_SPELL_COMMENT(fid, vec_p->comment, "/* %s */\n", comment);
-            continue;
-        }
+	 {
+		 if (vec_p->kind == DDBE_vec_noop_k)
+			 continue;
+		 if (vec_p->kind == DDBE_vec_comment_k)
+		 {
+			 DDBE_SPELL_COMMENT(fid, vec_p->comment, "/* %s */\n", comment);
+			 continue;
+		 }
 
-        NAMETABLE_id_to_string(vec_p->val.name, &rtn_name);
-        DDBE_SPELL_INDEX(fid, vec_p->index);
-        fprintf(fid, "(IDL_rtn_func_t)%s,\n", rtn_name);
-    }
+		 NAMETABLE_id_to_string(vec_p->val.name, &rtn_name);
+		 DDBE_SPELL_INDEX(fid, vec_p->index);
+		 if (   (vec_p->kind == DDBE_vec_name_client_k && !client_side)
+				 || (vec_p->kind == DDBE_vec_name_server_k && client_side) )
+			 fprintf(fid, "(IDL_rtn_func_t)NULL,\n");
+		 else
+			 fprintf(fid, "(IDL_rtn_func_t)%s,\n", rtn_name);
+	 }
 
     fprintf(fid, "(IDL_rtn_func_t)NULL");
     DDBE_SPELL_TEXT(fid, "\t/* sentinel */");
@@ -1492,6 +1489,12 @@ void DDBE_spell_type_vec
             DDBE_SPELL_TEXT(fid, "\t/* filler */");
             fprintf(fid, "\n");
             break;
+        case DDBE_vec_short_k:
+            DDBE_SPELL_INDEX(fid, vec_p->index);
+            DDBE_spell_short_bytes(fid, (unsigned short *)&vec_p->val.short_val,
+                DDBE_little_endian);
+            fprintf(fid, "\n");
+            break;
 
         case DDBE_vec_tag_k:
             DDBE_SPELL_INDEX(fid, vec_p->index);
@@ -1507,6 +1510,8 @@ void DDBE_spell_type_vec
         case DDBE_vec_expr_arr_k:
         case DDBE_vec_expr_k:
         case DDBE_vec_name_k:
+        case DDBE_vec_name_client_k:
+        case DDBE_vec_name_server_k:
         case DDBE_vec_offset_begin_k:
         case DDBE_vec_offset_end_k:
         case DDBE_vec_sizeof_k:
@@ -1664,6 +1669,9 @@ void DDBE_spell_param_vec_init
         {
             spell_value =
                 (   (side == BE_client_side
+                     && !(param_p->type->kind == AST_pointer_k
+                             && param_p->type->type_structure.pointer
+                                ->pointee_type->kind == AST_interface_k)
                      && (AST_REF_SET(param_p)
                                                 ))
                  || (side == BE_server_side && AST_REF_SET(param_p)

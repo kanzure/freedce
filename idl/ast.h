@@ -277,6 +277,7 @@
 #define AST_EXPLICIT_HANDLE 0x10000
 #define AST_DECODE        0x100000
 #define AST_ENCODE        0x200000
+#define AST_OBJECT		  0x00400
 
 /* flags used in  operation attribute flag word */
 #define AST_BROADCAST     0x0001
@@ -451,6 +452,10 @@
 #define AST_LOCAL_SET(np)         (AST_LOCAL & (np)->flags)
 #define AST_CLR_LOCAL(np)         (np)->flags &= ~AST_LOCAL
 #define AST_SET_LOCAL(np)         (np)->flags |= AST_LOCAL
+
+#define AST_OBJECT_SET(np)			 (AST_OBJECT & (np)->flags)
+#define AST_CLR_OBJECT(np)			 ((np)->flags &= ~AST_OBJECT
+#define AST_SET_OBJECT(np)			 (np)->flags |= AST_OBJECT		  
 
 #define AST_NPB_SET(np)           (AST_NPB & (np)->flags)
 #define AST_CLR_NPB(np)           (np)->flags &= ~AST_NPB
@@ -707,6 +712,11 @@ typedef struct AST_interface_n_t {
     NAMETABLE_id_t     cs_tag_rtn_name; /* [cs_tag_rtn] name if any */
     struct AST_name_n_t   *cs_tag_rtns; /* synth: list of [cs_tag_rtn] names */
     NAMETABLE_id_t  binding_callout_name;  /* [binding_callout] name if any */
+	 NAMETABLE_id_t	inherited_interface_name;	/* base class interface name for ORPC */
+	 int pointer_default;	/* for pointer_default() attribute: values are
+										0, ASTP_REF, ASTP_UNIQUE, or ASTP_PTR
+									 */
+	 struct AST_type_n_t * orpc_intf_type; /* type for ORPC */
 } AST_interface_n_t;
 
 
@@ -866,7 +876,8 @@ typedef enum {
     AST_array_k, AST_structure_k, AST_pipe_k, AST_pointer_k, AST_void_k,
     AST_function_k, AST_disc_union_k, AST_enum_k,
 
-    AST_null_k
+    AST_null_k,
+	 AST_interface_k
 } AST_type_k_t;
 
 
@@ -888,6 +899,7 @@ typedef struct AST_type_n_t {
         struct AST_pointer_n_t     *pointer;      /*  "   == pointer_k */
         struct AST_operation_n_t   *function;     /*  "   == function_k */
         struct AST_structure_n_t   *structure;    /*  "   == structure_k */
+		  struct AST_interface_n_t	  *interface;	  /*  "   == interface_k */
     } type_structure;
 
 
@@ -1119,6 +1131,7 @@ typedef struct AST_field_attr_n_t {
     struct AST_field_ref_n_t *max_is_vec;
     struct AST_field_ref_n_t *size_is_vec;
     struct AST_field_ref_n_t *switch_is;
+	 struct AST_field_ref_n_t *iid_is;
 } AST_field_attr_n_t;
 
 

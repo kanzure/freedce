@@ -9,7 +9,7 @@ include $(top_srcdir)/include.mk
 # implementations of some io functions.
 LIBS:=$(subst -ldcethread,,$(LIBS))
 
-CFLAGS+=-DMIA
+CFLAGS+=-DMIA -DDEFAULT_IDIR=\"$(includedir)\"
 
 bin_PROGRAMS = dceidl
 

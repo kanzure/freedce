@@ -486,7 +486,10 @@ AST_type_n_t *AST_enumerator_node
         /*
         ** Set the value of the enum element, if we overflow set a flag
         */
-        cp->value.int_val = N++;
+		  if (cp->value.int_val != 0)
+				N = cp->value.int_val + 1;
+		  else
+				cp->value.int_val = N++;
         if ((unsigned int)N >= ASTP_C_SHORT_MAX) overflow = TRUE;
     }
 
@@ -802,9 +805,11 @@ static void AST_finish_operation_node
      *  type if neigher REF or UNIQUE attributes were not specified.  Also
      *  don't set it if it is a "void *" because either it has [context_handle] or
      *  checker will issue an error anyway.
+	  *  Don't set it for "interface*" types
      */
     if ((operation_node_p->result->type->kind == AST_pointer_k) &&
         (operation_node_p->result->type->type_structure.pointer->pointee_type->kind != AST_void_k) &&
+        (operation_node_p->result->type->type_structure.pointer->pointee_type->kind != AST_interface_k) &&
         !AST_REF_SET(operation_node_p->result) &&
         !AST_UNIQUE_SET(operation_node_p->result))
           AST_SET_PTR (operation_node_p->result);
@@ -1308,7 +1313,8 @@ AST_type_n_t *AST_lookup_type_node
 
         case AST_long_float_k:
             type_node_ptr  = ASTP_long_float_ptr;
-            AST_SET_DOUBLE_USED(the_interface);
+				if (the_interface)
+					 AST_SET_DOUBLE_USED(the_interface);
             break;
 
         case AST_void_k:

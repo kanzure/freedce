@@ -638,7 +638,7 @@ void DDBE_gen_cstub
      *  Set up interpreter data structures
      */
     DDBE_spell_offset_vec( fid, dd_vip, cmd_opt, cmd_val );
-    DDBE_spell_rtn_vec( fid, dd_vip, cmd_opt, cmd_val );
+    DDBE_spell_rtn_vec( fid, dd_vip, cmd_opt, cmd_val, TRUE );
     DDBE_spell_type_vec( fid, dd_vip, cmd_opt, cmd_val );
 
     NAMETABLE_id_to_string(p_interface->name, &p_interface_name);

@@ -81,7 +81,9 @@ static void         **cmd_val;  /* Array of command option values */
     (   (type_p)->kind == AST_array_k \
     ||  (type_p)->kind == AST_structure_k \
     ||  ((type_p)->kind == AST_pointer_k \
-      && (type_p)->type_structure.pointer->pointee_type->kind != AST_void_k) \
+      && (type_p)->type_structure.pointer->pointee_type->kind != AST_void_k \
+      && (type_p)->type_structure.pointer->pointee_type->kind != AST_interface_k \
+	) \
     ||  (type_p)->kind == AST_disc_union_k)
 
 
@@ -171,6 +173,7 @@ typedef struct
       boolean               has_int;          /* T => type has integer      */
       boolean               has_error_status; /* T => type has error_status_t */
       boolean               has_v1_struct;    /* T => type has v1_struct    */
+		boolean					 has_interface;
 
 } prop_ctx_t;
 
@@ -1421,6 +1424,7 @@ static void PROP_type_info_OR
     dst_ctx->has_int            |= src_ctx->has_int;
     dst_ctx->has_error_status   |= src_ctx->has_error_status;
     dst_ctx->has_v1_struct      |= src_ctx->has_v1_struct;
+    dst_ctx->has_interface      |= src_ctx->has_interface;
 }
 
 /*
@@ -1924,6 +1928,10 @@ static void PROP_type_info
             AST_type_n_t *ptee_type_p;  /* Pointee type */
 
             ptee_type_p = type_p->type_structure.pointer->pointee_type;
+
+				if (ptee_type_p->kind == AST_interface_k)
+					ctx->has_interface = TRUE;
+				
             if (ptee_type_p->fe_info->fe_type_id != fe_ptr_info)
             {
                 ptee_type_p->fe_info->fe_type_id = fe_ptr_info;
@@ -2095,6 +2103,7 @@ static void PROP_type_info
         && !ctx->has_rep_as
         && !FE_TEST(type_p->fe_info->flags, FE_HAS_PTR)
         && !ctx->has_error_status
+		  && !ctx->has_interface
         && !ctx->has_v1_struct)
         FE_SET(type_p->fe_info->flags, FE_MAYBE_WIRE_ALIGNED);
 

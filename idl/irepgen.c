@@ -904,6 +904,32 @@ static void IR_gen_disc_union_rep
     }
 }
 
+/*
+ *  I R _ g e n _ i n t e r f a c e _ r e p
+ *
+ *  Generates an IR_op_interface_k tuple.
+ */
+static void IR_gen_interface_rep
+#ifdef PROTO
+(
+    IR_scope_ctx_t      *ctx_p,     /* [io] Scope context */
+    AST_type_n_t        *type_p,    /* [io] AST type node */
+    AST_instance_n_t    *inst_p     /* [in] Ptr to AST instance node */
+)
+#else
+(ctx_p, type_p, inst_p)
+    IR_scope_ctx_t      *ctx_p;     /* [io] Scope context */
+    AST_type_n_t        *type_p;    /* [io] AST type node */
+    AST_instance_n_t    *inst_p;    /* [in] Ptr to AST instance node */
+#endif
+{
+    IR_tup_n_t          *tup_p;     /* Ptr to generated IREP tuple */
+
+    tup_p = IR_gen_irep_tup(ctx_p, IR_op_interface_k);
+    tup_p->arg[IR_ARG_TYPE].type = type_p;
+    tup_p->arg[IR_ARG_INST].inst = inst_p;
+    tup_p->arg[IR_ARG_INTFC].intfc = type_p->type_structure.interface;
+}
 
 /*
  *  I R _ g e n _ p t r _ t u p
@@ -2476,6 +2502,7 @@ static void IR_gen_type_rep
         /*
          * Test first for context handle, which is only valid use of void *.
          * Context handles can only be parameters.
+			* Look for object references, which are not normal pointers
          */
         if (type_p->type_structure.pointer->pointee_type->kind == AST_void_k)
         {
@@ -2490,6 +2517,8 @@ static void IR_gen_type_rep
                  && type_p->type_structure.pointer->pointee_type->kind
                     == AST_structure_k)
             IR_gen_context_rep(ctx_p, type_p, (AST_parameter_n_t *)inst_p);
+		  else if (type_p->type_structure.pointer->pointee_type->kind == AST_interface_k)
+			  IR_gen_interface_rep(ctx_p, type_p->type_structure.pointer->pointee_type, inst_p);
         else
             IR_gen_pointer_rep(ctx_p, type_p, inst_p);
         break;

@@ -509,7 +509,15 @@ ASTP_node_t *ASTP_lookup_binding
         NAMETABLE_id_to_string (name, &identifier);
         log_error(nidl_yylineno, NIDL_NAMENOTFND, identifier, NULL) ;
     }
-
+#if 0
+	 /* If they are looking for a type and we got an ORPC interface, chase
+	  * through to the underlying type information */
+	 if (node_kind == fe_type_n_k && bound_node &&
+				bound_node->fe_info->node_kind == fe_interface_n_k &&
+				AST_OBJECT_SET((AST_interface_n_t*)bound_node))
+		  return bound_node->type_structure;
+		  bound_node = (ASTP_node_t*)((AST_interface_n_t*)bound_node)->orpc_intf_type;
+#endif
     /*
      * If binding node of wrong type, return NULL, and tell them.
      */
@@ -620,18 +628,12 @@ AST_pointer_n_t * AST_pointer_node
  */
 
 AST_type_p_n_t *AST_declarators_to_types
-#ifdef PROTO
 (
+ AST_interface_n_t * ifp,
     AST_type_n_t *type_ptr,
     ASTP_declarator_n_t *declarators_ptr,
     ASTP_attributes_t   *attributes
 )
-#else
-(type_ptr, declarators_ptr, attributes)
-    AST_type_n_t *type_ptr;
-    ASTP_declarator_n_t *declarators_ptr;
-    ASTP_attributes_t   *attributes;
-#endif
 {
     AST_type_p_n_t
         *type_p_list = NULL,        /* List of type pointer nodes */
@@ -693,7 +695,7 @@ AST_type_p_n_t *AST_declarators_to_types
 	(base_type->fe_info->tag_name == NAMETABLE_NIL_ID)) /* union/struct doesn't have a tag name */
     {
         base_dp = &gen_declarator;
-        base_dp->name = AST_generate_name(the_interface,"");
+        base_dp->name = AST_generate_name(ifp,"");
         base_dp->next = NULL;
         base_dp->last = NULL;
         base_dp->next_op = NULL;
@@ -1040,10 +1042,14 @@ static AST_type_n_t *AST_propagate_type_attrs
                 /*
                  *  Don't set [ref] on void* types because it is either a
                  *  context handle, or checker will issue an error on it.
+					  *  Also, don't set [ref] on interface* types.
                  */
                 if (!((return_type->kind == AST_pointer_k) &&
                     (return_type->type_structure.pointer->pointee_type->kind == AST_void_k) ))
-                        AST_SET_REF(((AST_parameter_n_t*)parent_node));
+					 {
+						  if (return_type->type_structure.pointer->pointee_type->kind != AST_interface_k)
+								AST_SET_REF(((AST_parameter_n_t*)parent_node));
+					 }
             }
             else
             {
@@ -1299,13 +1305,14 @@ static AST_type_n_t *AST_propagate_typedef
                            (ASTP_TEST_ATTR(attributes,ASTP_PTR|ASTP_REF|
                             ASTP_UNIQUE) != 0))
                                   continue;
-
+								if (current_type->type_structure.pointer->pointee_type->kind == AST_interface_k)
+									 continue;
                         /*
                          *  If none of the above exceptions apply, obtain the
                          *  pointer class from the default for the module, if
                          *  any.
                          */
-                        switch (interface_pointer_class)
+                        switch (the_interface->pointer_default)
                         {
                           case 0:            /* No interface default */
                               if (!AST_LOCAL_SET(the_interface))
@@ -1473,12 +1480,14 @@ AST_type_n_t *AST_propagate_type
                     if ((dop->next_op == NULL) && (i == 1) &&
                         (parent_node->fe_info->node_kind == fe_parameter_n_k))
                               continue;
+						  if (current_type->type_structure.pointer->pointee_type->kind == AST_interface_k)
+								continue;
 
                     /*
                      *  If we passed all of the exceptions, obtain the pointer
                      *  class from the default, and add to pointer.
                      */
-                    switch (interface_pointer_class)
+                    switch (the_interface->pointer_default)
                     {
                     case 0:             /* No interface default */
                           if (!AST_LOCAL_SET(the_interface))
@@ -1858,13 +1867,18 @@ AST_field_attr_n_t *AST_set_field_attrs
 
     /* If create the array_rep_type for this pointee */
     else if (type_node->kind == AST_pointer_k)
-    {
-        dimension = 1;
-        pointer_as_array = TRUE;
-        ASTP_set_array_rep_type(type_node,
-            type_node->type_structure.pointer->pointee_type,
-            FALSE);
-    }
+	 {
+		  tp = type_node;
+		  while(tp->type_structure.pointer->pointee_type->kind == AST_pointer_k && tp->kind != AST_interface_k)
+				tp = tp->type_structure.pointer->pointee_type;
+
+
+		  dimension = 1;
+		  pointer_as_array = TRUE;
+		  ASTP_set_array_rep_type(type_node,
+					 type_node->type_structure.pointer->pointee_type,
+					 FALSE);
+	 }
 
     /*
      *  If only arrayified via [string] then all we needed to do was fill in
@@ -1924,6 +1938,11 @@ AST_field_attr_n_t *AST_set_field_attrs
          */
         switch (attr_ptr->kind)
         {
+				case iid_is_k:
+					 if (field_attr_node->iid_is == NULL)
+						  field_attr_node->iid_is = AST_field_ref_node(dimension);
+					 field_ref_vector = field_attr_node->iid_is;
+					 break;
             case first_is_k:
                 if (field_attr_node->first_is_vec == NULL)
                 {
@@ -2584,7 +2603,7 @@ void AST_set_flags
      * is not valid on this node type.
      */
     for (current_attribute = 1;         /* start with first bit */
-          current_attribute <= (unsigned) ASTP_MAX_ATTRIBUTE; /* until and including last bit */
+          current_attribute != 0 && current_attribute <= (unsigned) ASTP_MAX_ATTRIBUTE; /* until and including last bit */
           current_attribute <<= 1)      /* Next higher bit */
     {
         /* Check if the attribute flag is set */
@@ -2742,6 +2761,7 @@ void AST_set_flags
                 case size_is_k:         token = SIZE_IS_KW; break;
                 case switch_is_k:       token = SWITCH_IS_KW; break;
 					 case min_is_k:				token = MIN_IS_KW; break;
+					 case iid_is_k:			token = IID_IS_KW; break;
             }
             log_error(nidl_yylineno, message_number, KEYWORDS_lookup_text(token), NULL) ;
         }

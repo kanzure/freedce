@@ -362,3 +362,7 @@
 "Warning: Use of C preprocessor directive requires %1$s",
 "Warning: Use of anonymous %1$s may not be portable across C compilers",
 "Warning: A [fault_status] parameter has no utility in this operation",
+"Interface must be an object to have an ancestor interface",
+"Interface ref not allowed",
+"ptrattbign??",
+"inherited interface not defined",

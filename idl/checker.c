@@ -1830,6 +1830,13 @@ static void array_check
         &&  type_p->type_structure.disc_union->discrim_name == NAMETABLE_NIL_ID)
         CHECKER_error(arr_type_p, NIDL_NEUARRAY);
 
+	/* Don't allow arrays of interfaces */
+	 if (type_p->kind == AST_interface_k)	{
+		 char const * id_name;
+		 NAMETABLE_id_to_string(type_p->name, &id_name);
+		 CHECKER_error(arr_type_p, NIDL_INTREFNOTALO, id_name);
+	 }
+	 
     /*
      * If the array is represented in array (as opposed to pointer) syntax,
      * then check the indices of each dimension of the array.
@@ -1906,9 +1913,7 @@ static void param_type
     /* void * must be used in conjunction with the [context_handle] attr */
 
     if (!AST_LOCAL_SET(int_p)
-#if 0   /** Obsolete **/
-        &&  type_p->xmit_as_type == NULL
-#endif
+        &&  type_p->xmit_as_type == NULL /* Allow if void* is NOT transmitted */
         &&  type_p->kind == AST_pointer_k
         &&  type_p->type_structure.pointer->pointee_type->kind == AST_void_k
         &&  !AST_CONTEXT_RD_SET(type_p)
@@ -2124,19 +2129,11 @@ static void param_size
 */
 
 static void param_struct
-#ifdef PROTO
 (
     AST_parameter_n_t   *param_p,       /* [in] Ptr to AST parameter node */
     AST_type_n_t        *top_type_p,    /* [in] Top-level parameter type */
     AST_type_n_t        *type_p         /* [in] Parameter type */
 )
-#else
-(param_p, top_type_p, type_p)
-    AST_parameter_n_t   *param_p;       /* [in] Ptr to AST parameter node */
-    AST_type_n_t        *top_type_p;    /* [in] Top-level parameter type */
-    AST_type_n_t        *type_p;        /* [in] Parameter type */
-#endif
-
 {
     type_p = type_xmit_type(type_p);    /* Pick up transmissible type */
 
@@ -2398,6 +2395,16 @@ static void param_pointer
         &&  (*(int *)cmd_val[opt_standard] <= opt_standard_dce_1_0))
         CHECKER_warning(param_p, NIDL_NOPORTUNIQUE, OPT_STD_EXTENDED);
 
+	/* if the parameter is a pointer to an interface, then it should ignore
+	 * the pointer attributes REF, UNIQUE or PTR */
+	 if (top_type_p->kind == AST_pointer_k && type_p->kind == AST_interface_k
+			 && AST_REF_SET(param_p))
+		 CHECKER_warning(param_p, NIDL_PTRATTBIGN);
+
+	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
+			 && (AST_UNIQUE_SET(param_p) || AST_PTR_SET(param_p)))
+		 CHECKER_warning(param_p, NIDL_PTRATTBIGN);
+	 
     /*
      * If the parameter is a pointer, and it is not a pointer to an array,
      * and it has any of the array attributes, then it is an arrayified
@@ -2629,6 +2636,7 @@ static void param_direction
     /* Parameter must have a least one of [in] and [out] attributes */
 
     if (type_p->kind != AST_void_k
+		  &&  !AST_LOCAL_SET(int_p)
         &&  !AST_IN_SET(param_p)
         &&  !AST_OUT_SET(param_p))
         CHECKER_error(param_p, NIDL_PRMINOROUT);
@@ -2642,7 +2650,10 @@ static void param_direction
              && top_type_p->kind != AST_pipe_k)     /* Pipes an exception */
           || (top_type_p->kind == AST_pointer_k     /* void * is special */
              && top_type_p->type_structure.pointer->pointee_type->kind
-                == AST_void_k)))
+                == AST_void_k)
+			 || (top_type_p->kind == AST_pointer_k
+				 && top_type_p->type_structure.pointer->pointee_type->kind == AST_interface_k)
+			 ))
         CHECKER_error(param_p, NIDL_OUTPRMREF);
 
     /* [out] parameter requires explicit top-level '*' */
@@ -2841,6 +2852,7 @@ static void param_first_handle
     /* No binding handle parameter for 'operation' - auto_handle assumed. */
 
     if (int_p->implicit_handle_name == NAMETABLE_NIL_ID
+			 && !AST_OBJECT_SET(int_p)
         &&  !AST_AUTO_HANDLE_SET(int_p)
         &&  !AST_LOCAL_SET(int_p)
         &&  !type_is_handle(type_p)
@@ -3005,7 +3017,7 @@ static void param_check
     AST_type_n_t        *top_type_p;    /* Top-level parameter type */
     AST_type_n_t        *type_p;        /* Param type (deref'd if necess.) */
     AST_type_n_t        *deref_type_p;  /* Param type (deref'd if necess.) */
-
+	
     /*
      * If the parameter type has a top-level '*' which indicates passing
      * mechanism only, follow the pointer to the data of interest.
@@ -3028,6 +3040,13 @@ static void param_check
         fattr_param_check(fattr_p, param_p, int_p);
     }
 
+	/* Interface must have a * */
+	 if (type_p->kind == AST_interface_k)	{
+		char const * id_name;
+		 NAMETABLE_id_to_string(type_p->name, &id_name);
+		 CHECKER_error(param_p, NIDL_INTREFNOTALO, id_name);
+	 }
+	 
     param_size(param_p, top_type_p, type_p, int_p);
     param_struct(param_p, top_type_p, type_p);
     param_pipe(param_p, top_type_p, deref_type_p);
@@ -3070,6 +3089,7 @@ static void op_handle
     if (int_p->implicit_handle_name == NAMETABLE_NIL_ID
         &&  !AST_AUTO_HANDLE_SET(int_p)
         &&  !AST_LOCAL_SET(int_p)
+		  &&  !AST_OBJECT_SET(int_p)
         &&  op_p->parameters == NULL)
         default_to_auto_handle(op_p, NIDL_DEFAUTOHAN);
 }
@@ -3532,6 +3552,13 @@ static void field_type
     if (type_p->kind == AST_pipe_k)
         CHECKER_error(field_p, NIDL_PIPESTRFLD);
 
+	/* interface must have a * */
+	 if (type_p->kind == AST_interface_k)	{
+		 char const * id_name;
+		 NAMETABLE_id_to_string(type_p->name, &id_name);
+		 CHECKER_error(field_p, NIDL_INTREFNOTALO, id_name);
+	 }
+	 
     /* Context handles not valid as structure fields */
 
     if (AST_CONTEXT_RD_SET(type_p)
@@ -3541,10 +3568,9 @@ static void field_type
     /* Function pointers not valid as structure fields */
 
     if (!AST_LOCAL_SET(int_p)
-        &&  type_is_function(type_p))
-#if 0   /** Obsolete **/
-        &&  type_p->xmit_as_type == NULL)
-#endif
+        &&  type_is_function(type_p)
+        &&  type_p->xmit_as_type == NULL /* allowed if void* is not xmited */
+		  )
         CHECKER_error(field_p, NIDL_FPSTRFLD);
 
     /* Structure fields cannot be of type handle_t */
@@ -3898,6 +3924,11 @@ static void field_pointer
         (AST_REF_SET(field_p) || AST_PTR_SET(field_p) || AST_UNIQUE_SET(field_p)))
         CHECKER_error(field_p, NIDL_ARRPTRPRM);
 
+	/* ignore REF, UNIQUE, PTR attributes on pointers to interfaces */
+	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
+			 && (AST_UNIQUE_SET(field_p) || AST_REF_SET(field_p) || AST_PTR_SET(field_p)))
+		 CHECKER_warning(field_p, NIDL_PTRATTBIGN);
+	 
     /*
      * If the field is a pointer, and it is not a pointer to an array,
      * and it has any of the array attributes, then it is an arrayified
@@ -4521,6 +4552,14 @@ static void pipe_base_type
     if (type_is_function(type_p))
         CHECKER_error(pipe_p, NIDL_FPPIPEBASE);
 
+	/* Cant be an interface or interface reference */
+	 if (type_p->kind == AST_interface_k)
+		 CHECKER_error(pipe_p, NIDL_PIPECTYPE, "interface");
+	if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k)
+		 CHECKER_error(pipe_p, NIDL_PIPECTYPE, "interface reference");
+
+	 
+	 
     /* Base type of a pipe can't be or contain a pointer */
 
     if (!type_is_function(type_p)
@@ -4765,10 +4804,19 @@ static void arm_type
     type_p = type_xmit_type(type_p);    /* Pick up transmissible type */
 
     /* Conformant arrays or structures are invalid within unions */
-
+	/* WEZ:FIXME we need them for ORPC! */
+#if !ENABLE_DCOM
     if (AST_CONFORMANT_SET(type_p))
         CHECKER_error(arm_p, NIDL_CFMTUNION);
+#endif
 
+	/* interface must have a * */
+	 if (type_p->kind == AST_interface_k)	{
+		 char const * id_name;
+		 NAMETABLE_id_to_string(type_p->name, &id_name);
+		 CHECKER_error(arm_p, NIDL_INTREFNOTALO, id_name);
+	 }
+	 
     /* Pipes not valid as members of unions */
 
     if (type_p->kind == AST_pipe_k)
@@ -4921,11 +4969,12 @@ static void arm_pointer
     type_p = type_xmit_type(type_p);    /* Pick up transmissible type */
 
     /* An arm of a union can't be or contain a [ref] pointer */
-
+	/* WEZ:FIXME we need this for ORPC */
+#if !ENABLE_DCOM
     if (FE_TEST(type_p->fe_info->flags, FE_HAS_REF_PTR) ||
         AST_REF_SET(arm_p))
         CHECKER_error(arm_p, NIDL_ARMREFPTR);
-
+#endif
     if (type_p->kind == AST_pointer_k
         &&  type_p->type_structure.pointer->pointee_type->kind != AST_void_k)
         pointer_attr_valid = TRUE;
@@ -4935,6 +4984,11 @@ static void arm_pointer
     if (AST_REF_SET(arm_p) && !pointer_attr_valid)
         CHECKER_error(arm_p, NIDL_REFATTRPTR);
 
+	/* ignore REF, UNIQUE or PTR for pointers to interfaces */
+	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
+			 && (AST_UNIQUE_SET(arm_p) || AST_REF_SET(arm_p) || AST_PTR_SET(arm_p)))
+		 CHECKER_warning(arm_p, NIDL_PTRATTBIGN);
+	 
     /* An arm of a union can't be or contain a [unique] pointer */
 
     if (FE_TEST(type_p->fe_info->flags, FE_HAS_UNIQUE_PTR) ||
@@ -5537,6 +5591,10 @@ static void type_pointer
 
     if (AST_UNIQUE_SET(type_p) && !pointer_attr_valid)
         CHECKER_error(type_p, NIDL_UNIQATTRPTR);
+	/* ignore REF, UNIQUE or PTR for pointers to interfaces */
+	 if (type_p->kind == AST_pointer_k && type_p->type_structure.pointer->pointee_type->kind == AST_interface_k
+			 && (AST_UNIQUE_SET(type_p) || AST_REF_SET(type_p) || AST_PTR_SET(type_p)))
+		 CHECKER_warning(type_p, NIDL_PTRATTBIGN);
 
     /* [ptr] attribute valid only for pointer or array types */
 
@@ -6006,7 +6064,7 @@ static void type_check
 
 {
     AST_type_n_t        *xmit_type_p;   /* Transmissible type */
-
+	char const * id_name;
     /*
      * Pick up the transmissible type (the top-level, presented, type is
      * different from the the transmissible type if it has a [transmit_as]).
@@ -6089,6 +6147,12 @@ static void type_check
         union_check(type_p->type_structure.disc_union, int_p);
         break;
 
+	case AST_interface_k:
+		  /* Interface type declaration is not allowed */
+		  NAMETABLE_id_to_string(type_p->name, &id_name);
+		  CHECKER_error(type_p, NIDL_INTREFNOTALO, id_name);
+		  break;
+		  
     default:
         error(NIDL_INTERNAL_ERROR, __FILE__, __LINE__);
     }
@@ -6322,7 +6386,7 @@ static void int_local
     /* [uuid] attribute invalid when [local] attribute is specified */
 
     if (AST_LOCAL_SET(int_p)
-        &&  !uuid_null)
+        &&  !uuid_null && !AST_OBJECT_SET(int_p))
         CHECKER_error(int_p, NIDL_UUIDINV);
 
     /*
@@ -6350,6 +6414,21 @@ static void int_local
         CHECKER_error(int_p, NIDL_IMPORTLOCAL);
 }
 
+
+/* Checks an interface node's inheritance attributes */
+static void int_inherit(AST_interface_n_t * int_p)
+{
+	char const * id_name;	/* name for [switch_is] */
+	/* check to see if there is a binding for the inherited interface;
+	 * if not, complain about it */
+	if (int_p->inherited_interface_name != NAMETABLE_NIL_ID)	{
+		/* WEZ:TODO only valid for ORPC */
+		if (!NAMETABLE_lookup_local(int_p->inherited_interface_name))	{
+			NAMETABLE_id_to_string(int_p->inherited_interface_name, &id_name);
+			CHECKER_error(int_p, NIDL_INHERITNOTDEF, id_name);
+		}
+	}
+}
 
 /*
 **  i n t e r f a c e _ c h e c k
@@ -6379,6 +6458,7 @@ static void interface_check
     int_code(int_p, parent_int_p);
     int_handle(int_p);
     int_local(int_p, parent_int_p);
+	 int_inherit(int_p);
 
     /* Check any interfaces that this interface imports. */
 
@@ -6425,6 +6505,13 @@ static void interface_check
             CHECKER_warning(int_p, NIDL_NOPORTATTR,
                             "exceptions", OPT_STD_EXTENDED);
     }
+	if (AST_OBJECT_SET(int_p) && ASTP_IF_AF_SET(int_p, ASTP_IF_VERSION))	{
+		CHECKER_warning(int_p, NIDL_CONFLICTATTR, "version", "object");
+	}
+	if (!AST_OBJECT_SET(int_p) && int_p->inherited_interface_name != NAMETABLE_NIL_ID)	{
+		CHECKER_warning(int_p, NIDL_ANCREQSOBJ);
+	}
+
 }
 
 /*

@@ -338,6 +338,7 @@ void AST_dump_interface
     if (AST_IN_LINE_SET(if_n_p)     ||
         AST_OUT_OF_LINE_SET(if_n_p) ||
         if_n_p->binding_callout_name != NAMETABLE_NIL_ID ||
+        if_n_p->inherited_interface_name != NAMETABLE_NIL_ID ||
         AST_CODE_SET(if_n_p)        ||
         AST_NO_CODE_SET(if_n_p)     ||
         AST_DECODE_SET(if_n_p)      ||
@@ -359,6 +360,12 @@ void AST_dump_interface
                 printf("[binding_callout(");
                 dump_nametable_id ("%s)] \n", if_n_p->binding_callout_name);
             }
+            if (if_n_p->inherited_interface_name != NAMETABLE_NIL_ID) {
+                indent(1);
+                printf("[inherited_interface(");
+                dump_nametable_id ("%s)] \n", if_n_p->inherited_interface_name);
+            }
+
             if (AST_CODE_SET(if_n_p)) {
                 indent(1);
                 printf("[code]\n");
@@ -801,6 +808,9 @@ static void print_type_name
     case AST_pointer_k:
         printf (format, "AST_pointer_k");
         break;
+	 case AST_interface_k:
+		  printf (format, "AST_interface_k");
+		  break;
     case AST_void_k:
         printf (format, "AST_void_k");
         break;
