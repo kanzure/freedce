@@ -355,6 +355,7 @@ optional_imports:
         {
             $<y_import>$ = (AST_import_n_t *)NULL;
         }
+    ;
 
 imports:
         import
@@ -1017,7 +1018,7 @@ array_bounds:
             $<y_index>$ = ASTP_array_index_node  ( $<y_constant>2, ASTP_constant_bound,
                                                  $<y_constant>4, ASTP_constant_bound);
         }
-
+    ;
 
 
 operation_dcl:
