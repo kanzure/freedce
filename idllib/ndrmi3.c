@@ -525,13 +525,21 @@ void rpc_ss_ndr_m_n_e_union_or_ptees
     }
     else
     {
+	unsigned long sv_copy;
         /* Marshall discriminant */
         if ( struct_addr == NULL )
             switch_addr = IDL_msp->IDL_param_vec[switch_index];
         else
             switch_addr = (rpc_void_p_t)((idl_byte *)struct_addr
                                        + struct_offset_vec_ptr[switch_index]);
-        rpc_ss_ndr_marsh_scalar(switch_type, switch_addr, IDL_msp);
+	/* lkcl: XXX HACK!  have to marshall out the switch value here
+	 * at 16-bit to keep MSRPC happy... *sigh*...
+	 */
+	sv_copy = *((long*)switch_addr);
+	sv_copy &= 0xffff;
+
+        /*rpc_ss_ndr_marsh_scalar(switch_type, switch_addr, IDL_msp);*/
+        rpc_ss_ndr_marsh_scalar(switch_type, &sv_copy, IDL_msp);
         /* Marshall arm */
         rpc_ss_ndr_marsh_union_body(defn_vec_ptr, switch_value, union_addr,
                                                                       IDL_msp);
