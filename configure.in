@@ -5,10 +5,37 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE
 AC_PREFIX_DEFAULT(/opt/dce)
 
+# determine target system
+if test "x$target" = "x"; then
+	echo "warning: target not set, building for host system"
+	target=${host}
+	target_cpu=${host_cpu}
+	target_os=${host_os}
+	target_vendor=${host_vendor}
+fi
+
+
 # reduce iX86 to i386 for target_cpu
 case $target_cpu in
 	i?86)	target_cpu="i386";;
 esac
+# expand linux to linux-gnu
+if test "x$target_os" = "xlinux"; then
+	target_os="linux-gnu";
+fi
+
+# show the user what we do
+echo "########################################"
+echo "# configuring for target: $target"
+echo "#   CPU $target_cpu"
+echo "#   OS $target_os"
+echo "#   VENDOR $target_vendor"
+echo "# on host: $host"
+echo "#   CPU $host_cpu"
+echo "#   OS $host_os"
+echo "#   VENDOR $host_vendor"
+echo "########################################"
+
 AC_SUBST(target_cpu)
 AC_SUBST(target_os)
 
