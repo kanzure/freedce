@@ -50,7 +50,7 @@
 
 /*
  * Many changes to support linux threads 0.8 / glibc2.1
- * by Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com> 
+ * by Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de> 
  */
 
 /***************************************************************************
@@ -59,8 +59,6 @@
  *
  ***************************************************************************/
 
-#include <signal.h>
-#include <time.h>
 
 #ifndef _PTHREAD_DCE_COMMONDEFS_
 #define _PTHREAD_DCE_COMMONDEFS_
@@ -155,10 +153,20 @@ extern const pthread_once_t	pthread4_once_init;
 #define CANCEL_OFF (0)
 #endif
 
+#ifndef SUCCESS
+#define SUCCESS (0)
+#endif
+
+#ifndef FAILURE
+#define FAILURE (-1)
+#endif
+
+#ifndef FALSE
+#define FALSE (0)
+#endif
+
+#ifndef TRUE
+#define TRUE (1)
+#endif
+
 #endif  
-
-
-
-
-
-

@@ -24,7 +24,7 @@
 
 /*
  * Many changes to support linux threads 0.8 / glibc2.1
- * by Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com> 
+ * by Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de> 
  */
 
 /*
@@ -50,6 +50,12 @@
 
 #ifndef EXC_HANDLING_H
 #define EXC_HANDLING_H
+
+/*
+ * this macro allows us safely include pthd signatures
+ * without any mapping macros
+ */
+#define ___INSIDE_EXC_HANDLING_H 1
 
 /*
 **
@@ -87,6 +93,236 @@
 ** 
 */
 
+
+/* we need internal _pthread_cleanup_*_defer() */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
+#include <features.h>
+#include </usr/include/pthread.h>          /* Import platform LinuxThreads */
+#include "pthread_dce_common.h"
+#include "pthread_dce.h"
+
+#include <setjmp.h>
+
+
+
+/*
+ * Undefine Define the necessary POSIX features.
+ * but only if they are not already redefined
+ * Do not define this guard in user space
+ */
+
+
+#ifndef _DCE_PTHREADS_COMPAT_MACROS_
+
+
+#define WARNING_CONFLICTING_API_USAGE \
+#error ERROR: Attempted conlicting use of DCE vs. POSIX Draft 7 Pthreads API
+
+#undef pthread_attr_default
+#undef pthread_mutexattr_default
+#undef pthread_condattr_default
+
+#define pthread_attr_default          WARNING_CONFLICTING_API_USAGE
+#define pthread_mutexattr_default     WARNING_CONFLICTING_API_USAGE
+#define pthread_condattr_default      WARNING_CONFLICTING_API_USAGE
+
+#undef pthread_attr_create 
+#undef pthread_attr_delete
+#undef pthread_attr_setstacksize
+#undef pthread_attr_getstacksize
+#undef pthread_attr_getprio
+#undef pthread_attr_setprio
+#undef pthread_attr_getsched
+#undef pthread_attr_setsched
+#undef pthread_attr_getinheritedsched
+#undef pthread_attr_setinheritedsched
+#undef pthread_attr_getguardsize_np
+#undef pthread_attr_setguardsize_np
+
+#define pthread_attr_create            WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_delete            WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setstacksize      WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getstacksize      WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getprio           WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setprio           WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getsched          WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setsched          WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getinheritedsched WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setinheritedsched WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getguardsize_np   WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setguardsize_np   WARNING_CONFLICTING_API_USAGE
+
+#undef pthread_mutex_init
+#undef pthread_mutex_destroy
+#undef pthread_mutex_lock   
+#undef pthread_mutex_unlock 
+#undef pthread_mutex_trylock
+#undef pthread_mutexattr_create
+#undef pthread_mutexattr_delete
+#undef pthread_mutexattr_getkind_np
+#undef pthread_mutexattr_setkind_np
+
+#define pthread_mutex_init             WARNING_CONFLICTING_API_USAGE
+#define pthread_mutex_destroy          WARNING_CONFLICTING_API_USAGE
+#define pthread_mutex_lock             WARNING_CONFLICTING_API_USAGE
+#define pthread_mutex_unlock           WARNING_CONFLICTING_API_USAGE
+#define pthread_mutex_trylock          WARNING_CONFLICTING_API_USAGE
+#define pthread_mutexattr_create       WARNING_CONFLICTING_API_USAGE
+#define pthread_mutexattr_delete       WARNING_CONFLICTING_API_USAGE
+#define pthread_mutexattr_getkind_np   WARNING_CONFLICTING_API_USAGE
+#define pthread_mutexattr_setkind_np   WARNING_CONFLICTING_API_USAGE
+
+#undef pthread_cond_init
+#undef pthread_cond_destroy 
+#undef pthread_cond_signal 
+#undef pthread_cond_signal_int_np 
+#undef pthread_cond_broadcast
+#undef pthread_cond_wait   
+#undef pthread_cond_timedwait
+#undef pthread_condattr_create
+#undef pthread_condattr_delete
+
+#define pthread_cond_init              WARNING_CONFLICTING_API_USAGE
+#define pthread_cond_destroy           WARNING_CONFLICTING_API_USAGE
+#define pthread_cond_signal            WARNING_CONFLICTING_API_USAGE
+#define pthread_cond_signal_int_np     WARNING_CONFLICTING_API_USAGE
+#define pthread_cond_broadcast         WARNING_CONFLICTING_API_USAGE
+#define pthread_cond_wait              WARNING_CONFLICTING_API_USAGE
+#define pthread_cond_timedwait         WARNING_CONFLICTING_API_USAGE
+#define pthread_condattr_create        WARNING_CONFLICTING_API_USAGE
+#define pthread_condattr_delete        WARNING_CONFLICTING_API_USAGE
+
+#undef pthread_lock_global_np         
+#undef pthread_unlock_global_np       
+
+#define pthread_lock_global_np         WARNING_CONFLICTING_API_USAGE
+#define pthread_unlock_global_np       WARNING_CONFLICTING_API_USAGE
+
+#undef pthread_equal 
+#undef pthread_create
+#undef pthread_detach 
+#undef pthread_exit  
+#undef pthread_join  
+#undef pthread_self 
+#undef pthread_setspecific 
+#undef pthread_getspecific 
+#undef pthread_setprio    
+#undef pthread_getprio   
+#undef pthread_setscheduler
+#undef pthread_getscheduler
+#undef pthread_yield 
+#undef pthread_once  
+#undef pthread_delay_np 
+#undef pthread_keycreate
+#undef pthread_setcancel
+#undef pthread_setasynccancel
+#undef pthread_cancel      
+#undef pthread_testcancel 
+#undef pthread_get_expiration_np 
+#undef pthread_get_unique_np  
+#undef pthread_getunique_np
+#undef pthread_signal_to_cancel_np
+#undef pthread_is_multithreaded_np
+
+#define pthread_equal                  WARNING_CONFLICTING_API_USAGE
+#define pthread_create                 WARNING_CONFLICTING_API_USAGE
+#define pthread_detach                 WARNING_CONFLICTING_API_USAGE
+#define pthread_exit                   WARNING_CONFLICTING_API_USAGE
+#define pthread_join                   WARNING_CONFLICTING_API_USAGE
+#define pthread_self                   WARNING_CONFLICTING_API_USAGE
+#define pthread_setspecific            WARNING_CONFLICTING_API_USAGE
+#define pthread_getspecific            WARNING_CONFLICTING_API_USAGE
+#define pthread_setprio                WARNING_CONFLICTING_API_USAGE
+#define pthread_getprio                WARNING_CONFLICTING_API_USAGE
+#define pthread_setscheduler           WARNING_CONFLICTING_API_USAGE
+#define pthread_getscheduler           WARNING_CONFLICTING_API_USAGE
+#define pthread_yield                  WARNING_CONFLICTING_API_USAGE
+#define pthread_once                   WARNING_CONFLICTING_API_USAGE
+#define pthread_delay_np               WARNING_CONFLICTING_API_USAGE
+#define pthread_keycreate              WARNING_CONFLICTING_API_USAGE
+#define pthread_setcancel              WARNING_CONFLICTING_API_USAGE
+#define pthread_setasynccancel         WARNING_CONFLICTING_API_USAGE
+#define pthread_cancel                 WARNING_CONFLICTING_API_USAGE
+#define pthread_testcancel             WARNING_CONFLICTING_API_USAGE
+#define pthread_get_expiration_np      WARNING_CONFLICTING_API_USAGE
+#define pthread_get_unique_np          WARNING_CONFLICTING_API_USAGE
+#define pthread_getunique_np           WARNING_CONFLICTING_API_USAGE
+#define pthread_signal_to_cancel_np    WARNING_CONFLICTING_API_USAGE
+#define pthread_is_multithreaded_np    WARNING_CONFLICTING_API_USAGE
+
+#undef  atfork
+#undef  pthread_atfork
+#define atfork                         WARNING_CONFLICTING_API_USAGE
+#define pthread_atfork                 WARNING_CONFLICTING_API_USAGE
+
+/************************************************************************
+ *
+ * Boiler-plate compiler redirection for illegal, attempted use of
+ * Draft 7 API functions.
+ *
+ * These definitions insure that any use of Draft 7 API functions not
+ * defined in Draft 4 _CANNOT_ be used by application programmers.
+ * This insures that people dont attempt to use this adapter layer with
+ * code that uses Both Draft 7 and Draft 4 functions.
+ *
+ *
+ ************************************************************************/
+
+
+#undef pthread_attr_init
+#undef pthread_attr_destroy
+#undef pthread_attr_setdetachstate
+#undef pthread_attr_getdetachstate
+#undef pthread_attr_setschedparam
+#undef pthread_attr_getschedparam
+#undef pthread_attr_setschedpolicy
+#undef pthread_attr_getschedpolicy
+#undef pthread_attr_setinheritsched
+#undef pthread_attr_getinheritsched
+#undef pthread_attr_setscope
+#undef pthread_attr_getscope
+#undef pthread_attr_setschedparam
+#undef pthread_attr_getschedparam
+#undef pthread_mutexattr_init
+#undef pthread_mutexattr_destroy
+#undef pthread_condattr_init
+#undef pthread_condattr_destroy
+#undef pthread_cleanup_push_defer
+#undef pthread_cleanup_pop_restore
+#undef pthread_kill
+#undef pthread_key_create
+#undef pthread_key_delete
+
+#define pthread_attr_init                        WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_destroy                     WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setdetachstate              WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getdetachstate              WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setschedparam               WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getschedparam               WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setschedpolicy              WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getschedpolicy              WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setinheritsched             WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getinheritsched             WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setscope                    WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getscope                    WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_setschedparam               WARNING_CONFLICTING_API_USAGE
+#define pthread_attr_getschedparam               WARNING_CONFLICTING_API_USAGE
+#define pthread_mutexattr_init                   WARNING_CONFLICTING_API_USAGE
+#define pthread_mutexattr_destroy                WARNING_CONFLICTING_API_USAGE
+#define pthread_condattr_init                    WARNING_CONFLICTING_API_USAGE
+#define pthread_condattr_destroy                 WARNING_CONFLICTING_API_USAGE
+#define pthread_cleanup_push_defer               WARNING_CONFLICTING_API_USAGE
+#define pthread_kill                             WARNING_CONFLICTING_API_USAGE
+#define pthread_key_create                       WARNING_CONFLICTING_API_USAGE
+#define pthread_key_delete                       WARNING_CONFLICTING_API_USAGE
+
+#undef WARNING_CONFLICTING_API_USAGE
+
+#endif /* _DCE_PTHREADS_COMPAT_MACROS_ */
+
 /*
  * Define the Implementation Type of DCE Exceptions
  */
@@ -98,11 +334,9 @@
 #define DCE_EXCEPTIONS_IMPLEMENTATION    DCE_EXCEPTIONS_IMPL_SETJMP
 
 
-#include <pthread.h>     /* Import LinuxThreads pthread.h */
-#include <sys/types.h>
-#include <setjmp.h>
-
 /* --------------------------------------------------------------------------- */
+
+__BEGIN_DECLS
 
 typedef enum _exc_kind_t 
 {
@@ -114,7 +348,7 @@ typedef struct _exc_exception
 {
     _exc_kind_t kind;
     union match_value {
-        int                     value;
+        long int                value;
         struct _exc_exception   *address;       
     } match;
   char printable_name[64+1];
@@ -124,14 +358,14 @@ typedef struct _exc_exception
 
 
 static inline void
-exc_set_status(EXCEPTION * e, int s)
+exc_set_status(EXCEPTION * e, long int s)
 {
     e->match.value = s;
     e->kind = _exc_c_kind_status;
 }
 
 static inline int
-exc_get_status(EXCEPTION * e, int * s)
+exc_get_status(EXCEPTION * e, long int * s)
 {
     return (e->kind == _exc_c_kind_status ? (*s = e->match.value, 0) : -1);
 }
@@ -333,7 +567,7 @@ _exc_push_buf(_exc_buf * buf)
 {
 
     _exc_buf *__head;
-    if ((pthd4_getspecific(_exc_key, (void *)&__head)) == -1) {
+    if ((pthd4_getspecific(_exc_key, (void **)&__head)) == -1) {
       // XXX Something went seriously wrong
 	pthread_cancel(pthread_self()); pthread_testcancel();
     }
@@ -349,7 +583,7 @@ static inline void
 _exc_pop_buf(_exc_buf * buf)
 {
     _exc_buf *__head; 
-    if ((pthd4_getspecific(_exc_key, (void *)&__head)) == -1) { 
+    if ((pthd4_getspecific(_exc_key, (void **)&__head)) == -1) { 
       // XXX Something went seriously wrong
 	pthread_cancel(pthread_self()); pthread_testcancel();
     }
@@ -536,15 +770,9 @@ do \
 #define RERAISE     _exc_reraise(_exc_cur)
 
 /* --------------------------------------------------------------------------- */
+
+__END_DECLS
+
+#undef ___INSIDE_EXC_HANDLING_H
+
 #endif
-
-
-
-
-
-
-
-
-
-
-

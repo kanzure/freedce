@@ -24,7 +24,7 @@
 
 /*
  * Many changes to support linux threads 0.8 / glibc2.1
- * by Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com> 
+ * by Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de> 
  */
 
 /*
@@ -55,7 +55,7 @@
 
 
 #ifndef lint
-static const char rcsid[] = "$Id: pthread_dce.c,v 1.1 2000/08/13 02:02:40 wez Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.2 2000/08/20 08:42:22 mirek-dn Exp $";
 #endif
 
 /****************************************************************************
@@ -73,34 +73,24 @@ static const char rcsid[] = "$Id: pthread_dce.c,v 1.1 2000/08/13 02:02:40 wez Ex
  * void pthread_cleanup_push(void routine, pthread_addr_t arg)
  *   return: NO this routine must be used as a statement
  */
-#include <errno.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <sys/time.h>
 
-#include <pthread_dce_common.h>    /* Import common D4/D7 overlays */
-#include <pthread_dce.h>           /* Import DCE Threads */
+#include </usr/include/pthread.h>
+
+#define _DCE_PTHREADS_COMPAT_MACROS_
+#include "dce/pthread_dce_common.h"    /* Import common D4/D7 overlays */
+#include "dce/pthread_dce.h"           /* Import DCE Threads */
+#include "pthread_dce_atfork.h"
+
+#include <errno.h>
+#include <sys/time.h>
+#include <signal.h>
+#include <stdio.h>
+
 
 
 /*
  * Pthreads functions return 0 on success
  */
-
-#ifndef SUCCESS
-#define SUCCESS 0
-#endif
-
-#ifndef FAILURE
-#define FAILURE -1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
-#endif
-
-#ifndef TRUE
-#define TRUE 1
-#endif
 
 # define PTHREAD_TEMP_FAILURE_RETRY(expression) \
 (__extension__ \
@@ -1733,18 +1723,31 @@ pthd4_getunique_np(pthread_t *thread __attribute__((__unused__)))
  ****************************************************************************/
 
 
+			
 /*
  * atfork:
  *  return: nothing
  *  exception is raised if there is not enough space
+ *  we do a simple abort; is there a better solution ???
  */
 void
-pthd4_atfork(void *userstate __attribute__((__unused__)),
-             void (* pre_fork)(void), 
-             void (* parent_fork)(void), 
-             void (* child_fork)(void))
+pthd4_atfork(void *userstate,
+             void (* pre_fork)(void*), 
+             void (* parent_fork)(void*), 
+             void (* child_fork)(void*))
 {
-    pthread_atfork(pre_fork, parent_fork, child_fork);
+	int res;
+	struct atfork_cb_t cb;
+	cb.draft4        = !0;
+	cb.cb.fh4.data   = userstate;
+	cb.cb.fh4.pre    = pre_fork;
+	cb.cb.fh4.parent = parent_fork;
+	cb.cb.fh4.child  = child_fork;
+	res = pthd4_pthread_atfork(&cb);
+	if (SUCCESS != res) {
+		perror("DCE atfork");
+		abort();
+	}
 }
 
 /*

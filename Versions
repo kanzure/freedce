@@ -202,5 +202,8 @@ GLIBC_2.0 {
 
 #pseudo cancelable
 	select;
+
+#pthread Draft 7 Wrapper
+	pthread_atfork;
 };
 

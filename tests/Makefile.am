@@ -2,8 +2,8 @@
 
 INCLUDES=-I$(top_srcdir)
 
-EXTRA_PROGRAMS = test1 test2 test3 test3var test4 test5
-TESTS=test1 test2 test3 test3var test4 invert-test5
+EXTRA_PROGRAMS = test1 test2 test3 test3var test4 test5 test_atfork1
+TESTS=test1 test2 test3 test3var test4 invert-test5 test_atfork1
 EXTRA_DIST=inverttest
 
 CLEANFILES=$(EXTRA_PROGRAMS) $(TESTS)
@@ -35,3 +35,5 @@ test4_LDADD = $(THREADLIB)
 test5_SOURCES=test5.c
 test5_LDADD = $(THREADLIB)
 
+test_atfork1_SOURCES=test_atfork1.c
+test_atfork1_LDADD = $(THREADLIB)

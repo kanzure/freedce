@@ -24,7 +24,7 @@
 
 /*
  * Many changes to support linux threads 0.8 / glibc2.1
- * by Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com> 
+ * by Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de> 
  */
 
 /*
@@ -54,43 +54,36 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$Id: pthread_dceexc.c,v 1.1 2000/08/13 02:03:22 wez Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.2 2000/08/20 08:42:22 mirek-dn Exp $";
 #endif
 
 /*
  * Exceptions returning interfaces
  */
 
+/*
+ * #include <errno.h>
+ * #include <pthread.h>
+ * #include <signal.h>
+ */
+
+/* #include "dce/exc_handling.h" */
+
+#include </usr/include/pthread.h>
+
+#define _DCE_PTHREADS_COMPAT_MACROS_
+#include "dce/pthread_dce_common.h"   /* Import common D4/D7 overlays */
+#include "dce/pthread_dce_exc.h"      /* Import DCE Threads */
+#include "dce/pthread_dce.h"
+#include "dce/exc_handling.h"
+#include "pthread_dce_atfork.h"
+
+#include <stdio.h>
 #include <errno.h>
-#include <pthread.h>
-#include <signal.h>
-
-#include <pthread_dce_common.h>    /* Import common D4/D7 overlays */
-#include <pthread_dce_proto.h>
-
-#ifdef __BUILD_DCE_PTHREADS_LIBRARY
-# ifdef __BUILD_DCE_PTHREADS_LIBRARY_STDALONE
-# include <exc_handling.h>
-#else
-# include <dce/exc_handling.h>
-#endif /* STDALONE */
-#else
-#include <exc_handling.h>
-#endif /* DCE Build */
-
-#include <pthread_dce.h>           /* Import DCE Threads */
 
 /*
  * Pthreads functions return 0 on success
  */
-
-#ifndef SUCCESS
-#define SUCCESS 0
-#endif
-
-#ifndef FAILURE
-#define FAILURE -1
-#endif
 
 
 extern void _exc_thread_init();    /* exception library initialization */
@@ -100,38 +93,40 @@ extern void _exc_thread_init();    /* exception library initialization */
  * initialized by pthd4_lib_init().
  */
 
-extern pthread_attr_t               pthread4_attr_default;
-extern pthread_mutexattr_t          pthread4_mutexattr_default;
-extern pthread_condattr_t           pthread4_condattr_default;
-static pthread_once_t               pthd4exc_is_initialized = 
-                                                 pthread_once_init;
+extern pthread_attr_t      pthread4_attr_default;
+extern pthread_mutexattr_t pthread4_mutexattr_default;
+extern pthread_condattr_t  pthread4_condattr_default;
+static pthread_once_t      pthd4exc_is_initialized = PTHREAD_ONCE_INIT;
 
 /*
  * Maps errno values returned by pthd4_xxx() interface to a DCE Exception
  */
 
-#define pthd4_map_errno_to_exc(x)               		\
-								\
+#define pthd4_map_errno_to_exc(x)				\
+do {								\
 	switch (x)						\
-	 {							\
-	   case EBUSY:		RAISE(pthread_in_use_e);	\
+	{							\
+	case EBUSY:		RAISE(pthread_in_use_e);	\
 				break;				\
-	   case EAGAIN:		RAISE(pthread_in_use_e);	\
+	case EAGAIN:		RAISE(pthread_in_use_e);	\
 				break;				\
-	   case ENOMEM:		RAISE(exc_insfmem_e);		\
+	case ENOMEM:		RAISE(exc_insfmem_e);		\
 				break;				\
-	   case EPERM:		RAISE(exc_nopriv_e);		\
+	case EPERM:		RAISE(exc_nopriv_e);		\
 				break;				\
-           case ERANGE:		RAISE(pthread_badparam_e);	\
+	case ERANGE:		RAISE(pthread_badparam_e);	\
 				break;				\
-           case ENOSYS:		RAISE(pthread_unimp_e);		\
+	case ENOSYS:		RAISE(pthread_unimp_e);		\
 				break;				\
-           case ESRCH:		RAISE(pthread_use_error_e);	\
+	case ESRCH:		RAISE(pthread_use_error_e);	\
 				break;				\
-           case EINVAL:         RAISE(pthread_badparam_e);      \
-                                break;                          \
-	   default:		printf("map_errno_to_exc: hucking a %d\n", x); RAISE(pthread_badparam_e);      \
-	 }
+	case EINVAL:		RAISE(pthread_badparam_e);      \
+				break;                          \
+	default:		printf("map_errno_to_exc: hucking a %d\n", x); RAISE(pthread_badparam_e);      \
+				break;				\
+	}							\
+} while (0)
+
 
 
 
@@ -972,14 +967,28 @@ pthd4exc_signal_to_cancel_np(sigset_t * sigset, pthread_t * thread)
   return e;
 }
 
+/*
+ * atfork:
+ *  return: nothing
+ *  exception is raised if there is not enough space
+ *  we do a simple abort; is there a better solution ???
+ */
 void
-pthd4exc_atfork(void * userstate, 
-                void (*pre_fork)(void), 
-                void (*parent_fork)(void), 
-                void (*child_fork)(void) 
-	     )
+pthd4exc_atfork(void *userstate,
+             void (* pre_fork)(void*), 
+             void (* parent_fork)(void*), 
+             void (* child_fork)(void*))
 {
-  pthd4_atfork(userstate, pre_fork, parent_fork, child_fork);
+	int res;
+	struct atfork_cb_t cb;
+	cb.draft4        = !0;
+	cb.cb.fh4.data   = userstate;
+	cb.cb.fh4.pre    = pre_fork;
+	cb.cb.fh4.parent = parent_fork;
+	cb.cb.fh4.child  = child_fork;
+	res = pthd4_pthread_atfork(&cb);
+	if (!res)
+		pthd4_map_errno_to_exc(res);
 }
 
 void

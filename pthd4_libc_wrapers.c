@@ -31,7 +31,7 @@
 /*
  * Many changes to support linux threads 0.8 / glibc2.1
  *
- * by Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com> 
+ * by Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de> 
  *
  * the DCE jackets for D4 call semantic
  *
@@ -47,7 +47,10 @@
  * modify accordingly the Versions file
  */
 
+static char rcsid [] __attribute__((__unused__)) = "$Id: pthd4_libc_wrapers.c,v 1.2 2000/08/20 08:42:22 mirek-dn Exp $";
+
 #include </usr/include/pthread.h>
+#include "pthread_dce_atfork.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -258,4 +261,16 @@ PSEUDO_CANCELABLE_SYSCALL (int, select,
 		(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout),
 		(nfds, readfds, writefds, exceptfds, timeout));
 
+
+int pthread_atfork __P ((fork_handler_7_t pre,
+			 fork_handler_7_t parent,
+			 fork_handler_7_t child))
+{
+	struct atfork_cb_t cb;
+	cb.draft4        = !!0;
+	cb.cb.fh7.pre    = pre;
+	cb.cb.fh7.parent = parent;
+	cb.cb.fh7.child  = child;
+	return pthd4_pthread_atfork(&cb);
+}
 

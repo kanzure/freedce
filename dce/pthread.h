@@ -50,23 +50,22 @@
     
 #include </usr/include/pthread.h>           /* Import platform LinuxThreads */
 
+
 /* Enable Draft 4 POSIX Threads API compatibility */
 
-#if !defined(_DCE_PTHREADS_COMPAT_) && !defined(__BUILD_DCE_PTHREADS_LIBRARY)
-#define _DCE_PTHREADS_COMPAT_
-#endif 
+
+#ifndef _DCE_PTHREADS_COMPAT_
+#define _DCE_PTHREADS_COMPAT_ 1
+#endif
+
 
 #ifndef _DCE_PTHREAD_H_
 #define _DCE_PTHREAD_H_
  
 
-#ifndef __BUILD_DCE_PTHREADS_LIBRARY
- #include <dce/pthread_dce_common.h>    /* Import common D4/D7 overlays */
- #include <dce/pthread_dce.h>           /* Import DCE Threads */
-#else
- #include <pthread_dce_common.h>    /* Import common D4/D7 overlays */
- #include <pthread_dce.h>           /* Import DCE Threads */
-#endif
+#include "pthread_dce_common.h"    /* Import common D4/D7 overlays */
+#include "pthread_dce.h"           /* Import DCE Threads */
+
 
 #endif
 

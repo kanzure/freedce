@@ -24,7 +24,7 @@
 
 /*
  * Many changes to support linux threads 0.8 / glibc2.1
- * by Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com> 
+ * by Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de> 
  */
 
 /*
@@ -66,13 +66,6 @@
  */
 
 
-#include <signal.h>
-#include <time.h>
-
-#ifdef __cplusplus
-    extern "C" {
-#endif
-
 /************************************************************************
  * Shadowing Macros for Source Compatibility with DCE Pthreads
  *
@@ -101,7 +94,17 @@
  ************************************************************************
  */
 
-#ifdef _DCE_PTHREADS_COMPAT_
+
+#if defined(_DCE_PTHREADS_COMPAT_) && !defined(___INSIDE_EXC_HANDLING_H)
+
+#if defined(_DCE_PTHREADS_COMPAT_MACROS_)
+#  if !defined(_PTHREADS_DCE_EXC_MACROS_)
+#    error ERROR: Attempted conflicting use of pthread with pthread_exc
+#  endif
+#else
+
+#define _DCE_PTHREADS_COMPAT_MACROS_
+#define _PTHREADS_DCE_EXC_MACROS_
 
 /* Let the world know that it is using the exception based pthreads API. */
 #define PTHREAD_EXC
@@ -237,9 +240,7 @@
 #define pthread_is_multithreaded_np    (pthd4_is_multithreaded_np)
 
 #undef  atfork
-#undef  pthread_atfork
 #define atfork                         (pthd4exc_atfork)
-#define pthread_atfork                         (pthd4exc_atfork)
 
 /************************************************************************
  *
@@ -278,6 +279,7 @@
 #undef pthread_kill
 #undef pthread_key_create
 #undef pthread_key_delete
+#undef pthread_atfork
 
 #define WARNING_CONFLICTING_API_USAGE \
 #error ERROR: Attempted conlicting use of DCE vs. POSIX Draft 7 Pthreads API
@@ -304,9 +306,20 @@
 #define pthread_kill                             WARNING_CONFLICTING_API_USAGE
 #define pthread_key_create                       WARNING_CONFLICTING_API_USAGE
 #define pthread_key_delete                       WARNING_CONFLICTING_API_USAGE
+#define pthread_atfork                           WARNING_CONFLICTING_API_USAGE
 
 #undef WARNING_CONFLICTING_API_USAGE
-#endif /* _DCE_PTHREADS_COMPAT_ */
+
+#endif /* _DCE_PTHREADS_COMPAT_MACROS_ */
+#endif /* _DCE_PTHREADS_COMPAT_ && ! ___INSIDE_EXC_HANDLING_H */
+
+
+#ifndef __PTHREAD_DCE_EXC
+#define __PTHREAD_DCE_EXC
+
+#include <features.h>
+
+__BEGIN_DECLS
 
 /************************************************************************
  *
@@ -314,51 +327,42 @@
  *
  ************************************************************************/
 
-#ifndef __BUILD_DCE_PTHREADS_LIBRARY
-#include <dce/pthread_dce_proto.h>
-#else
-#include <pthread_dce_proto.h>
-#endif
-
-/*
- * Attribute types
- */
 
 extern int
-pthd4exc_attr_create( pthread_attr_t * attr );
+pthd4exc_attr_create __P(( pthread_attr_t * attr ));
 
 extern int 
-pthd4exc_attr_delete ( pthread_attr_t * attr);
+pthd4exc_attr_delete  __P(( pthread_attr_t * attr));
  
 extern long
-pthd4exc_attr_getstacksize( pthread_attr_t attr );
+pthd4exc_attr_getstacksize __P(( pthread_attr_t attr ));
 
 extern int
-pthd4exc_attr_setstacksize( pthread_attr_t * attr, long stacksize );
+pthd4exc_attr_setstacksize __P(( pthread_attr_t * attr, long stacksize ));
 
 extern int
-pthd4exc_attr_getprio( pthread_attr_t attr);
+pthd4exc_attr_getprio __P(( pthread_attr_t attr));
 
 extern int
-pthd4exc_attr_setprio( pthread_attr_t * attr, int priority);
+pthd4exc_attr_setprio __P(( pthread_attr_t * attr, int priority));
 
 extern int
-pthd4exc_attr_getsched( pthread_attr_t attr);
+pthd4exc_attr_getsched __P(( pthread_attr_t attr));
 
 extern int
-pthd4exc_attr_setsched( pthread_attr_t * attr, int schedval);
+pthd4exc_attr_setsched __P(( pthread_attr_t * attr, int schedval));
 
 extern int
-pthd4exc_attr_getinheritedsched( pthread_attr_t attr);
+pthd4exc_attr_getinheritedsched __P(( pthread_attr_t attr));
 
 extern int
-pthd4exc_attr_setinheritedsched( pthread_attr_t * attr, int schedval);
+pthd4exc_attr_setinheritedsched __P(( pthread_attr_t * attr, int schedval));
 
 extern long
-pthd4exc_attr_getguardsize_np( pthread_attr_t attr );
+pthd4exc_attr_getguardsize_np __P(( pthread_attr_t attr ));
 
 extern int
-pthd4exc_attr_setguardsize_np( pthread_attr_t * attr, long size);
+pthd4exc_attr_setguardsize_np __P(( pthread_attr_t * attr, long size));
 
 
 
@@ -367,31 +371,31 @@ pthd4exc_attr_setguardsize_np( pthread_attr_t * attr, long size);
    */
 
 extern int 
-pthd4exc_mutex_init( pthread_mutex_t * mutex, pthread_mutexattr_t attr );
+pthd4exc_mutex_init __P(( pthread_mutex_t * mutex, pthread_mutexattr_t attr ));
 
 extern int 
-pthd4exc_mutex_destroy( pthread_mutex_t * mutex );
+pthd4exc_mutex_destroy __P(( pthread_mutex_t * mutex ));
 
 extern int
-pthd4exc_mutex_lock( pthread_mutex_t * mutex );
+pthd4exc_mutex_lock __P(( pthread_mutex_t * mutex ));
 
 extern int
-pthd4exc_mutex_trylock( pthread_mutex_t * mutex );
+pthd4exc_mutex_trylock __P(( pthread_mutex_t * mutex ));
 
 extern int
-pthd4exc_mutex_unlock( pthread_mutex_t * mutex );
+pthd4exc_mutex_unlock __P(( pthread_mutex_t * mutex ));
 
 extern int
-pthd4exc_mutexattr_create( pthread_mutexattr_t * mutexattr );
+pthd4exc_mutexattr_create __P(( pthread_mutexattr_t * mutexattr ));
 
 extern int
-pthd4exc_mutexattr_delete( pthread_mutexattr_t * mutexattr );
+pthd4exc_mutexattr_delete __P(( pthread_mutexattr_t * mutexattr ));
 
 extern int
-pthd4exc_mutexattr_setkind_np( pthread_mutexattr_t * mutexattr, int kind );
+pthd4exc_mutexattr_setkind_np __P(( pthread_mutexattr_t * mutexattr, int kind ));
 
 extern int
-pthd4exc_mutexattr_getkind_np( pthread_mutexattr_t  mutexattr );
+pthd4exc_mutexattr_getkind_np __P(( pthread_mutexattr_t  mutexattr ));
 
 
 
@@ -400,33 +404,33 @@ pthd4exc_mutexattr_getkind_np( pthread_mutexattr_t  mutexattr );
  */
 
 extern int 
-pthd4exc_cond_init( pthread_cond_t * cond, pthread_condattr_t attr );
+pthd4exc_cond_init __P(( pthread_cond_t * cond, pthread_condattr_t attr ));
 
 extern int 
-pthd4exc_cond_destroy( pthread_cond_t * cond );
+pthd4exc_cond_destroy __P(( pthread_cond_t * cond ));
 
 extern int
-pthd4exc_cond_broadcast( pthread_cond_t * cond );
+pthd4exc_cond_broadcast __P(( pthread_cond_t * cond ));
 
 extern int
-pthd4exc_cond_signal( pthread_cond_t * cond );
+pthd4exc_cond_signal __P(( pthread_cond_t * cond ));
 
 extern int
-pthd4exc_cond_signal_int_np( pthread_cond_t * cond );
+pthd4exc_cond_signal_int_np __P(( pthread_cond_t * cond ));
 
 extern int
-pthd4exc_cond_wait( pthread_cond_t * cond, pthread_mutex_t * mutex );
+pthd4exc_cond_wait __P(( pthread_cond_t * cond, pthread_mutex_t * mutex ));
 
 extern int
-pthd4exc_cond_timedwait( pthread_cond_t * cond,
+pthd4exc_cond_timedwait __P(( pthread_cond_t * cond,
                       pthread_mutex_t * mutex,
-                      struct timespec * abstime );
+                      struct timespec * abstime ));
 
 extern int 
-pthd4exc_condattr_create( pthread_condattr_t * attr );
+pthd4exc_condattr_create __P(( pthread_condattr_t * attr ));
 
 extern int 
-pthd4exc_condattr_delete( pthread_condattr_t * attr );
+pthd4exc_condattr_delete __P(( pthread_condattr_t * attr ));
 
 
 /*
@@ -434,10 +438,10 @@ pthd4exc_condattr_delete( pthread_condattr_t * attr );
  */
 
 extern void
-pthd4exc_lock_global_np( void ); 
+pthd4exc_lock_global_np __P(( void )); 
 
 extern void
-pthd4exc_unlock_global_np( void ); 
+pthd4exc_unlock_global_np __P(( void )); 
 
 /*
  * Draft 4 core and DCE 
@@ -445,94 +449,89 @@ pthd4exc_unlock_global_np( void );
 
 
 extern int 
-pthd4exc_create( pthread_t * th_h,
+pthd4exc_create __P(( pthread_t * th_h,
               pthread_attr_t attr,
               pthread_startroutine_t proc,
-              pthread_addr_t arg );
+              pthread_addr_t arg ));
 
 extern int
-pthd4exc_detach( pthread_t * thread );
+pthd4exc_detach __P(( pthread_t * thread ));
 
 extern void
-pthd4exc_exit( pthread_addr_t status );
+pthd4exc_exit __P(( pthread_addr_t status ));
 
 extern int 
-pthd4exc_join( pthread_t thread, pthread_addr_t * status );
+pthd4exc_join __P(( pthread_t thread, pthread_addr_t * status ));
 
 extern int
-pthd4exc_equal( pthread_t thd1, pthread_t thd2);
+pthd4exc_equal __P(( pthread_t thd1, pthread_t thd2));
 
 extern pthread_t 
-pthd4exc_self( void );
+pthd4exc_self __P(( void ));
 
 extern int 
-pthd4exc_setspecific( pthread_key_t key, pthread_addr_t value );
+pthd4exc_setspecific __P(( pthread_key_t key, pthread_addr_t value ));
 
 extern int 
-pthd4exc_getspecific( pthread_key_t key, pthread_addr_t *value );
+pthd4exc_getspecific __P(( pthread_key_t key, pthread_addr_t *value ));
 
 extern int 
-pthd4exc_setprio( pthread_t thd, int p);
+pthd4exc_setprio __P(( pthread_t thd, int p));
 
 extern int 
-pthd4exc_getprio( pthread_t thd);
+pthd4exc_getprio __P(( pthread_t thd));
 
 extern int 
-pthd4exc_setscheduler( pthread_t thread, int scheduler, int priority);
+pthd4exc_setscheduler __P(( pthread_t thread, int scheduler, int priority));
 
 extern int 
-pthd4exc_getscheduler( pthread_t thd);
+pthd4exc_getscheduler __P(( pthread_t thd));
 
 extern void
-pthd4exc_yield( void );
+pthd4exc_yield __P(( void ));
 
 extern pthread_t
-pthd4exc_self( void );
+pthd4exc_self __P(( void ));
 
 extern int
-pthd4exc_once( pthread_once_t *once_block, void (*init_routine)(void) );
+pthd4exc_once __P(( pthread_once_t *once_block, void (*init_routine)(void) ));
 
 extern int
-pthd4exc_delay_np( struct timespec * interval );
+pthd4exc_delay_np __P(( struct timespec * interval ));
 
 extern int 
-pthd4exc_keycreate( pthread_key_t * key, pthread_destructor_t destructor );
+pthd4exc_keycreate __P(( pthread_key_t * key, pthread_destructor_t destructor ));
 
 extern int
-pthd4exc_setcancel( int state );
+pthd4exc_setcancel __P(( int state ));
 
 extern int
-pthd4exc_setasynccancel( int state );
+pthd4exc_setasynccancel __P(( int state ));
 
 extern int 
-pthd4exc_cancel( pthread_t thread );
+pthd4exc_cancel __P(( pthread_t thread ));
 
 extern void 
-pthd4exc_testcancel( void );
+pthd4exc_testcancel __P(( void ));
 
 extern int
-pthd4exc_get_expiration_np( struct timespec * delta, struct timespec * abstime );
+pthd4exc_get_expiration_np __P(( struct timespec * delta, struct timespec * abstime ));
 
 extern int 
-pthd4exc_getunique_np( pthread_t * handle);
+pthd4exc_getunique_np __P(( pthread_t * handle));
 
 extern int
-pthd4exc_signal_to_cancel_np( sigset_t * sig, pthread_t * thd);
+pthd4exc_signal_to_cancel_np __P(( sigset_t * sig, pthread_t * thd));
 
 extern int
-pthd4_is_multithreaded_np( void );
+pthd4_is_multithreaded_np __P(( void ));
 
 extern void
-pthd4exc_atfork( void * userstate, void (*pre_fork)(void), 
-		 void (*parent_fork)(void), void (*child_fork)(void) );
+pthd4exc_atfork __P(( void * userstate, void (*pre_fork)(void*), 
+		 void  (*parent_fork)(void*), void (*child_fork)(void*) ));
 
-#ifdef __cplusplus
-}
+
+__END_DECLS
+
+
 #endif
-
-
-
-
-
-
-

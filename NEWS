@@ -1,0 +1,8 @@
+Version 1:1 -> 2:0:0
+
+	* dce atfork() implemented
+	  because we claim the binary compatibility between both standatds
+	  pthread_atfork() has been reimplemented to work with dce atfork()
+	* pthread_atfork() is not available in dce context
+	* including <dce/exc_handling.h> disables most pthread_* calls
+	  unless you include either <dce/pthread.h> or <dce/pthread_exc.h>

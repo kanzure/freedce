@@ -24,7 +24,7 @@
 
 /*
  * Many changes to support linux threads 0.8 / glibc2.1
- * by Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com> 
+ * by Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de> 
  */
 
 /*
@@ -91,25 +91,27 @@
 ** 
 */
 
-#include <pthread.h>
-#include <pthread_dce_common.h>
-#include <pthread_dce_exc.h>
-#include <pthread_dce_proto.h>
+/*
+ * #include <pthread.h>
+ * #include <pthread_dce_common.h>
+ * #include <pthread_dce_exc.h>
+ * #include <pthread_dce_proto.h>
+ * 
+ * #include <signal.h>
+ * #include <stdio.h>
+ * #include <malloc.h>
+ * #include <string.h>
+ */
 
-#include <signal.h>
+#define _DCE_PTHREADS_COMPAT_MACROS_
+
+static char rcsid [] __attribute__((__unused__)) = "$Id: exc_handling.c,v 1.2 2000/08/20 08:42:22 mirek-dn Exp $";
+
+#include "dce/exc_handling.h"
+#include <stdlib.h>
 #include <stdio.h>
-#include <malloc.h>
 #include <string.h>
-
-#ifdef __BUILD_DCE_PTHREADS_LIBRARY
-# ifdef __BUILD_DCE_PTHREADS_LIBRARY_STDALONE
-# include <exc_handling.h>
-#else
-# include <dce/exc_handling.h>
-#endif /* STDALONE */
-#else
-#include <exc_handling.h>
-#endif /* DCE Build */
+#include <signal.h>
 
 /**
  **
@@ -766,7 +768,7 @@ EXCEPTION *exc;
 				exc->match.address);
 		break;
 	case _exc_c_kind_status:
-		fprintf(stderr, ", status value <%d>\n",
+		fprintf(stderr, ", status value <%ld>\n",
 				exc->match.value);
 		break;
 	default:
