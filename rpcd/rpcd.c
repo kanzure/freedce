@@ -488,6 +488,7 @@ error_status_t  *status;
 
         uuid_to_string(&epdb_obj, &ustr, &st);
         printf("(rpcd) endpoint database object id: %s\n", ustr);
+        rpc_string_free(&ustr, &st);
     }
 }
 
