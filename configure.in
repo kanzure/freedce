@@ -41,6 +41,9 @@ AC_MSG_ERROR([freedce requires dcethreads include files!]))
 DCETHREADINCLUDES="${rpc_incdir_dcethreads+-I$rpc_incdir_dcethreads}"
 AC_SUBST(DCETHREADINCLUDES)
 
+dnl Make sure we link our libs to dcethreads
+AC_CHECK_LIB(pthd4exc_create, dcethreads)
+
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 dnl Checks for library functions.

@@ -397,7 +397,7 @@ other           .
     if ((yytext[0] == '0') && (strlen((char *)yytext) != strspn((char *)yytext,"01234567"))) {
         char const *int_text;           /* Text of integer */
         STRTAB_str_t string_id;         /* Entry in string table of integer */
-        string_id = STRTAB_add_string(yytext_p);
+        string_id = STRTAB_add_string(yytext);
         STRTAB_str_to_string(string_id, &int_text);
         log_error(nidl_yylineno, NIDL_INVOCTDIGIT, int_text, NULL);
     }

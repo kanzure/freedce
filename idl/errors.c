@@ -83,7 +83,7 @@ typedef struct error_log_rec_t
 FILE    **yyin_p;           /* Points to yyin or acf_yyin */
 int     *yylineno_p;        /* Points to yylineno or acf_yylineno */
 int     *yynerrs_p;         /* Points to yynerrs or acf_yynerrs */
-char    *yytext_p;          /* Points to yytext or acf_yytext */
+char ** yytext_p;
 
 boolean ERR_no_warnings;    /* Global copy of -no_warn command line option */
 
@@ -105,11 +105,6 @@ extern void sysdep_cleanup_temp ( void );
  *
  *  Globals:    yy*_p
  *
- *  Notes:      This was adapted from the book
- *                  "Compiler Construction under Unix"
- *              by A. T. Schreiner & H. G. Friedman
- *
- *              Rico 16-Oct-89: Considerably changed original algorithm.
  */
 
 void yywhere
@@ -117,53 +112,60 @@ void yywhere
     void
 )
 {
-    boolean    have_text = false;  /* True if have source text to output */
-    int        text_len = 0;       /* Length of source text to output */
-    int        lineno;             /* Source line number of relevant text */
-    long       msg_id;             /* ID of message to output */
-    char const *near_text;         /* Text of object near error */
-    STRTAB_str_t string_id;     /* Entry in string table of near text */
+	boolean    have_text = false;  /* True if have source text to output */
+	int        text_len = 0;       /* Length of source text to output */
+	int        lineno;             /* Source line number of relevant text */
+	long       msg_id;             /* ID of message to output */
+	char const *near_text;         /* Text of object near error */
+	STRTAB_str_t string_id;     /* Entry in string table of near text */
+	char wherebuf[WHERE_TEXT_LEN+1];
+	char * text_p = *yytext_p;
+	lineno = *yylineno_p;
 
-    lineno = *yylineno_p;
+	if (*text_p)
+	{
+		for (text_len = 0; text_len < WHERE_TEXT_LEN; ++text_len)
+		{
+			if (text_p[text_len] == '\0' || text_p[text_len] == '\n')
+				break;
+			wherebuf[text_len] = text_p[text_len];
+		}
+		wherebuf[text_len] = '\0';
 
-    if (*yytext_p)
-    {
-        for (text_len = 0; text_len < WHERE_TEXT_LEN; ++text_len)
-            if (!yytext_p[text_len] || yytext_p[text_len] == '\n')
-                break;
+		if (text_len > 0)
+		{
+			have_text = true;
+			lineno = lineno - (*text_p == '\n' || ! *text_p);
+		}
+	/*	printf("wherebuf is %s, yytext has %s\n", wherebuf, *yytext_p); */
+	}
 
-        if (text_len > 0)
-        {
-            have_text = true;
-            lineno = lineno - (*yytext_p == '\n' || ! *yytext_p);
-        }
-    }
 
-    /*
-     * If there is some text to show, put it in the string table
-     */
-    if (have_text)
-    {
-        string_id = STRTAB_add_string(yytext_p);
-        STRTAB_str_to_string(string_id, &near_text);
-    }
+	/*
+	 * If there is some text to show, put it in the string table
+	 */
+	if (have_text)
+	{
+		string_id = STRTAB_add_string(wherebuf);
+		STRTAB_str_to_string(string_id, &near_text);
+	}
 
-    if (have_text)
-    {
-        if (feof(*yyin_p))
-            msg_id = NIDL_EOFNEAR;
-        else
-            msg_id = NIDL_SYNTAXNEAR;
-    }
-    else
-    {
-        if (feof(*yyin_p))
-            msg_id = NIDL_EOF;
-        else
-            msg_id = NIDL_SYNTAXNEAR;
-    }
+	if (have_text)
+	{
+		if (feof(*yyin_p))
+			msg_id = NIDL_EOFNEAR;
+		else
+			msg_id = NIDL_SYNTAXNEAR;
+	}
+	else
+	{
+		if (feof(*yyin_p))
+			msg_id = NIDL_EOF;
+		else
+			msg_id = NIDL_SYNTAXERR;
+	}
 
-    log_error(lineno, msg_id, text_len, near_text, NULL);
+	log_error(lineno, msg_id, text_len, near_text, NULL);
 }
 
 /*
@@ -966,4 +968,4 @@ void inq_name_for_errors
         *name = '\0';
 }
 
-/* preserve coding style vim: set tw=78 sw=4 : */
+/* preserve coding style vim: set tw=78 sw=4 ts=4: */

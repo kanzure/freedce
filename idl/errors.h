@@ -144,7 +144,7 @@ void yywhere(void);
 extern FILE     **yyin_p;
 extern int      *yylineno_p;
 extern int      *yynerrs_p;
-extern char     *yytext_p;
+extern char     **yytext_p;
 
 /*
  * Error info to be fillin the fe_info nodes

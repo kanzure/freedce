@@ -1,4 +1,4 @@
-dnl $Revision: 1.5 $
+dnl $Revision: 1.6 $
 AC_DEFUN(RPC_ARG_DEFINE,
 [
 AC_ARG_ENABLE($1,
@@ -6,7 +6,6 @@ dnl $1=option name
 dnl $2=symbol name
 dnl $3=if yes, then enable by default
 dnl $4=help string
-dnl $5=shell code to execute if activated
 [  --enable-$1		$4 (default=$3)],
 [
  case "${enableval}" in

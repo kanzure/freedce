@@ -355,12 +355,12 @@ static boolean parse_acf        /* Returns true on success */
 
     extern FILE *acf_yyin;
     extern int  acf_yynerrs;
-    extern char acf_yytext[];
+    extern char * acf_yytext;
 
     FILE        **yyin_sp;              /* Used to save yy pointer variables */
     int         *yylineno_sp;
     int         *yynerrs_sp;
-    char        *yytext_sp;
+    char        **yytext_sp;
     char        temp_path_name[max_string_len]; /* Full temp file pathname */
 
     if (cmd_opt[opt_verbose])
@@ -387,7 +387,7 @@ static boolean parse_acf        /* Returns true on success */
     yyin_p      = &acf_yyin;
     yylineno_p  = &acf_yylineno;
     yynerrs_p   = &acf_yynerrs;
-    yytext_p    = acf_yytext;
+    yytext_p    = &acf_yytext;
 
     acf_init(cmd_opt, cmd_val, acf_file);
 
@@ -570,7 +570,7 @@ static boolean parse
 {
     extern FILE *nidl_yyin;
     extern int nidl_yynerrs;
-    extern int nidl_yytext[];
+    extern char *nidl_yytext;
     extern int nidl_yyparse(void);
 
     char const  *sf;                            /* Source filespec */
@@ -665,7 +665,7 @@ static boolean parse
     yyin_p      = &nidl_yyin;
     yylineno_p  = &nidl_yylineno;
     yynerrs_p   = &nidl_yynerrs;
-    yytext_p    = (char*)nidl_yytext;
+    yytext_p    = &nidl_yytext;
 
     if (nidl_yyparse() != 0 && error_count == 0)
         log_error(nidl_yylineno, NIDL_COMPABORT, NULL);
