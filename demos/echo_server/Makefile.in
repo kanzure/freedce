@@ -105,9 +105,9 @@ echo_client_SOURCES = misc.c echo_client.c
 
 noinst_HEADERS = misc.h echo.idl echo.acf
 
-CLEANFILES = echo.h
+CLEANFILES = echo.h echo_sstub.o echo_cstub.o
 
-libs = $(top_builddir)/dcelib/libdcerpc.la 	-lstdc++
+libs = $(top_builddir)/dcelib/libdcerpc.la 	$(top_builddir)/uuid/libuuid.la -lstdc++
 
 
 echo_server_LDADD = echo_sstub.o $(libs)
@@ -123,11 +123,11 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 echo_server_OBJECTS =  misc.o echo_server.o
 echo_server_DEPENDENCIES =  echo_sstub.o \
-$(top_builddir)/dcelib/libdcerpc.la
+$(top_builddir)/dcelib/libdcerpc.la $(top_builddir)/uuid/libuuid.la
 echo_server_LDFLAGS = 
 echo_client_OBJECTS =  misc.o echo_client.o
 echo_client_DEPENDENCIES =  echo_cstub.o \
-$(top_builddir)/dcelib/libdcerpc.la
+$(top_builddir)/dcelib/libdcerpc.la $(top_builddir)/uuid/libuuid.la
 echo_client_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -150,7 +150,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .idl .lo .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/include.mk
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu demos/echo_server/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign demos/echo_server/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -260,7 +260,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu demos/echo_server/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign demos/echo_server/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -382,11 +382,8 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-# The return code of the IDL compiler is ignored so that we can "build" in the
-# include directory on pass 1 (this creates osdep symlinks) and on pass 2
-# (after the IDL compiler has been built) we can generate headers.
 %.h: %.idl
-	-$(IDL) $(IDLFLAGS) -no_mepv $<
+	$(IDL) $(IDLFLAGS) -no_mepv $<
 
 install-strip:	install
 

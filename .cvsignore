@@ -15,4 +15,5 @@ libtool
 *.la
 .libs
 *.tar.gz
+*.tgz
 .deps

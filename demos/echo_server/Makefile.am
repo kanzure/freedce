@@ -12,10 +12,10 @@ echo_client_SOURCES=misc.c echo_client.c
 
 noinst_HEADERS=misc.h echo.idl echo.acf
 
-CLEANFILES=echo.h
+CLEANFILES=echo.h echo_sstub.o echo_cstub.o
 
 libs=$(top_builddir)/dcelib/libdcerpc.la \
-	-lstdc++
+	$(top_builddir)/uuid/libuuid.la -lstdc++
 
 echo_server_LDADD=echo_sstub.o $(libs)
 echo_client_LDADD=echo_cstub.o $(libs)
