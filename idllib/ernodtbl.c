@@ -669,7 +669,6 @@ have to be done now).
  */
 static void rework_pointer(unsigned long *num  __attribute__((__unused__)))
 {
-#if 0 /* disabled for a commit - for now */
 	static int max_ptr = 1;
 	if ((*num) == 0) /* null needs no rework */
 		return; 
@@ -678,7 +677,6 @@ static void rework_pointer(unsigned long *num  __attribute__((__unused__)))
 	if ((*num) < 0x00010000) /* assume no more than 65536 pointers */
 		return;
 	(*num) = ++max_ptr;
-#endif
 }
 
 /*
