@@ -1837,7 +1837,7 @@ byte_p_t rpc_ss_return_pointer_to_node
     long                *new_node;              /* NULL or addr of return flag */
 #endif
 {
-    byte_p_t p;
+    byte_p_t p = NULL;
     rpc_ss_pvt_node_table_t * str;
     rpc_ss_hash_entry_t * hash_entry;
 
@@ -1846,7 +1846,11 @@ byte_p_t rpc_ss_return_pointer_to_node
 #endif
 
     str = (rpc_ss_pvt_node_table_t *)tab;
-    p = rpc_ss_lookup_node_by_num (tab, num);
+    /* lkcl: XXX HACK ALERT!  oh dearie me, this turns FULL pointers into unique
+     * but without the hassle of "eeuw you can't have a non-encapsulated union
+     * with unique pointers in it...
+     */
+    /* p = rpc_ss_lookup_node_by_num (tab, num); */
 
     if (p == NULL)
     {
@@ -2011,7 +2015,7 @@ byte_p_t rpc_ss_inquire_pointer_to_node
     long *has_been_unmarshalled;
 #endif
 {
-    byte_p_t p;
+    byte_p_t p = NULL;
     rpc_ss_pvt_node_table_t * str;
     rpc_ss_hash_entry_t * hash_entry;
 
@@ -2019,7 +2023,12 @@ byte_p_t rpc_ss_inquire_pointer_to_node
     RPC_SS_INQUIRE_POINTER_TO_NODE_N;
 #endif
 
-    p = rpc_ss_lookup_node_by_num (tab, num);
+    /* lkcl: XXX HACK ALERT!  oh dearie me, this turns FULL pointers into unique
+     * but without the hassle of "eeuw you can't have a non-encapsulated union
+     * with unique pointers in it...
+     */
+    num = num;
+    /* p = rpc_ss_lookup_node_by_num (tab, num); */
 
     if (p == NULL)
     {
