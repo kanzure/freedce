@@ -38,6 +38,7 @@
 */
 
 #include <noauth.h>
+#include <sec_id_pickle.h>
 
 /*
  * Size of buffer used when asking for remote server's principal name
@@ -247,7 +248,7 @@ PRIVATE void rpc__noauth_free_info
     (*info)->u.s.privs = 0;
     if (noauth_info->client_name)
         rpc_string_free (&noauth_info->client_name, &tst);
-    sec_id_pac_util_free (&noauth_info->client_pac);
+    sec_id_pac_free (&noauth_info->client_pac);
 
     memset (noauth_info, 0x69, sizeof(*noauth_info));
     RPC_MEM_FREE (noauth_info, RPC_C_MEM_UTIL);

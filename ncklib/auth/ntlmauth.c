@@ -245,7 +245,7 @@ PRIVATE void rpc__ntlmauth_inq_my_princ_name
 )
 {
     if (name_size > 0) {
-        rpc__strncpy(name, (unsigned char *)"", name_size - 1);
+        rpc__strncpy(name, (unsigned char *)"HIGHFIELD", name_size - 1);
     }
     *stp = rpc_s_ok;
 }

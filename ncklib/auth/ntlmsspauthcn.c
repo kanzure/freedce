@@ -1,3 +1,10 @@
+/* (c) Copyright 2001 Luke Kenneth Casson Leighton
+ * NTLMSSP Authentication Implementation (see ISBN 1578701503)
+ * All rights reserved.
+ *
+ * Specifically, this code is NOT released under the GPL.
+ */
+
 /*
  * 
  * (c) Copyright 1991 OPEN SOFTWARE FOUNDATION, INC.
@@ -23,7 +30,7 @@
 /*
 **  NAME
 **
-**      noauthcn.c
+**      ntlmsspauthcn.c
 **
 **  FACILITY:
 **
@@ -31,55 +38,68 @@
 **
 **  ABSTRACT:
 **
-**  The noauth CN authentication module.
+**  The ntlmsspauth CN authentication module.
 **
 **
 */
 
-#include <noauth.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#define NCK_NEED_MARSHALLING 1
+#define HOSTNAME "HIGHFIELD"
+#define DOMAINNAME "WORKGROUP"
+
+#include <dg.h>
+#include <dce/rpc.h>
+#include <dce/conv.h>
+#include <dce/stubbase.h>
+
+#include <ntlmsspauthcn.h>
+#include <ntlmsspauth.h>
 
 #include <pwd.h>                /* for getpwuid, etc, for "level_none" */
+#include <ntlmssp_api.h>
 
-#include <noauthcn.h>
+#include <ctype.h>
+#include "crc32.h"
 
-INTERNAL void rpc__noauth_cn_srvr_transport_ctx _DCE_PROTOTYPE_((
-	rpc_cn_sec_context_p_t          /* sec */,
-	rpc_cn_packet_p_t       /* pkt_p */,
-	unsigned32                      * /* st */
-    ));
+INTERNAL boolean32 rpc__ntlmsspauth_cn_three_way _DCE_PROTOTYPE_((void));
 
-INTERNAL boolean32 rpc__noauth_cn_three_way _DCE_PROTOTYPE_((void));
-
-INTERNAL boolean32 rpc__noauth_cn_context_valid _DCE_PROTOTYPE_((
+INTERNAL boolean32 rpc__ntlmsspauth_cn_context_valid _DCE_PROTOTYPE_((
         rpc_cn_sec_context_p_t           /*sec*/,
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_create_info _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_create_info _DCE_PROTOTYPE_((
        rpc_authn_level_t                 /*authn_level*/,
        rpc_auth_info_p_t                * /*auth_info*/,
        unsigned32                       * /*st*/
     ));
 
-INTERNAL boolean32 rpc__noauth_cn_cred_changed _DCE_PROTOTYPE_((
+INTERNAL boolean32 rpc__ntlmsspauth_cn_cred_changed _DCE_PROTOTYPE_((
         rpc_cn_sec_context_p_t           /*sec*/,
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_cred_refresh _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_cred_refresh _DCE_PROTOTYPE_((
         rpc_auth_info_p_t                /*auth_info*/,
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_fmt_client_req _DCE_PROTOTYPE_((
-        rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
-        rpc_cn_sec_context_p_t           /*sec*/,
-        pointer_t                        /*auth_value*/,
-        unsigned32                      * /*auth_value_len*/,
-        unsigned32                      * /*st*/
+INTERNAL void rpc__ntlmsspauth_cn_fmt_client_req _DCE_PROTOTYPE_((
+	rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
+	rpc_cn_sec_context_p_t           /*sec*/,
+	pointer_t                        /*auth_value*/,
+	unsigned32                      * /*auth_value_len*/,
+	pointer_t                       * /*last_auth_pos*/,
+	unsigned32                      * /*auth_len_remain*/,
+	unsigned32                       /*old_server*/,
+	unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_fmt_srvr_resp _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_fmt_srvr_resp _DCE_PROTOTYPE_((
         unsigned32                       /*verify_st*/,
         rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
         rpc_cn_sec_context_p_t           /*sec*/,
@@ -89,18 +109,18 @@ INTERNAL void rpc__noauth_cn_fmt_srvr_resp _DCE_PROTOTYPE_((
         unsigned32                      * /*auth_value_len*/
     ));
 
-INTERNAL void rpc__noauth_cn_free_prot_info _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_free_prot_info _DCE_PROTOTYPE_((
         rpc_auth_info_p_t                /*info*/,
         rpc_cn_auth_info_p_t            * /*cn_info*/
     ));
 
-INTERNAL void rpc__noauth_cn_get_prot_info _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_get_prot_info _DCE_PROTOTYPE_((
         rpc_auth_info_p_t                /*info*/,
         rpc_cn_auth_info_p_t            * /*cn_info*/,
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_pre_call _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_pre_call _DCE_PROTOTYPE_((
         rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
         rpc_cn_sec_context_p_t           /*sec*/,
         pointer_t                        /*auth_value*/,
@@ -108,7 +128,7 @@ INTERNAL void rpc__noauth_cn_pre_call _DCE_PROTOTYPE_((
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_pre_send _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_pre_send _DCE_PROTOTYPE_((
         rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
         rpc_cn_sec_context_p_t           /*sec*/,
         rpc_socket_iovec_p_t             /*iov*/,
@@ -117,7 +137,7 @@ INTERNAL void rpc__noauth_cn_pre_send _DCE_PROTOTYPE_((
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_recv_check _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_recv_check _DCE_PROTOTYPE_((
         rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
         rpc_cn_sec_context_p_t           /*sec*/,
         rpc_cn_common_hdr_p_t            /*pdu*/,
@@ -128,19 +148,28 @@ INTERNAL void rpc__noauth_cn_recv_check _DCE_PROTOTYPE_((
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_tlr_uuid_crc _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_tlr_uuid_crc _DCE_PROTOTYPE_((
         pointer_t                /*auth_value*/,
         unsigned32               /*auth_value_len*/,
         unsigned32              * /*uuid_crc*/
     ));
 
-INTERNAL void rpc__noauth_cn_tlr_unpack _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_tlr_unpack _DCE_PROTOTYPE_((
         rpc_cn_packet_p_t        /*pkt_p*/,
         unsigned32               /*auth_value_len*/,
         unsigned8               * /*packed_drep*/
     ));
 
-INTERNAL void rpc__noauth_cn_vfy_client_req _DCE_PROTOTYPE_((
+INTERNAL void rpc__ntlmsspauth_cn_vfy_client_req _DCE_PROTOTYPE_((
+        rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
+        rpc_cn_sec_context_p_t           /*sec*/,
+        pointer_t                        /*auth_value*/,
+        unsigned32                       /*auth_value_len*/,
+        unsigned32		         /*old_client*/,
+        unsigned32                      * /*st*/
+    ));
+
+INTERNAL void rpc__ntlmsspauth_cn_vfy_srvr_resp _DCE_PROTOTYPE_((
         rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
         rpc_cn_sec_context_p_t           /*sec*/,
         pointer_t                        /*auth_value*/,
@@ -148,111 +177,31 @@ INTERNAL void rpc__noauth_cn_vfy_client_req _DCE_PROTOTYPE_((
         unsigned32                      * /*st*/
     ));
 
-INTERNAL void rpc__noauth_cn_vfy_srvr_resp _DCE_PROTOTYPE_((
-        rpc_cn_assoc_sec_context_p_t     /*assoc_sec*/,
-        rpc_cn_sec_context_p_t           /*sec*/,
-        pointer_t                        /*auth_value*/,
-        unsigned32                       /*auth_value_len*/,
-        unsigned32                      * /*st*/
-    ));
-
-GLOBAL rpc_cn_auth_epv_t rpc_g_noauth_cn_epv =
+GLOBAL rpc_cn_auth_epv_t rpc_g_ntlmsspauth_cn_epv =
 {
-    rpc__noauth_cn_srvr_transport_ctx,
-    rpc__noauth_cn_three_way,
-    rpc__noauth_cn_context_valid,
-    rpc__noauth_cn_create_info,
-    rpc__noauth_cn_cred_changed,
-    rpc__noauth_cn_cred_refresh,
-    rpc__noauth_cn_fmt_client_req,
-    rpc__noauth_cn_fmt_srvr_resp,
-    rpc__noauth_cn_free_prot_info,
-    rpc__noauth_cn_get_prot_info,
-    rpc__noauth_cn_pre_call,
-    rpc__noauth_cn_pre_send,
-    rpc__noauth_cn_recv_check,
-    rpc__noauth_cn_tlr_uuid_crc,
-    rpc__noauth_cn_tlr_unpack,
-    rpc__noauth_cn_vfy_client_req,
-    rpc__noauth_cn_vfy_srvr_resp
+    rpc__ntlmsspauth_cn_three_way,
+    rpc__ntlmsspauth_cn_context_valid,
+    rpc__ntlmsspauth_cn_create_info,
+    rpc__ntlmsspauth_cn_cred_changed,
+    rpc__ntlmsspauth_cn_cred_refresh,
+    rpc__ntlmsspauth_cn_fmt_client_req,
+    rpc__ntlmsspauth_cn_fmt_srvr_resp,
+    rpc__ntlmsspauth_cn_free_prot_info,
+    rpc__ntlmsspauth_cn_get_prot_info,
+    rpc__ntlmsspauth_cn_pre_call,
+    rpc__ntlmsspauth_cn_pre_send,
+    rpc__ntlmsspauth_cn_recv_check,
+    rpc__ntlmsspauth_cn_tlr_uuid_crc,
+    rpc__ntlmsspauth_cn_tlr_unpack,
+    rpc__ntlmsspauth_cn_vfy_client_req,
+    rpc__ntlmsspauth_cn_vfy_srvr_resp
 };
 
 /*****************************************************************************/
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_srvr_transport_ctx
-**
-**  SCOPE:    		  INTERNAL - declared locally
-**
-**  DESCRIPTION:
-**      
-**      In instances where the transport inherits a security context
-**      (for example, NT "Named Pipes"), endeavour to obtain that
-**      security context from the transport and associate it with
-**      the connection.
-**
-**	It can be assumed that it has been determined that the transport
-**	*IS* capable of transporting security contexts, and that this
-**	function is being called *TO* set up the security context from
-**	the information being received.
-**
-**  INPUTS:
-**
-**      sec	A pointer to security context element which includes
-**    		the key ID, auth information rep and RPC auth
-**    		information rep.
-**
-**	pkt	A pointer to an RPC packet which contains the security
-**		information: i'm overloading the RPC format for coding
-**		simplicity at this time.
-**
-**  INPUTS/OUTPUTS:     none
-**
-**  OUTPUTS:    		
-**
-**      st			  The return status of this routine.
-**
-**  IMPLICIT INPUTS:    none
-**
-**  IMPLICIT OUTPUTS:   none
-**
-**  FUNCTION VALUE:     none
-**
-**  SIDE EFFECTS:       
-**
-**      The context may be created.
-**
-**--
-**/
-
-
-INTERNAL void rpc__noauth_cn_srvr_transport_ctx 
-#ifdef _DCE_PROTO_
-(
-	rpc_cn_sec_context_p_t		/* sec */,
-	rpc_cn_packet_p_t       	/* pkt_p */,
-	unsigned32			*st
-)
-#else
-(sec, pkt, st)
-rpc_cn_sec_context_p_t    	  sec;
-rpc_cn_packet_p_t                 /* pkt_p */;
-unsigned32    			  *st;
-#endif
-{
-    RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-    				("(rpc__noauth_cn_srvr_transport_ctx)\n"));
-
-    /* Ah, DCE... */
-    *st = rpc_s_ok;
-
-}
-/*****************************************************************************/
-/*
-**++
-**
-**  ROUTINE NAME:       rpc__noauth_cn_three_way
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_three_way
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -283,20 +232,20 @@ unsigned32    			  *st;
 **--
 **/
 
-INTERNAL boolean32 rpc__noauth_cn_three_way (void)
+INTERNAL boolean32 rpc__ntlmsspauth_cn_three_way (void)
 {
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_three_way)\n"));
+                    ("(rpc__ntlmsspauth_cn_three_way)\n"));
 
 
-    return (false);
+    return (true);
 }
 
 /*****************************************************************************/
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_context_valid
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_context_valid
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -337,7 +286,7 @@ INTERNAL boolean32 rpc__noauth_cn_three_way (void)
 **--
 **/
 
-INTERNAL boolean32 rpc__noauth_cn_context_valid 
+INTERNAL boolean32 rpc__ntlmsspauth_cn_context_valid 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_sec_context_p_t          sec,
@@ -351,14 +300,14 @@ unsigned32                      *st;
 {
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_context_valid)\n"));
+                    ("(rpc__ntlmsspauth_cn_context_valid)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_GENERAL,
-                    ("(rpc__noauth_cn_context_valid) time->%x\n", time));
+                    ("(rpc__ntlmsspauth_cn_context_valid) time->%x\n", time));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_context_valid) prot->%x level->%x key_id->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_context_valid) prot->%x level->%x key_id->%x\n",
+                    rpc_c_authn_winnt,
                     sec->sec_info->authn_level,
                     sec->sec_key_id));
 
@@ -380,7 +329,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_create_info
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_create_info
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -419,7 +368,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_create_info 
+INTERNAL void rpc__ntlmsspauth_cn_create_info 
 #ifdef _DCE_PROTO_
 (
     rpc_authn_level_t                authn_level,
@@ -433,15 +382,15 @@ rpc_auth_info_p_t                *auth_info;
 unsigned32                       *st;
 #endif
 {
-    rpc_noauth_info_p_t noauth_info;
+    rpc_ntlmsspauth_info_p_t ntlmsspauth_info;
 
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_create_info)\n"));
+                    ("(rpc__ntlmsspauth_cn_create_info)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_create_info) prot->%x level->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_create_info) prot->%x level->%x\n",
+                    rpc_c_authn_winnt,
                     authn_level));
 
 #ifdef DEBUG
@@ -454,31 +403,31 @@ unsigned32                       *st;
 #endif
 
     /*
-     * Allocate storage for a noauth info structure from heap.
+     * Allocate storage for a ntlmsspauth info structure from heap.
      */
-    RPC_MEM_ALLOC (noauth_info, 
-                   rpc_noauth_info_p_t, 
-                   sizeof (rpc_noauth_info_t), 
-                   RPC_C_MEM_NOAUTH_INFO, 
+    RPC_MEM_ALLOC (ntlmsspauth_info, 
+                   rpc_ntlmsspauth_info_p_t, 
+                   sizeof (rpc_ntlmsspauth_info_t), 
+                   RPC_C_MEM_NTLMSSPAUTH_INFO, 
                    RPC_C_MEM_WAITOK);
 
     /*
      * Initialize it.
      */
-    memset (noauth_info, 0, sizeof(rpc_noauth_info_t));
-    RPC_MUTEX_INIT (noauth_info->lock);
+    memset (ntlmsspauth_info, 0, sizeof(rpc_ntlmsspauth_info_t));
+    RPC_MUTEX_INIT (ntlmsspauth_info->lock);
 
     /*
      * Initialize the common auth_info stuff.
      */
-    noauth_info->auth_info.refcount = 1;
-    noauth_info->auth_info.server_princ_name = '\0';
-    noauth_info->auth_info.authn_level = authn_level;
-    noauth_info->auth_info.authn_protocol = rpc_c_authn_dce_dummy;
-    noauth_info->auth_info.authz_protocol = rpc_c_authz_name;
-    noauth_info->auth_info.is_server = true;
+    ntlmsspauth_info->auth_info.refcount = 1;
+    ntlmsspauth_info->auth_info.server_princ_name = '\0';
+    ntlmsspauth_info->auth_info.authn_level = authn_level;
+    ntlmsspauth_info->auth_info.authn_protocol = rpc_c_authn_winnt;
+    ntlmsspauth_info->auth_info.authz_protocol = rpc_c_authz_mspac;
+    ntlmsspauth_info->auth_info.is_server = true;
 
-    *auth_info = (rpc_auth_info_t *) noauth_info;
+    *auth_info = (rpc_auth_info_t *) ntlmsspauth_info;
     *st = rpc_s_ok;
 }
 
@@ -487,7 +436,7 @@ unsigned32                       *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_cred_changed
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_cred_changed
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -530,7 +479,7 @@ unsigned32                       *st;
 **--
 **/
 
-INTERNAL boolean32 rpc__noauth_cn_cred_changed 
+INTERNAL boolean32 rpc__ntlmsspauth_cn_cred_changed 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_sec_context_p_t          sec,
@@ -542,16 +491,18 @@ rpc_cn_sec_context_p_t          sec;
 unsigned32                      *st;
 #endif
 {
-    rpc_noauth_cn_info_t        *noauth_cn_info;
-    rpc_noauth_info_p_t         noauth_info;
+    /*
+    rpc_ntlmsspauth_cn_info_t        *ntlmsspauth_cn_info;
+    rpc_ntlmsspauth_info_p_t         ntlmsspauth_info;
+    */
     boolean32                   different_creds;
 
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_cred_changed)\n"));
+                    ("(rpc__ntlmsspauth_cn_cred_changed)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_cred_changed) prot->%x level->%x key_id->%x\n",
+                    ("(rpc__ntlmsspauth_cn_cred_changed) prot->%x level->%x key_id->%x\n",
                     rpc_c_authn_dce_private,
                     sec->sec_info->authn_level,
                     sec->sec_key_id));
@@ -578,7 +529,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_cred_refresh
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_cred_refresh
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -610,7 +561,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_cred_refresh 
+INTERNAL void rpc__ntlmsspauth_cn_cred_refresh 
 #ifdef _DCE_PROTO_
 (
     rpc_auth_info_p_t               auth_info,
@@ -622,16 +573,18 @@ rpc_auth_info_p_t               auth_info;
 unsigned32                      *st;
 #endif
 {
-    rpc_noauth_cn_info_t        *noauth_cn_info;
-    rpc_noauth_info_p_t         noauth_info;
+    /*
+    rpc_ntlmsspauth_cn_info_t        *ntlmsspauth_cn_info;
+    rpc_ntlmsspauth_info_p_t         ntlmsspauth_info;
+    */
 
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_cred_refresh)\n"));
+                    ("(rpc__ntlmsspauth_cn_cred_refresh)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_cred_refresh) prot->%x level->%x\n",
-                    rpc_c_authn_dce_private,
+                    ("(rpc__ntlmsspauth_cn_cred_refresh) prot->%x level->%x\n",
+                    rpc_c_authn_winnt,
                     auth_info->authn_level));
 
 #ifdef DEBUG
@@ -653,7 +606,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_fmt_client_req
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_fmt_client_req
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -695,33 +648,51 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_fmt_client_req 
+INTERNAL void rpc__ntlmsspauth_cn_fmt_client_req 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_assoc_sec_context_p_t    assoc_sec,
     rpc_cn_sec_context_p_t          sec,
     pointer_t                       auth_value,
     unsigned32                      *auth_value_len,
+    pointer_t                       *last_auth_pos,
+    unsigned32                      *auth_len_remain,
+    unsigned32                      old_server,
     unsigned32                      *st
 )
 #else
-(assoc_sec, sec, auth_value, auth_value_len, st)
+(assoc_sec, sec, auth_value, auth_value_len, last_auth_pos, st)
 rpc_cn_assoc_sec_context_p_t    assoc_sec;
 rpc_cn_sec_context_p_t          sec;
 pointer_t                       auth_value;
 unsigned32                      *auth_value_len;
+pointer_t                       *last_auth_pos;
+unsigned32                      *auth_len_remain;
+unsigned32                      old_server;
 unsigned32                      *st;
 #endif
 {
-    rpc_cn_bind_auth_value_priv_t       *priv_auth_value;
+    rpc_ntlmsspauth_cn_info_p_t ntlmsspauth_cn_info;
+	unsigned32 ntlmreq_len;
+
+    rpc_ntlmsspauth_info_p_t ntlmsspauth_info;
+    ntlmssp_sec_state_p_t ntlmssp;
+    struct ntuser_creds *usr;
+
+    ntlmsspauth_info = (rpc_ntlmsspauth_info_p_t) (sec->sec_info);
+    ntlmssp = &(ntlmsspauth_info->ntlmssp);
+    usr = (struct ntuser_creds *)(sec->sec_info->u.auth_identity);
+
+    ntlmsspauth_cn_info = (rpc_ntlmsspauth_cn_info_p_t) (sec->sec_cn_info);
 
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_fmt_client_req)\n"));
+                    ("(rpc__ntlmsspauth_cn_fmt_client_req) old_srv: %ld\n",
+		     old_server));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_fmt_client_req) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_fmt_client_req) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
+                    rpc_c_authn_winnt,
                     sec->sec_info->authn_level,
                     sec->sec_key_id,
                     assoc_sec->assoc_uuid_crc,
@@ -737,21 +708,42 @@ unsigned32                      *st;
     }
 #endif
 
-    if (*auth_value_len < RPC_CN_PKT_SIZEOF_BIND_AUTH_VAL)
-    {
-        *st = rpc_s_credentials_too_large;
-        return;
-    }
-    else
-    {
-        *auth_value_len = RPC_CN_PKT_SIZEOF_BIND_AUTH_VAL;
-    }
+	ntlmreq_len = 0x20 + strlen(HOSTNAME) + strlen(DOMAINNAME);
 
-    priv_auth_value = (rpc_cn_bind_auth_value_priv_t *)auth_value;
-    priv_auth_value->assoc_uuid_crc = assoc_sec->assoc_uuid_crc;
-    priv_auth_value->sub_type = RPC_C_CN_DCE_SUB_TYPE;
-    priv_auth_value->checksum_length = 0;
-    priv_auth_value->cred_length = 0;
+	if (*auth_len_remain == 0)
+	{
+		if (ntlmsspauth_cn_info->auth_sequence == 0)
+		{
+			if (!ntlmssp_create_bind_req(ntlmssp,
+				    sec->sec_info->server_princ_name,
+						usr,
+						auth_value,
+						(int*)auth_value_len))
+			{
+				*st = rpc_s_credentials_too_large;
+				*auth_value_len = 0;
+				return;
+			}
+			ntlmsspauth_cn_info->auth_sequence = 1;
+		}
+		else
+		{
+			if (!ntlmssp_create_bind_cont(ntlmssp,
+				    sec->sec_info->server_princ_name,
+					usr,
+					auth_value, (int*)auth_value_len))
+			{
+				*st = rpc_s_credentials_too_large;
+				*auth_value_len = 0;
+				return;
+			}
+		}
+		*auth_len_remain = 0;
+	}
+
+	/* stop compiler bitchin' */
+    *last_auth_pos = NULL;
+
     *st = rpc_s_ok;
 }
 
@@ -759,7 +751,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_fmt_srvr_resp
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_fmt_srvr_resp
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -814,7 +806,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_fmt_srvr_resp 
+INTERNAL void rpc__ntlmsspauth_cn_fmt_srvr_resp 
 #ifdef _DCE_PROTO_
 (
     unsigned32                      verify_st,
@@ -836,14 +828,19 @@ pointer_t                       auth_value;
 unsigned32                      *auth_value_len;
 #endif
 {
-    rpc_cn_bind_auth_value_priv_t       *priv_auth_value;
+    rpc_ntlmsspauth_info_p_t ntlmsspauth_info;
+    ntlmssp_sec_state_p_t ntlmssp;
+
+    ntlmsspauth_info = (rpc_ntlmsspauth_info_p_t) (sec->sec_info);
+    ntlmssp = &(ntlmsspauth_info->ntlmssp);
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_fmt_srvr_resp)\n"));
+                    ("(rpc__ntlmsspauth_cn_fmt_srvr_resp) req_auth_value_len %d req_auth_value %p\n",
+		     req_auth_value_len, req_auth_value));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_fmt_srvr_resp) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x, vfy_client_st->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_fmt_srvr_resp) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x, vfy_client_st->%x\n",
+                    rpc_c_authn_winnt,
                     sec->sec_info->authn_level,
                     sec->sec_key_id,
                     assoc_sec->assoc_uuid_crc,
@@ -860,21 +857,15 @@ unsigned32                      *auth_value_len;
 #endif
 
     assert (verify_st == rpc_s_ok);
-    assert (*auth_value_len >= RPC_CN_PKT_SIZEOF_BIND_AUTH_VAL);
-    *auth_value_len = RPC_CN_PKT_SIZEOF_BIND_AUTH_VAL;
 
-    priv_auth_value = (rpc_cn_bind_auth_value_priv_t *)auth_value;
-    priv_auth_value->assoc_uuid_crc = assoc_sec->assoc_uuid_crc;
-    priv_auth_value->sub_type = RPC_C_CN_DCE_SUB_TYPE;
-    priv_auth_value->checksum_length = 0;
-    priv_auth_value->cred_length = 0;
+    ntlmssp_auth_gen(ntlmssp, auth_value, (size_t*)auth_value_len);
 }
 
 /*****************************************************************************/
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_free_prot_info
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_free_prot_info
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -907,7 +898,7 @@ unsigned32                      *auth_value_len;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_free_prot_info 
+INTERNAL void rpc__ntlmsspauth_cn_free_prot_info 
 #ifdef _DCE_PROTO_
 (
     rpc_auth_info_p_t               info,    
@@ -920,18 +911,18 @@ rpc_cn_auth_info_p_t            *cn_info;
 #endif
 {
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_free_prot_info)\n"));
+                    ("(rpc__ntlmsspauth_cn_free_prot_info)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_free_prot_info) prot->%x level->%x \n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_free_prot_info) prot->%x level->%x \n",
+                    rpc_c_authn_winnt,
                     info->authn_level));
 
 #ifdef DEBUG
     memset (*cn_info, 0, sizeof (rpc_cn_auth_info_t));
 #endif
 
-    RPC_MEM_FREE (*cn_info, RPC_C_MEM_NOAUTH_CN_INFO);
+    RPC_MEM_FREE (*cn_info, RPC_C_MEM_NTLMSSPAUTH_CN_INFO);
     *cn_info = NULL;
 }
 
@@ -939,7 +930,7 @@ rpc_cn_auth_info_p_t            *cn_info;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_get_prot_info
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_get_prot_info
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -972,7 +963,7 @@ rpc_cn_auth_info_p_t            *cn_info;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_get_prot_info 
+INTERNAL void rpc__ntlmsspauth_cn_get_prot_info 
 #ifdef _DCE_PROTO_
 (
     rpc_auth_info_p_t               info,
@@ -986,15 +977,15 @@ rpc_cn_auth_info_p_t            *cn_info;
 unsigned32                      *st;
 #endif
 {
-    rpc_noauth_cn_info_t        *noauth_cn_info;
+    rpc_ntlmsspauth_cn_info_t        *ntlmsspauth_cn_info;
 
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_get_prot_info)\n"));
+                    ("(rpc__ntlmsspauth_cn_get_prot_info)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_get_prot_info) prot->%x level->%x \n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_get_prot_info) prot->%x level->%x \n",
+                    rpc_c_authn_winnt,
                     info->authn_level));
 
 #ifdef DEBUG
@@ -1007,20 +998,20 @@ unsigned32                      *st;
 #endif
 
     /*
-     * Allocate storage for a noauth cn info structure from heap.
+     * Allocate storage for a ntlmsspauth cn info structure from heap.
      */
-    RPC_MEM_ALLOC (noauth_cn_info, 
-                   rpc_noauth_cn_info_p_t, 
-                   sizeof (rpc_noauth_cn_info_t), 
-                   RPC_C_MEM_NOAUTH_CN_INFO, 
+    RPC_MEM_ALLOC (ntlmsspauth_cn_info, 
+                   rpc_ntlmsspauth_cn_info_p_t, 
+                   sizeof (rpc_ntlmsspauth_cn_info_t), 
+                   RPC_C_MEM_NTLMSSPAUTH_CN_INFO, 
                    RPC_C_MEM_WAITOK);
 
     /*
      * Initialize it.
      */
-    memset (noauth_cn_info, 0, sizeof(rpc_noauth_cn_info_t));
+    memset (ntlmsspauth_cn_info, 0, sizeof(rpc_ntlmsspauth_cn_info_t));
 
-    *cn_info = (rpc_cn_auth_info_t *)noauth_cn_info;
+    *cn_info = (rpc_cn_auth_info_t *)ntlmsspauth_cn_info;
     *st = rpc_s_ok;
 }
 
@@ -1028,7 +1019,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_pre_call
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_pre_call
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1077,7 +1068,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_pre_call 
+INTERNAL void rpc__ntlmsspauth_cn_pre_call 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_assoc_sec_context_p_t    assoc_sec,
@@ -1095,16 +1086,14 @@ unsigned32                      *auth_value_len;
 unsigned32                      *st;
 #endif
 {
-    rpc_cn_auth_value_priv_t    *priv_auth_value;
-
     CODING_ERROR(st);
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_pre_call)\n"));
+                    ("(rpc__ntlmsspauth_cn_pre_call)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_pre_call) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_pre_call) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
+                    rpc_c_authn_winnt,
                     sec->sec_info->authn_level,
                     sec->sec_key_id,
                     assoc_sec->assoc_uuid_crc,
@@ -1122,14 +1111,15 @@ unsigned32                      *st;
 
     if (sec->sec_info->authn_level >= rpc_c_authn_level_pkt)
     {
-        if (*auth_value_len < RPC_CN_PKT_SIZEOF_AUTH_VAL_CKSM)
+        if (*auth_value_len < 16)
         {
             *st = rpc_s_credentials_too_large;
+            *auth_value_len = 0;
             return;
         }
         else
         {
-            *auth_value_len = RPC_CN_PKT_SIZEOF_AUTH_VAL_CKSM;
+            *auth_value_len = 16;
         }
     }
     else
@@ -1137,6 +1127,7 @@ unsigned32                      *st;
         if (*auth_value_len < RPC_CN_PKT_SIZEOF_AUTH_VAL)
         {
             *st = rpc_s_credentials_too_large;
+            *auth_value_len = 0;
             return;
         }
         else
@@ -1145,9 +1136,8 @@ unsigned32                      *st;
         }
     }
 
-    priv_auth_value = (rpc_cn_auth_value_priv_t *)auth_value;
-    priv_auth_value->sub_type = RPC_C_CN_DCE_SUB_TYPE;
-    priv_auth_value->checksum_length = 0;
+	dump_data(20, auth_value, *auth_value_len);
+
     *st = rpc_s_ok;
 }
 
@@ -1155,7 +1145,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_pre_send
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_pre_send
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1204,7 +1194,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_pre_send 
+INTERNAL void rpc__ntlmsspauth_cn_pre_send 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_assoc_sec_context_p_t    assoc_sec,
@@ -1225,18 +1215,28 @@ unsigned32                      *st;
 #endif
 {
     unsigned32          ptype;
+    rpc_cn_common_hdr_t *pdu;
+
+    rpc_ntlmsspauth_info_p_t ntlmsspauth_info;
+    ntlmssp_sec_state_p_t ntlmssp;
+
+    ntlmsspauth_info = (rpc_ntlmsspauth_info_p_t) (sec->sec_info);
+    ntlmssp = &(ntlmsspauth_info->ntlmssp);
 
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_pre_send)\n"));
+                    ("(rpc__ntlmsspauth_cn_pre_send)\n"));
 
-    ptype = ((rpc_cn_common_hdr_t *)(iov[0].base))->ptype;
+    pdu = (rpc_cn_common_hdr_t *)(iov[0].iov_base);
+
+    ptype = pdu->ptype;
+
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_GENERAL,
-                    ("(rpc__noauth_cn_pre_send) authn level->%x packet type->%x\n", sec->sec_info->authn_level, ptype));
+                    ("(rpc__ntlmsspauth_cn_pre_send) authn level->%x packet type->%x iovlen->%d\n", sec->sec_info->authn_level, ptype, iovlen));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_pre_send) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x ptype->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_pre_send) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x ptype->%x\n",
+                    rpc_c_authn_winnt,
                     sec->sec_info->authn_level,
                     sec->sec_key_id,
                     assoc_sec->assoc_uuid_crc,
@@ -1253,11 +1253,45 @@ unsigned32                      *st;
     }
 #endif
     
-    out_iov->base = NULL;
     switch (ptype)
     {
         case RPC_C_CN_PKT_REQUEST:
         case RPC_C_CN_PKT_RESPONSE:
+        {
+			char *auth_value;
+			unsigned32 i;
+			char *val;
+
+			out_iov->iov_len = pdu->frag_len;
+			RPC_MEM_ALLOC (out_iov->iov_base, char*, 
+								   pdu->frag_len, 
+								   RPC_C_MEM_CN_ENCRYPT_BUF, 
+								   RPC_C_MEM_WAITOK);
+			val = out_iov->iov_base;
+			pdu = (rpc_cn_common_hdr_t *)val;
+
+			for (i = 0; i < iovlen; i++)
+			{
+				memcpy(val, iov[i].iov_base, iov[i].iov_len);
+				val += iov[i].iov_len;
+			}
+
+			auth_value = (out_iov[0].iov_base) + pdu->frag_len - pdu->auth_len;
+
+			dump_data(20, (char *)pdu, pdu->frag_len);
+			dump_data(20, (char *)auth_value, pdu->auth_len);
+			if (!ntlmssp_sign_seal(ntlmssp,
+				(char *)(((int)pdu) +
+				RPC_CN_PKT_SIZEOF_RQST_HDR),
+				pdu->frag_len - RPC_CN_PKT_SIZEOF_RQST_HDR -
+				RPC_CN_PKT_SIZEOF_COM_AUTH_TLR - pdu->auth_len,
+				auth_value, pdu->auth_len))
+			{
+				*st = RPC_S_CN_DBG_AUTH_FAILURE;
+				return;
+			}
+            break;
+        }
         case RPC_C_CN_PKT_FAULT:
         {
             break;
@@ -1285,7 +1319,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_recv_check
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_recv_check
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1328,7 +1362,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_recv_check 
+INTERNAL void rpc__ntlmsspauth_cn_recv_check 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_assoc_sec_context_p_t    assoc_sec,
@@ -1352,39 +1386,36 @@ boolean32                       unpack_ints;
 unsigned32                      *st;
 #endif
 {
-    rpc_cn_auth_value_priv_t    *priv_auth_value;
     unsigned32                  ptype;
     unsigned32                  authn_level;
     unsigned32                  assoc_uuid_crc;
 
+    rpc_ntlmsspauth_info_p_t ntlmsspauth_info;
+    ntlmssp_sec_state_p_t ntlmssp;
+
+    ntlmsspauth_info = (rpc_ntlmsspauth_info_p_t) (sec->sec_info);
+    ntlmssp = &(ntlmsspauth_info->ntlmssp);
+
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_recv_check)\n"));
+                    ("(rpc__ntlmsspauth_cn_recv_check)\n"));
 
     ptype = pdu->ptype;
-    priv_auth_value = (rpc_cn_auth_value_priv_t *)(auth_tlr->auth_value);
     authn_level = auth_tlr->auth_level;
-    if (ptype == RPC_C_CN_PKT_BIND)
-    {
-        assoc_uuid_crc = ((rpc_cn_bind_auth_value_priv_t *)priv_auth_value)->assoc_uuid_crc;
-    }
-    else
-    {
-        assoc_uuid_crc = assoc_sec->assoc_uuid_crc;
-    }
+    assoc_uuid_crc = assoc_sec->assoc_uuid_crc;
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_GENERAL,
-                    ("(rpc__noauth_cn_recv_check) authn level->%x packet type->%x\n", authn_level, ptype));
+                    ("(rpc__ntlmsspauth_cn_recv_check) authn level->%x packet type->%x\n", authn_level, ptype));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_recv_check) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x ptype->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_recv_check) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x ptype->%x pdulen->%d, cred_len->%d unpack_ints->%d\n",
+                    rpc_c_authn_winnt,
                     authn_level,
                     sec->sec_key_id,
                     assoc_uuid_crc,
                     assoc_sec->assoc_next_snd_seq,
                     assoc_sec->assoc_next_rcv_seq,
-                    ptype));
+                    ptype, pdu_len, cred_len, unpack_ints));
 
 #ifdef DEBUG
     if (RPC_DBG_EXACT(rpc_es_dbg_cn_errors,
@@ -1399,13 +1430,44 @@ unsigned32                      *st;
     {
         case RPC_C_CN_PKT_REQUEST:
         case RPC_C_CN_PKT_RESPONSE:
+		{
+            dump_data(10, auth_tlr->auth_value, pdu->auth_len);
+			if (!ntlmssp_unsign_unseal(ntlmssp,
+				(char *)(((int)pdu) +
+					 RPC_CN_PKT_SIZEOF_RQST_HDR),
+				pdu_len - 
+				(pdu->auth_len ?
+				 	RPC_CN_PKT_SIZEOF_COM_AUTH_TLR : 0) -
+					pdu->auth_len -
+					RPC_CN_PKT_SIZEOF_RQST_HDR,
+				auth_tlr->auth_value, pdu->auth_len))
+			{
+				*st = RPC_S_CN_DBG_AUTH_FAILURE;
+				return;
+			}
+			break;
+		}
         case RPC_C_CN_PKT_FAULT:
         case RPC_C_CN_PKT_BIND:
         case RPC_C_CN_PKT_BIND_ACK:
         case RPC_C_CN_PKT_BIND_NAK:
         case RPC_C_CN_PKT_ALTER_CONTEXT:
         case RPC_C_CN_PKT_ALTER_CONTEXT_RESP:
+        {
+            break;
+        }
+
         case RPC_C_CN_PKT_AUTH3:
+        {
+            dump_data(10, auth_tlr->auth_value, pdu->auth_len);
+			if (!ntlmssp_bind_auth_resp(ntlmssp,
+						auth_tlr->auth_value, pdu->auth_len))
+			{
+				*st = RPC_S_CN_DBG_AUTH_FAILURE;
+				return;
+			}
+            break;
+        }
         case RPC_C_CN_PKT_SHUTDOWN:
         case RPC_C_CN_PKT_REMOTE_ALERT:
         case RPC_C_CN_PKT_ORPHANED:
@@ -1422,7 +1484,7 @@ unsigned32                      *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_tlr_uuid_crc
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_tlr_uuid_crc
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1457,7 +1519,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_tlr_uuid_crc 
+INTERNAL void rpc__ntlmsspauth_cn_tlr_uuid_crc 
 #ifdef _DCE_PROTO_
 (
     pointer_t               auth_value,
@@ -1471,24 +1533,21 @@ unsigned32              auth_value_len;
 unsigned32              *uuid_crc;
 #endif
 {
-    rpc_cn_bind_auth_value_priv_t       *priv_auth_value;
-
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_tlr_uuid_crc)\n"));
+                    ("(rpc__ntlmsspauth_cn_tlr_uuid_crc)\n"));
 
     assert (auth_value_len >= RPC_CN_PKT_SIZEOF_BIND_AUTH_VAL);
-    priv_auth_value = (rpc_cn_bind_auth_value_priv_t *)auth_value;
-    *uuid_crc = priv_auth_value->assoc_uuid_crc;
+    *uuid_crc = crc32_calc_buffer(auth_value_len, auth_value);
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_GENERAL,
-                    ("(rpc__noauth_cn_tlr_uuid_crc) assoc_uuid_crc->%x\n", *uuid_crc));
+                    ("(rpc__ntlmsspauth_cn_tlr_uuid_crc) assoc_uuid_crc->%x\n", *uuid_crc));
 }
 
 /*****************************************************************************/
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_tlr_unpack
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_tlr_unpack
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1524,7 +1583,7 @@ unsigned32              *uuid_crc;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_tlr_unpack 
+INTERNAL void rpc__ntlmsspauth_cn_tlr_unpack 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_packet_p_t       pkt_p,
@@ -1539,14 +1598,17 @@ unsigned8               *packed_drep;
 #endif
 {
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_tlr_unpack)\n"));
+                    ("(rpc__ntlmsspauth_cn_tlr_unpack)\n"));
+    RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
+                    ("(rpc__ntlmsspauth_cn_tlr_unpack), pkt->%d auth_value_len->%ld packed_drep->%p\n",
+		     pkt_p, auth_value_len, packed_drep));
 }
 
 /*****************************************************************************/
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_vfy_client_req
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_vfy_client_req
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1590,40 +1652,44 @@ unsigned8               *packed_drep;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_vfy_client_req 
+INTERNAL void rpc__ntlmsspauth_cn_vfy_client_req 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_assoc_sec_context_p_t    assoc_sec,
     rpc_cn_sec_context_p_t          sec,
     pointer_t                       auth_value,
     unsigned32                      auth_value_len,
+    unsigned32		            old_client,
     unsigned32                      *st
 )
 #else
-(assoc_sec, sec, auth_value, auth_value_len, st)
+(assoc_sec, sec, auth_value, auth_value_len, old_client, st)
 rpc_cn_assoc_sec_context_p_t    assoc_sec;
 rpc_cn_sec_context_p_t          sec;
 pointer_t                       auth_value;
 unsigned32                      auth_value_len;
+unsigned32		        old_client;
 unsigned32                      *st;
 #endif
 {
-    rpc_cn_bind_auth_value_priv_t       *priv_auth_value;
-
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_vfy_client_req)\n"));
+                    ("(rpc__ntlmsspauth_cn_vfy_client_req)\n"));
 
-    priv_auth_value = (rpc_cn_bind_auth_value_priv_t *)auth_value;
-    
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_vfy_client_req) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_vfy_client_req) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
+                    rpc_c_authn_winnt,
                     sec->sec_info->authn_level,
                     sec->sec_key_id,
                     assoc_sec->assoc_uuid_crc,
                     assoc_sec->assoc_next_snd_seq,
                     assoc_sec->assoc_next_rcv_seq));
+
+    RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
+                    ("(rpc__ntlmsspauth_cn_vfy_client_req) auth_value->%p auth_value_len->%lx, old_client->%lx\n",
+                    auth_value, auth_value_len, old_client));
+
+    dump_data(RPC_C_CN_DBG_AUTH_PKT, auth_value, auth_value_len);
 
 #ifdef DEBUG
     if (RPC_DBG_EXACT(rpc_es_dbg_cn_errors,
@@ -1634,14 +1700,19 @@ unsigned32                      *st;
     }
 #endif
 
-    *st = rpc_s_ok;
+	/*if (srv_ntlmssp_auth_verify(sec->sec_info, auth_value, auth_value_len))*/
+		*st = rpc_s_ok;
+		/*
+	else
+        *st = RPC_S_CN_DBG_AUTH_FAILURE;
+		*/
 }
 
 /*****************************************************************************/
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__noauth_cn_vfy_srvr_resp
+**  ROUTINE NAME:       rpc__ntlmsspauth_cn_vfy_srvr_resp
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1685,7 +1756,7 @@ unsigned32                      *st;
 **--
 **/
 
-INTERNAL void rpc__noauth_cn_vfy_srvr_resp 
+INTERNAL void rpc__ntlmsspauth_cn_vfy_srvr_resp 
 #ifdef _DCE_PROTO_
 (
     rpc_cn_assoc_sec_context_p_t    assoc_sec,
@@ -1703,18 +1774,28 @@ unsigned32                      auth_value_len;
 unsigned32                      *st;
 #endif
 {
+    rpc_ntlmsspauth_info_p_t ntlmsspauth_info;
+    ntlmssp_sec_state_p_t ntlmssp;
+
+    ntlmsspauth_info = (rpc_ntlmsspauth_info_p_t) (sec->sec_info);
+    ntlmssp = &(ntlmsspauth_info->ntlmssp);
+
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_vfy_srvr_resp)\n"));
+                    ("(rpc__ntlmsspauth_cn_vfy_srvr_resp)\n"));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
-                    ("(rpc__noauth_cn_vfy_server_resp) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
-                    rpc_c_authn_dce_dummy,
+                    ("(rpc__ntlmsspauth_cn_vfy_server_resp) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
+                    rpc_c_authn_winnt,
                     sec->sec_info->authn_level,
                     sec->sec_key_id,
                     assoc_sec->assoc_uuid_crc,
                     assoc_sec->assoc_next_snd_seq,
                     assoc_sec->assoc_next_rcv_seq));
+
+    RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
+                    ("(rpc__ntlmsspauth_cn_vfy_server_resp) auth_value->%p auth_value_len->%lx\n",
+                    auth_value, auth_value_len));
 
 #ifdef DEBUG
     if (RPC_DBG_EXACT(rpc_es_dbg_cn_errors,
@@ -1725,11 +1806,17 @@ unsigned32                      *st;
     }
 #endif
 
+	if (!ntlmssp_decode_bind_resp(ntlmssp, 
+				auth_value, auth_value_len))
+    {
+        *st = RPC_S_CN_DBG_AUTH_FAILURE;
+        return;
+    }
     *st = rpc_s_ok;
 }
 
 
-PRIVATE rpc_protocol_id_t       rpc__noauth_cn_init 
+PRIVATE rpc_protocol_id_t       rpc__ntlmsspauth_cn_init 
 #ifdef _DCE_PROTO_
 (
     rpc_auth_rpc_prot_epv_p_t       *epv,
@@ -1743,9 +1830,9 @@ unsigned32                      *st;
 {
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__noauth_cn_init)\n"));
+                    ("(rpc__ntlmsspauth_cn_init)\n"));
 
-    *epv = (rpc_auth_rpc_prot_epv_p_t) (&rpc_g_noauth_cn_epv);
+    *epv = (rpc_auth_rpc_prot_epv_p_t) (&rpc_g_ntlmsspauth_cn_epv);
     *st = rpc_s_ok;
     return (RPC_C_PROTOCOL_ID_NCACN);
 }
