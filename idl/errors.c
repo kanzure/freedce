@@ -56,9 +56,8 @@
  */
 typedef struct error_log_rec_t
 {
-    STRTAB_str_t filename;      /* Error file name */
-    int     lineno;            /* Source line number */
-    long    msg_id;             /* Message identifer */
+    STRTAB_str_t     filename;  /* Error file name */
+    int              lineno;    /* Source line number */
     idl_error_list_t msgs;      /* msgid + args */
     union                       /* Tree node or List node */
     {
@@ -163,7 +162,7 @@ void yywhere
             msg_id = NIDL_SYNTAXNEAR;
     }
 
-    log_error(lineno, msg_id, text_len, near_text);
+    log_error(lineno, msg_id, text_len, near_text, NULL);
 }
 
 /*
@@ -247,22 +246,17 @@ static error_log_rec_t *alloc_log_rec
 (
     STRTAB_str_t filename,
     int  lineno,
-    long msg_id,
-    void* arg[]
+    idl_error_list_t *msgs
 )
 {
     error_log_rec_t *log_rec_p;
     int             i;
 
-
     log_rec_p = (error_log_rec_t *) MALLOC(sizeof(error_log_rec_t));
 
     log_rec_p->lineno  = lineno;
     log_rec_p->filename = filename;
-    log_rec_p->msg_id = msg_id;
-    for (i = 0; i < IDL_ERROR_LIST_SIZE; i++)
-	log_rec_p->msgs.arg[i] = arg[i];
-
+    log_rec_p->msgs = *msgs;
     log_rec_p->first_this_line = 0;
     log_rec_p->last_this_line  = 0;
 
@@ -346,15 +340,14 @@ static void free_log_rec
 
 static void queue_error
 (
-    error_log_rec_t *log_rec_p,
-    STRTAB_str_t filename,
-    long msg_id,
-    void* arg[]
+    error_log_rec_t  *log_rec_p,
+    STRTAB_str_t     filename,
+    idl_error_list_t *msgs
 )
 {
     error_log_rec_t *new_log_rec_p;
 
-    new_log_rec_p = alloc_log_rec(filename, log_rec_p->lineno, msg_id, arg);
+    new_log_rec_p = alloc_log_rec(filename, log_rec_p->lineno, msgs);
 
     if (log_rec_p->first_this_line == NULL)
     {
@@ -383,18 +376,17 @@ static void add_error_log_rec
     error_log_rec_t *log_rec_p,
     STRTAB_str_t filename,
     int lineno,
-    long msg_id,
-    void* arg[]
+    idl_error_list_t *msgs
 )
 {
     if (log_rec_p->lineno < lineno)
     {
         if (log_rec_p->links.asBinTree.right != NULL)
             add_error_log_rec(log_rec_p->links.asBinTree.right, filename, lineno,
-                    msg_id, arg);
+                    msgs);
         else
             log_rec_p->links.asBinTree.right = alloc_log_rec(filename, lineno,
-                    msg_id, arg);
+                    msgs);
 
         return;
     }
@@ -403,16 +395,16 @@ static void add_error_log_rec
     {
         if (log_rec_p->links.asBinTree.left != NULL)
             add_error_log_rec(log_rec_p->links.asBinTree.left, filename, lineno,
-                    msg_id, arg);
+                    msgs);
 
         else
             log_rec_p->links.asBinTree.left = alloc_log_rec(filename, lineno,
-                    msg_id, arg);
+                    msgs);
         return;
     }
 
     if (log_rec_p->lineno == lineno)
-	queue_error(log_rec_p, filename, msg_id, arg);
+	queue_error(log_rec_p, filename, msgs);
 }
 
 /*
@@ -443,21 +435,23 @@ static void log_source_va
  va_list      ap
 )
 {
-    void*   arg[IDL_ERROR_LIST_SIZE] = {NULL}; 
+    idl_error_list_t msgs = {0, {NULL}};
+
     size_t  idx;
 
     ++*counter;
 
+    msgs.msg_id = msg_id;
     for (idx = 0; idx < IDL_ERROR_LIST_SIZE; idx++) {
-	arg[idx] = va_arg(ap, void*); 
-	if (!arg[idx])
+	msgs.arg[idx] = va_arg(ap, void*);
+	if (!msgs.arg[idx])
 	    break;
     }
 
     if (errors == NULL)
-	errors = alloc_log_rec(filename, lineno, msg_id, arg);
+	errors = alloc_log_rec(filename, lineno, &msgs);
     else
-	add_error_log_rec(errors, filename, lineno, msg_id, arg);
+	add_error_log_rec(errors, filename, lineno, &msgs);
 }
 
 
