@@ -97,9 +97,9 @@ void ASTP_add_name_binding
     void          *AST_node
 )
 {
-    char const *identifier; /* place to receive the identifier text pointer */
-    ASTP_node_t *binding;   /* place to recieve binding */
-    char const *filename;   /* place to receive the filename text pointer */
+    char        const *identifier; /* place to receive the identifier text pointer */
+    ASTP_node_t const *binding;    /* place to recieve binding */
+    char        const *filename;   /* place to receive the filename text pointer */
     int issue_error;
     int issue_case_warning __attribute__((__unused__));
 
@@ -108,7 +108,7 @@ void ASTP_add_name_binding
      * If there is, then we can't make this declaration because constants
      * are implemented as #define which are global.
      */
-    binding = (ASTP_node_t *)NAMETABLE_lookup_binding(name);
+    binding = NAMETABLE_lookup_binding(name);
     if ((binding != NULL) && (binding->fe_info->node_kind == fe_constant_n_k))
         issue_error = true;
     else
@@ -122,6 +122,10 @@ void ASTP_add_name_binding
      */
     if (issue_error)
     {
+	/* FIXME binding can become NULL */
+
+	assert(NULL != binding);
+
         NAMETABLE_id_to_string (name, &identifier);
 
         /* Select message and file information as present */
@@ -586,7 +590,7 @@ AST_pointer_n_t * AST_pointer_node
 
     pointer_node_ptr = NEW (AST_pointer_n_t);
     pointer_node_ptr->pointee_type = pointee;
-    ASTP_set_fe_info((ASTP_node_t *)pointer_node_ptr,fe_pointer_n_k);
+    ASTP_set_fe_info (&pointer_node_ptr->fe_info, fe_pointer_n_k);
     return pointer_node_ptr;
 }
 
@@ -1362,7 +1366,7 @@ static AST_type_n_t *AST_propagate_typedef
     return_type->name = declarator_ptr->name;
 
     /* Add name to nametable and bind to new type */
-    ASTP_add_name_binding(return_type->name, (char *)return_type);
+    ASTP_add_name_binding (return_type->name, return_type);
 
     return return_type;
 }
@@ -2394,32 +2398,27 @@ void ASTP_patch_field_reference
  *      fe_node_kind -- type of fe_node to create
  */
 void ASTP_set_fe_info
-#ifdef PROTO
 (
-    ASTP_node_t *node_ptr,
-    fe_node_k_t fe_node_kind
+    fe_info_t  **fe_info_ptr,
+    fe_node_k_t  fe_node_kind
 )
-#else
-(node_ptr,fe_node_kind)
-    ASTP_node_t *node_ptr;
-    fe_node_k_t fe_node_kind;
-#endif
 {
-    node_ptr->fe_info = (fe_info_t *) BE_ctx_malloc(sizeof (fe_info_t));
-    node_ptr->fe_info->source_line = nidl_yylineno;
-    node_ptr->fe_info->file = error_file_name_id;
-    node_ptr->fe_info->acf_source_line = 0;
-    node_ptr->fe_info->acf_file = 0;
-    node_ptr->fe_info->node_kind = fe_node_kind;
-    node_ptr->fe_info->fe_type_id = fe_source_only;
-    node_ptr->fe_info->tag_ptr = NULL;
-    node_ptr->fe_info->tag_name = NAMETABLE_NIL_ID;
-    node_ptr->fe_info->gen_index = 0;
-    node_ptr->fe_info->pointer_count = 0;
-    node_ptr->fe_info->flags = 0;
-    node_ptr->fe_info->original = NULL;
+    fe_info_t *fe_info;
 
-    node_ptr->be_info = NULL;
+    fe_info = *fe_info_ptr = BE_ctx_malloc(sizeof (fe_info_t));
+
+    fe_info->source_line = nidl_yylineno;
+    fe_info->file = error_file_name_id;
+    fe_info->acf_source_line = 0;
+    fe_info->acf_file = 0;
+    fe_info->node_kind = fe_node_kind;
+    fe_info->fe_type_id = fe_source_only;
+    fe_info->tag_ptr = NULL;
+    fe_info->tag_name = NAMETABLE_NIL_ID;
+    fe_info->gen_index = 0;
+    fe_info->pointer_count = 0;
+    fe_info->flags = 0;
+    fe_info->original = NULL;
 }
 
 /*---------------------------------------------------------------------*/

@@ -194,7 +194,7 @@ AST_constant_n_t *AST_constant_node
     constant_node_p->name = NAMETABLE_NIL_ID;
     constant_node_p->kind = kind;
 
-    ASTP_set_fe_info((ASTP_node_t *)constant_node_p, fe_constant_n_k);
+    ASTP_set_fe_info (&constant_node_p->fe_info, fe_constant_n_k);
 
     return constant_node_p;
 }
@@ -224,7 +224,7 @@ static AST_operation_n_t *AST_create_operation_node
     AST_operation_n_t *operation_node_p;
 
     operation_node_p = NEW (AST_operation_n_t);
-    ASTP_set_fe_info((ASTP_node_t *)operation_node_p, fe_operation_n_k);
+    ASTP_set_fe_info (&operation_node_p->fe_info, fe_operation_n_k);
 
     operation_node_p->name = op_name;
     operation_node_p->parameters = parameters;
@@ -432,7 +432,7 @@ AST_parameter_n_t  *AST_declarator_to_param
 
 
     /* Now bind the new parameter name to the parameter node */
-    ASTP_add_name_binding(new_parameter->name, (char *)new_parameter);
+    ASTP_add_name_binding (new_parameter->name, new_parameter);
 
     /* Free the declarator node */
     ASTP_free_declarators(declarator);
@@ -519,7 +519,7 @@ AST_type_n_t *AST_enumerator_node
     /*
      * Set the source information
      */
-    ASTP_set_fe_info((ASTP_node_t *)enum_node_ptr, fe_enumeration_n_k);
+    ASTP_set_fe_info (&enum_node_ptr->fe_info, fe_enumeration_n_k);
 
 
     /*
@@ -583,7 +583,7 @@ AST_export_n_t *AST_export_node
             break;
     }
 
-    ASTP_set_fe_info((ASTP_node_t *)export_node_ptr, fe_export_n_k);
+    ASTP_set_fe_info (&export_node_ptr->fe_info, fe_export_n_k);
 
     return export_node_ptr;
 }
@@ -644,7 +644,7 @@ AST_constant_n_t *AST_finish_constant_node
     return_constant->name = declarator->name;
 
     /* Add constant name to nametable and bind to constant node */
-    ASTP_add_name_binding(return_constant->name, (char *)return_constant);
+    ASTP_add_name_binding (return_constant->name, return_constant);
 
     switch (return_constant->kind)
     {
@@ -911,7 +911,7 @@ AST_include_n_t *AST_include_node
     include_node_ptr = NEW (AST_include_n_t);
     include_node_ptr->file_name = include_file;
     include_node_ptr->simple_file_name = include_file_name;
-    ASTP_set_fe_info((ASTP_node_t *)include_node_ptr, fe_include_n_k);
+    ASTP_set_fe_info (&include_node_ptr->fe_info, fe_include_n_k);
 
     return include_node_ptr;
 }
@@ -942,7 +942,7 @@ AST_import_n_t *AST_import_node
 
     import_node_ptr->file_name = imported_file;
 
-    ASTP_set_fe_info((ASTP_node_t *)import_node_ptr, fe_import_n_k);
+    ASTP_set_fe_info (&import_node_ptr->fe_info, fe_import_n_k);
 
     return import_node_ptr;
 }
@@ -991,7 +991,7 @@ AST_exception_n_t *AST_exception_node
 
     excep_node_ptr = NEW (AST_exception_n_t);
     excep_node_ptr->name = excep_name;
-    ASTP_set_fe_info((ASTP_node_t *)excep_node_ptr, fe_exception_n_k);
+    ASTP_set_fe_info (&excep_node_ptr->fe_info, fe_exception_n_k);
 
     NAMETABLE_add_binding(excep_name, (char *)excep_node_ptr);
 
@@ -1131,7 +1131,7 @@ AST_interface_n_t *AST_interface_node
 
     interface_node_p = NEW (AST_interface_n_t);
 
-    ASTP_set_fe_info((ASTP_node_t *)interface_node_p, fe_interface_n_k);
+    ASTP_set_fe_info (&interface_node_p->fe_info, fe_interface_n_k);
     ASTP_CLR_IF_AF(interface_node_p);
 
     /*
@@ -1548,7 +1548,7 @@ AST_operation_n_t *AST_operation_node
     /*
      * Bind the operation node to the operation name.
      */
-    ASTP_add_name_binding(op_name, (char *)operation_node_p);
+    ASTP_add_name_binding (op_name, operation_node_p);
 
 
     /*
@@ -1582,7 +1582,7 @@ AST_parameter_n_t * AST_parameter_node
 
     parameter_node_ptr = NEW (AST_parameter_n_t);
 
-    ASTP_set_fe_info((ASTP_node_t *)parameter_node_ptr, fe_parameter_n_k);
+    ASTP_set_fe_info (&parameter_node_ptr->fe_info, fe_parameter_n_k);
 
     parameter_node_ptr->name = identifier;
 
@@ -1633,7 +1633,7 @@ AST_rep_as_n_t *AST_represent_as_node
     represent_as_node->type_name = name;
     represent_as_node->file_name = STRTAB_NULL_STR;
 
-    ASTP_set_fe_info((ASTP_node_t *)represent_as_node, fe_rep_as_n_k);
+    ASTP_set_fe_info (&represent_as_node->fe_info, fe_rep_as_n_k);
 
     return represent_as_node;
 
@@ -1658,7 +1658,7 @@ AST_cs_char_n_t *AST_cs_char_node
 
     cs_char_node->type_name = name;
 
-    ASTP_set_fe_info((ASTP_node_t *)cs_char_node, fe_cs_char_n_k);
+    ASTP_set_fe_info (&cs_char_node->fe_info, fe_cs_char_n_k);
 
     return cs_char_node;
 
@@ -1852,7 +1852,7 @@ AST_type_n_t *AST_type_node
     type_node_ptr->name = NAMETABLE_NIL_ID;
     type_node_ptr->kind = kind;
 
-    ASTP_set_fe_info((ASTP_node_t *)type_node_ptr, fe_type_n_k);
+    ASTP_set_fe_info (&type_node_ptr->fe_info, fe_type_n_k);
     type_node_ptr->fe_info->type_specific.clone = NULL; /* No clones yet! */
 
     /* Now get the ndr size for if this is a scalar and pointer type */
@@ -1933,7 +1933,7 @@ AST_type_p_n_t *AST_type_ptr_node
 
     type_p_node = NEW (AST_type_p_n_t );
 
-    ASTP_set_fe_info((ASTP_node_t *)type_p_node, fe_type_p_n_k);
+    ASTP_set_fe_info (&type_p_node->fe_info, fe_type_p_n_k);
 
     return type_p_node;
 }
@@ -2179,7 +2179,7 @@ AST_constant_n_t *AST_enum_constant
     /*
      * Bind the name to the constant value
      */
-     ASTP_add_name_binding(identifier, (char *)constant_node_ptr);
+     ASTP_add_name_binding (identifier, constant_node_ptr);
 
 
     /*
@@ -2237,7 +2237,7 @@ AST_type_n_t *AST_pipe_node
     /*
      * Set the source information
      */
-    ASTP_set_fe_info((ASTP_node_t *)pipe_node_ptr, fe_pipe_n_k);
+    ASTP_set_fe_info(&pipe_node_ptr->fe_info, fe_pipe_n_k);
 
     /*
      * Return the type node

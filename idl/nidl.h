@@ -64,12 +64,10 @@
     extern double atof();
     extern long atol();
 #endif
-#if defined DEBUG_VERBOSE || defined DUMPERS
-#   ifdef __STDC__
-#       include <assert.h>
-#   else
-#       define assert(ex) if (ex) ;
-#   endif
+#ifdef __STDC__
+#  include <assert.h>
+#else
+#  define assert(ex) if (ex) ;
 #endif
 #include <sysdep.h>
 

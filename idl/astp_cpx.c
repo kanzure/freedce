@@ -237,7 +237,7 @@ AST_array_index_n_t *AST_array_index_node
          i<array_size;
          i++, index_node++)
     {
-        ASTP_set_fe_info((ASTP_node_t *)index_node, fe_array_index_n_k);
+        ASTP_set_fe_info (&index_node->fe_info, fe_array_index_n_k);
     }
 
     return index_vector;
@@ -273,7 +273,7 @@ AST_array_n_t *AST_array_node
     /* Link in the element type */
     array_node_ptr->element_type = element_type_ptr;
 
-    ASTP_set_fe_info((ASTP_node_t *)array_node_ptr, fe_array_n_k);
+    ASTP_set_fe_info(&array_node_ptr->fe_info, fe_array_n_k);
 
     return array_node_ptr;
 }
@@ -300,7 +300,7 @@ AST_field_attr_n_t *AST_field_attr_node
     AST_field_attr_n_t *field_attr_node_ptr;
 
     field_attr_node_ptr = NEW (AST_field_attr_n_t);
-    ASTP_set_fe_info((ASTP_node_t *)field_attr_node_ptr, fe_field_attr_n_k);
+    ASTP_set_fe_info(&field_attr_node_ptr->fe_info, fe_field_attr_n_k);
 
     return field_attr_node_ptr;
 }
@@ -338,7 +338,7 @@ AST_field_ref_n_t *AST_field_ref_node
          i++, field_ref_node++)
     {
         field_ref_node->valid = FALSE;
-        ASTP_set_fe_info((ASTP_node_t *)field_ref_node, fe_field_ref_n_k);
+        ASTP_set_fe_info(&field_ref_node->fe_info, fe_field_ref_n_k);
     }
 
     return field_ref_vector;
@@ -379,7 +379,7 @@ AST_type_n_t *AST_structure_node
     structure_node_ptr = NEW (AST_structure_n_t);
     structure_node_ptr->fields = field_list;
     structure_node_ptr->tag_name = identifier;
-    ASTP_set_fe_info((ASTP_node_t *)structure_node_ptr,fe_structure_n_k);
+    ASTP_set_fe_info(&structure_node_ptr->fe_info, fe_structure_n_k);
 
 
     /*
@@ -575,7 +575,7 @@ AST_case_label_n_t *AST_case_label_node
     /*
      * Set source information
      */
-    ASTP_set_fe_info((ASTP_node_t *)case_label_node,fe_case_label_n_k);
+    ASTP_set_fe_info (&case_label_node->fe_info, fe_case_label_n_k);
 
     /*
      * Return the case node
@@ -657,7 +657,7 @@ AST_type_n_t *AST_disc_union_node
     disc_union_node_ptr->discrim_name = disc_name;
     disc_union_node_ptr->discrim_type = disc_type;
     disc_union_node_ptr->arms = arm_list;
-    ASTP_set_fe_info((ASTP_node_t *)disc_union_node_ptr,fe_disc_union_n_k);
+    ASTP_set_fe_info (&disc_union_node_ptr->fe_info, fe_disc_union_n_k);
 
 
     /*
@@ -825,7 +825,7 @@ AST_arm_n_t *AST_arm_node
     /*
      * Set source information
      */
-    ASTP_set_fe_info((ASTP_node_t *)arm_node_ptr,fe_arm_n_k);
+    ASTP_set_fe_info (&arm_node_ptr->fe_info, fe_arm_n_k);
 
 
     /*
@@ -833,7 +833,7 @@ AST_arm_n_t *AST_arm_node
      * is already declared in this scope.
      */
     if (name != NAMETABLE_NIL_ID)
-        ASTP_add_name_binding(name, (char *)arm_node_ptr);
+        ASTP_add_name_binding (name, arm_node_ptr);
 
 
     /*
@@ -873,14 +873,14 @@ static AST_field_n_t * AST_field_node
     /*
      * Set source information
      */
-    ASTP_set_fe_info((ASTP_node_t *)field_node_ptr,fe_field_n_k);
+    ASTP_set_fe_info (&field_node_ptr->fe_info, fe_field_n_k);
 
 
     /*
      * Bind field name to the field node, give an error if it
      * is already declared in this scope
      */
-    ASTP_add_name_binding(field_name, (char *)field_node_ptr);
+    ASTP_add_name_binding (field_name, field_node_ptr);
 
     /*
      * Return the new field node
@@ -1263,7 +1263,7 @@ void ASTP_patch_tag_references
                 AST_structure_n_t *struct_p;
                 struct_p = type_node_ptr->type_structure.structure =
                     NEW (AST_structure_n_t);
-                ASTP_set_fe_info((ASTP_node_t *)struct_p, fe_structure_n_k);
+                ASTP_set_fe_info (&struct_p->fe_info, fe_structure_n_k);
                 struct_p->tag_name = tag_ref_node_ptr->name;
                 continue;
             }

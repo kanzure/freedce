@@ -253,7 +253,8 @@ interface_start:
         interface_attributes INTERFACE_KW IDENTIFIER
         {
             the_interface->name = $<y_id>3;
-            ASTP_add_name_binding(the_interface->name, (char *)the_interface);
+	    /* FIXME cast */
+            ASTP_add_name_binding (the_interface->name, the_interface);
         }
     ;
 

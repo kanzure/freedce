@@ -949,10 +949,8 @@ void ASTP_patch_field_reference(
 );
 
 void ASTP_set_fe_info(
-#ifdef PROTO
-    ASTP_node_t *node_ptr,
-    fe_node_k_t fe_node_kind
-#endif
+    fe_info_t   **fe_info_ptr,
+    fe_node_k_t   fe_node_kind
 );
 
 void ASTP_save_tag_ref(
