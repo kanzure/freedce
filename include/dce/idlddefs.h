@@ -292,6 +292,9 @@ void rpc_ss_ndr_clean_up  _DCE_PROTOTYPE_ (
 #define IDL_DT_CS_ARRAY              54
 #define IDL_DT_CS_ATTRIBUTE          55
 #define IDL_DT_CS_RLSE_SHADOW        56
+#define IDL_DT_INTERFACE             57
+#define IDL_DT_DYN_INTERFACE         58
+#define IDL_DT_ORPC_INTERFACE			 59 /* DCOM/ORPC */
 #define IDL_DT_EOL                  254
 /* Reserved as filler byte          255 */
 

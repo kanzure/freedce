@@ -113,7 +113,6 @@ static long max_message_number		/* Compute number of messages. */
 static char     msg_prefix[PATH_MAX+3];
 
 
-
 
 /*
  *  m e s s a g e _ o p e n
@@ -124,7 +123,7 @@ static char     msg_prefix[PATH_MAX+3];
 void message_open
 #ifdef PROTO
 (
-    char *image_name
+    char *image_name __attribute__((unused))
 )
 #else
 (image_name)
@@ -165,41 +164,9 @@ void message_open
 #else
                     /* m e s s a g e _ o p e n  (non-VMS) */
 {
-    char cat_name[PATH_MAX];
-    char *cp;  /* Used to pull image name out of full image path */
-    char *bcp; /* Used to fine BRANCHCHAR in image name */
+    char cat_name[PATH_MAX] = CATALOG_DIR "idl.cat";
 
-    /*
-     * Save away the image name for use in error reporting
-     */
-    strncpy(msg_prefix,image_name,PATH_MAX);
-    strcat(msg_prefix,": ");
-
-    /*
-     * Find the name of the image (path name removed), loop
-     * until all branch chars are removed.
-     */
-    cp = image_name;
-    while ((bcp=strrchr(cp,BRANCHCHAR)) != NULL)
-    {
-        /*
-         *  bcp now points at a BRANCHCHAR, If this is a trailing BRANCHCHAR,
-         *  remove it, otherwise everything following the BRANCHCHR is the
-         *  image name, so just move past it.
-         */
-        if (bcp[1] == '\0')
-            bcp[0]='\0';
-        else
-            cp = bcp+1;
-    }
-
-    /*
-     *  cp is now only the image name, so just add ".cat" to derive the name of
-     *  the message catalog.
-     */
-    strncpy(cat_name,cp,PATH_MAX);
-    strcat(cat_name,".cat");
-
+    strcpy(msg_prefix, "idl: ");
 
     /*
      * Open the message catalog using the image name.
@@ -208,7 +175,6 @@ void message_open
     setlocale(LC_ALL, "");
 #endif
     cat_handle = catopen(cat_name, 0);
-
 
     /* Sucessful open, check version information */
     if (cat_handle != (nl_catd)-1)

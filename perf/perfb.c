@@ -42,7 +42,9 @@
 
 #include <perf_c.h>
 #include <perf_p.h>
+#include <unistd.h>
 
+void print_binding_info(char *text, handle_t h);
 
 perfb_v1_0_epv_t perfb_mgr_epv =
 {
@@ -119,7 +121,7 @@ void perfb_brd
 void perfb_null
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h
+    handle_t                h __attribute__((unused))
 )
 #else
     (h)
@@ -133,7 +135,7 @@ void perfb_null
 void perfb_null_idem
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h
+    handle_t                h __attribute__((unused))
 )
 #else
     (h)

@@ -41,9 +41,9 @@
 #include <dce/dce_error.h>
 #include <perf_c.h>
 
-#ifdef VMS
 #include <ctype.h>
-#endif
+#include <stdlib.h>
+
 
 /*
  * Define the Foo and Bar type UIDS.
@@ -148,7 +148,7 @@ uuid_t NilTypeObj =
  * Define the "nil" object.  (Not to be confused with an object whose type
  * simply happens to be "nil".)
  */
-uuid_t NilObj = {0};
+uuid_t NilObj = {0,0,0,0,0,{0,0,0,0,0,0} };
 
 
     
@@ -203,7 +203,7 @@ unsigned32      st;
 /*
  * Dump storage usage info.
  */
-dump_stg_info()
+void dump_stg_info(void)
 
 {
 #ifdef ETEXT_EDATA
@@ -218,10 +218,8 @@ dump_stg_info()
 /*
  * Lookup a name in a table.
  */
-
-int lookup_name(table, s)
-char *table[];
-char *s;
+extern void usage(int);
+int lookup_name(char *table[], char *s)
 {
     int i;
 
@@ -239,6 +237,8 @@ char *s;
     }
 
     usage(-1);
+	 /* NOTREACHED */
+	 return -1;
 }
 
 

@@ -300,6 +300,13 @@ static void rpc_ss_ndr_unmar_union_body
             IDL_GET_LONG_FROM_VECTOR(defn_index, arm_type_ptr);
             rpc_ss_ndr_unmar_xmit_as(defn_index, body_addr, NULL, IDL_msp);
             break;
+#if 0
+        case IDL_DT_INTERFACE:
+            IDL_GET_LONG_FROM_VECTOR(defn_index, arm_type_ptr);
+            rpc_ss_ndr_unmar_interface(defn_index, body_addr, NULL, IDL_msp);
+            break;
+#endif
+
         case IDL_DT_V1_STRING:
             rpc_ss_ndr_unmar_v1_string(body_addr, 0, IDL_msp);
             break;
@@ -930,6 +937,14 @@ void rpc_ss_ndr_unmar_xmit_as
             rpc_ss_ndr_unmar_xmit_as(xmit_defn_index, transmitted_data, NULL,
                                                                      IDL_msp);
             break;
+#if 0
+        case IDL_DT_INTERFACE:
+            defn_vec_ptr += 2;      /* Byte after properties byte */
+            IDL_GET_LONG_FROM_VECTOR(xmit_defn_index, defn_vec_ptr);
+            rpc_ss_ndr_unmar_interface(xmit_defn_index, transmitted_data, NULL, IDL_msp);
+            break;
+#endif
+
         case IDL_DT_V1_STRING:
             rpc_ss_ndr_unmar_v1_string(transmitted_data, 0, IDL_msp);
             break;

@@ -165,7 +165,7 @@ static void DDBE_spell_long_val
     byte        *bp;
     int         i;
 #ifdef DUMPERS
-    char        *comment;
+    char const       *comment;
 #endif
 
     bp = (byte *)&vec_p->val.long_val;
@@ -265,7 +265,7 @@ static void DDBE_spell_long_bool_val
 {
     char        *sym;
 #ifdef DUMPERS
-    char        *comment;
+    char const       *comment;
 #endif
 
     if (vec_p->val.long_val == 0)
@@ -427,7 +427,7 @@ static void DDBE_sizeof_expr_use_inst
 {
     char const          *inst_name; /* Name of generated instance of type */
 #ifdef DUMPERS
-    char                *comment;   /* Comment string */
+    char const                *comment;   /* Comment string */
 #endif
 
     NAMETABLE_id_to_string(type_p->be_info.dd_type->inst_name, &inst_name);
@@ -592,7 +592,7 @@ void DDBE_spell_offset_vec
     AST_rep_as_n_t      *rep_p = NULL;     /* Ptr to AST represent_as node */
     AST_cs_char_n_t     *ichar_p = NULL;   /* Ptr to AST cs_char node */
 #ifdef DUMPERS
-    char                *comment;   /* Comment text */
+    char const                *comment;   /* Comment text */
 #endif
     boolean             in_struct = false;  /* T => in struct (for speller) */
 
@@ -742,7 +742,7 @@ void DDBE_spell_offset_vec_use_inst
     AST_type_n_t        *type_p;    /* Ptr to AST type node */
     char const          *inst_name; /* Name of generated instance of type */
 #ifdef DUMPERS
-    char                *comment;   /* Comment text */
+    char const               *comment;   /* Comment text */
 #endif
 
     vec_p = vip->offset_p;
@@ -856,7 +856,7 @@ void DDBE_init_offset_vec
     unsigned long       last_index; /* Last index spelled */
     char const          *inst_name; /* Name of generated instance of type */
 #ifdef DUMPERS
-    char                *comment;   /* Comment text */
+    char const               *comment;   /* Comment text */
 #endif
 
     vec_p = vip->offset_p;
@@ -976,7 +976,7 @@ void DDBE_spell_rtn_vec
     DDBE_vec_rep_t      *vec_p;     /* Ptr to routine vector entry list */
     char const *rtn_name;
 #ifdef DUMPERS
-    char    *comment;
+    char const    *comment;
 #endif
 
     vec_p = vip->rtn_p;
@@ -1432,7 +1432,7 @@ void DDBE_spell_type_vec
     char const *name;
     char const *expr;
 #ifdef DUMPERS
-    char    *comment;
+    char const   *comment;
 #endif
     int     i;
 

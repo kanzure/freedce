@@ -58,7 +58,7 @@ int main(int ac __attribute__((__unused__)), char *av[] __attribute__((__unused_
        * object UUID of with those communications endpoints.
        */
 
-  rpc_server_use_all_protseqs(rpc_c_protseq_max_calls_default, &status);
+  rpc_server_use_all_protseqs_if(0, echo_v1_0_s_ifspec, &status);
       chk_dce_err(status, "rpc_server_use_all_protseqs()", "", 1);
   rpc_server_inq_bindings(&server_binding, &status);
       chk_dce_err(status, "rpc_server_inq_bindings()", "", 1);

@@ -9,9 +9,11 @@ include $(top_srcdir)/include.mk
 # implementations of some io functions.
 LIBS:=$(subst -ldcethread,,$(LIBS))
 
-CFLAGS+=-DMIA -DDEFAULT_IDIR=\"$(includedir)\"
+CFLAGS+=-DMIA -DDEFAULT_IDIR=\"$(includedir)\" -DCATALOG_DIR=\"$(pkgdatadir)\"
 
 bin_PROGRAMS = dceidl
+
+pkgdata_DATA=idl.cat
 
 dceidl_SOURCES = acf_y.y acf_l.l nidl_y.y nidl_l.l astp_com.c astp_cpx.c \
 	astp_gbl.c astp_sim.c astp_dmp.c checker.c chkichar.c command.c \
@@ -30,7 +32,7 @@ noinst_HEADERS= acf.h ast.h astp.h astp_dmp.h backend.h be_pvt.h bedeck.h \
  propagat.h sstubmts.h sysdep.h user_exc.h
 
 
-BUILT_SOURCES=acf_y.c acf_l.c nidl_y.c nidl_l.c acf_y.h nidl_y.h
+BUILT_SOURCES=acf_y.c acf_l.c nidl_y.c nidl_l.c acf_y.h nidl_y.h default_msg.h
 
 # Ensure that YACC/LEX generated files go away during clean
 CLEANFILES=acf_y.o acf_y.c acf_l.o acf_l.c acf_y.h nidl_y.o nidl_y.c nidl_l.o nidl_l.c nidl_y.h
@@ -52,3 +54,11 @@ nidl_l.c: nidl_l.l
 
 install-exec-local:
 	test -f $(bindir)/idl || $(LN_S) dceidl $(bindir)/idl
+
+
+default_msg.h:	nidlmsg.m
+	$(RM) $(RMFLAGS) default_msg.h idl.cat
+	$(SED) -e '/^\$$/d;/^$$/d;s/^[^ ]* /"/;s/$$/",/;' nidlmsg.m > default_msg.h
+	$(GENCAT) idl.cat nidlmsg.m
+
+	

@@ -657,6 +657,15 @@ void rpc_ss_ndr_marsh_struct
                 rpc_ss_ndr_marsh_xmit_as(field_defn_index,
                                        (idl_byte *)struct_addr+offset, IDL_msp);
                 break;
+#if 0
+				case IDL_DT_INTERFACE:
+					 defn_vec_ptr++;	/* properties byte */
+					 IDL_GET_LONG_FROM_VECTOR(field_defn_index, defn_vec_ptr);
+					 offset = *offset_vec_ptr;
+					 offset_vec_ptr++;
+					 rpc_ss_ndr_marsh_interface(field_defn_index, (idl_byte*)struct_addr+offset, IDL_msp);
+					 break;
+#endif
             case IDL_DT_V1_ARRAY:
                 v1_array = idl_true;
                 break;
@@ -911,6 +920,12 @@ void rpc_ss_ndr_marsh_by_looping
                 array_addr = (rpc_void_p_t)
                                     ((idl_byte *)(array_addr) + element_size);
                 break;
+#if 0
+				case IDL_DT_INTERFACE:
+					 rpc_ss_ndr_marsh_interface(element_defn_index, array_addr, IDL_msp);
+					 array_addr = (rpc_void_p_t)((idl_byte*)(array_addr) + element_size);
+					 break;
+#endif
             default:
 #ifdef DEBUG_INTERP
                 printf(
@@ -1075,6 +1090,13 @@ void rpc_ss_ndr_m_fix_or_conf_arr
         IDL_DISCARD_LONG_FROM_VECTOR( defn_vec_ptr );   /* Full array defn */
         IDL_GET_LONG_FROM_VECTOR( element_defn_index, defn_vec_ptr );
     }
+#if 0
+	 else if (base_type == IDL_DT_INTERFACE)	{
+		 element_size = sizeof(void*);
+		 defn_vec_ptr += 2; /* skip base and properties bytes */
+		 IDL_GET_LONG_FROM_VECTOR(element_defn_index, defn_vec_ptr);
+	 }
+#endif
 
     /* element_index, element_defn_ptr may not be set, but in these cases
         the procedure calls following do not use them */
@@ -1727,6 +1749,9 @@ void rpc_ss_ndr_marsh_interp
     idl_ulong_int param_index;
     rpc_void_p_t param_addr;
     idl_ulong_int defn_index;
+#if 0
+	 idl_ulong_int rtn_index, iid_index;
+#endif
     idl_boolean type_has_pointers;
     idl_boolean v1_array = idl_false;
     idl_boolean is_string = idl_false;
@@ -1993,6 +2018,21 @@ void rpc_ss_ndr_marsh_interp
                     IDL_GET_LONG_FROM_VECTOR(defn_index,type_vec_ptr);
                     rpc_ss_ndr_marsh_xmit_as(defn_index, param_addr, IDL_msp);
                     break;
+#if 0
+					 case IDL_DT_INTERFACE:
+						  type_vec_ptr++;	/* skip properties */
+							IDL_GET_LONG_FROM_VECTOR(defn_index, type_vec_ptr);
+							rpc_ss_ndr_marsh_interface(defn_index, param_addr, IDL_msp);
+							break;
+					 case IDL_DT_DYN_INTERFACE:
+                    type_vec_ptr++;     /* Properties byte */
+                    IDL_GET_LONG_FROM_VECTOR(rtn_index,type_vec_ptr);
+                    IDL_GET_LONG_FROM_VECTOR(iid_index,type_vec_ptr);
+                    rpc_ss_ndr_marsh_dyn_interface(rtn_index, param_addr,
+								  ((uuid_t*) IDL_param_vector[iid_index]), IDL_msp);
+                   break;
+#endif
+
                 case IDL_DT_ALLOCATE:
                     /* Do nothing except move to next parameter */
                     if ((*type_vec_ptr == IDL_DT_STRING)

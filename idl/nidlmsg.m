@@ -3275,3 +3275,10 @@ $ Perhaps you meant to use a <kw>([comm_status]) attribute.
 $ If not, the parameter can be removed from the operation or
 $ the <kw>([fault_status]) attribute can be removed from the
 $ parameter.
+
+365 Only objects can inherit interfaces
+
+367 Ptr att bign
+
+368 Inherited interface not defined/imported
+

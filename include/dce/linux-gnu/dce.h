@@ -23,6 +23,10 @@
 #if !defined(_DCE_H)
 #define _DCE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Common definitions for DCE
  * This is a machine specific file that must be ported to each platform.
@@ -177,6 +181,10 @@ typedef struct unsigned128_s_t {
  */
 #if 0
 #include <dce/dce_svc.h>
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif                                  /* _DCE_H */

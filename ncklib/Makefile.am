@@ -21,7 +21,7 @@ libnck_la_SOURCES=comfork.c ndrglob.c mgmt.c
 libnck_la_LIBADD=com/libcom.la rpc/librpc.la transport/libtrans.la $(idlobjs)
 
 mgmt_cstub.lo mgmt_sstub.lo: $(IDL_INCLUDE_DIR)/mgmt.idl
-	$(IDL) $(NCK_IDLFLAGS) -cepv -cc_cmd '$(LIBTOOL) --mode=compile $(CC) -c ' $<
+	$(IDL) $(NCK_IDLFLAGS) -cepv $<
 	@rm -f mgmt.h
 
 

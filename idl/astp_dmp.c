@@ -192,24 +192,17 @@ static void indent
 }
 
 static void dump_node_address
-#ifdef PROTO
 (
     char   *node_name,
     char   *node_address,
     int    indentation
 )
-#else
-(node_name, node_address, indentation)
-    char   *node_name;
-    char   *node_address;
-    int    indentation;
-#endif
 {
     if (debug_dump)
     {
         indent(indentation);
         if (node_name != NULL) printf (node_name);
-        printf (NODE_ADDR_FMT, node_address);
+        printf (NODE_ADDR_FMT, (unsigned long)node_address);
         if (node_name != NULL)
         {
             printf("\n");
@@ -235,7 +228,7 @@ void AST_dump_nametable_id
     NAMETABLE_id_t id;
 #endif
 {
-    char   *name_ptr;
+    const char   *name_ptr;
 
     if (id == NAMETABLE_NIL_ID)
         printf (format_string, "NAMETABLE_NIL_ID");
@@ -294,10 +287,10 @@ void AST_dump_interface
     } else {
         printf("UUID\n");
         indent(1);
-        printf("time_high = %02lx.%02lx\n", if_n_p->uuid.time_hi_and_version,
-                                            if_n_p->uuid.time_mid);
+        printf("time_high = %02lx.%02lx\n", (unsigned long)if_n_p->uuid.time_hi_and_version,
+                                            (unsigned long)if_n_p->uuid.time_mid);
         indent(1);
-        printf("time_low  = %04x\n", if_n_p->uuid.time_low);
+        printf("time_low  = %04lx\n", if_n_p->uuid.time_low);
         indent(1);
         printf("clock_seq_hi = %02x\n", if_n_p->uuid.clock_seq_hi_and_reserved);
         indent(1);
@@ -338,7 +331,6 @@ void AST_dump_interface
     if (AST_IN_LINE_SET(if_n_p)     ||
         AST_OUT_OF_LINE_SET(if_n_p) ||
         if_n_p->binding_callout_name != NAMETABLE_NIL_ID ||
-        if_n_p->inherited_interface_name != NAMETABLE_NIL_ID ||
         AST_CODE_SET(if_n_p)        ||
         AST_NO_CODE_SET(if_n_p)     ||
         AST_DECODE_SET(if_n_p)      ||
@@ -360,12 +352,6 @@ void AST_dump_interface
                 printf("[binding_callout(");
                 dump_nametable_id ("%s)] \n", if_n_p->binding_callout_name);
             }
-            if (if_n_p->inherited_interface_name != NAMETABLE_NIL_ID) {
-                indent(1);
-                printf("[inherited_interface(");
-                dump_nametable_id ("%s)] \n", if_n_p->inherited_interface_name);
-            }
-
             if (AST_CODE_SET(if_n_p)) {
                 indent(1);
                 printf("[code]\n");
@@ -392,7 +378,7 @@ void AST_dump_interface
             };
     };
 
-    printf("Version = %d\n", if_n_p->version);
+    printf("Version = %ld\n", if_n_p->version);
 
     if (if_n_p->implicit_handle_name != NAMETABLE_NIL_ID) {
         dump_nametable_id("Implicit handle name = %s \n",
@@ -470,7 +456,7 @@ static void AST_dump_include_list
 #endif
 {
     AST_include_n_t *ip;
-    char *include_file;
+    const char *include_file;
 
     for (ip = include_list_ptr; ip; ip = ip->next)
     {
@@ -492,7 +478,7 @@ static void AST_dump_import_list
 #endif
 {
     AST_import_n_t *ip;
-    char *import_file;
+    const char *import_file;
 
     for (ip = import_list_ptr; ip; ip = ip->next)
     {
@@ -589,7 +575,7 @@ static void AST_dump_ports_list
      */
     for (i = 0; i < interface_node_ptr->number_of_ports; i++)
     {
-        char *protocol, *endpoint;
+        const char *protocol, *endpoint;
         STRTAB_str_to_string((interface_node_ptr->protocol)[i],&protocol);
         STRTAB_str_to_string((interface_node_ptr->endpoints)[i],&endpoint);
         printf("Port Spec: %s:[%s]\n",protocol,endpoint);
@@ -682,7 +668,7 @@ void AST_dump_constant
     int indentation;
 #endif
 {
-    char   *string_val_ptr;
+    const char   *string_val_ptr;
 
     switch (constant_node_ptr->kind)
     {
@@ -728,7 +714,7 @@ void AST_dump_constant
         break;
 
     case AST_nil_const_k:
-        printf ("NULL constant: %d\n", constant_node_ptr->value.int_val);
+        printf ("NULL constant: %ld\n", constant_node_ptr->value.int_val);
         break;
 
     default:
@@ -808,9 +794,6 @@ static void print_type_name
     case AST_pointer_k:
         printf (format, "AST_pointer_k");
         break;
-	 case AST_interface_k:
-		  printf (format, "AST_interface_k");
-		  break;
     case AST_void_k:
         printf (format, "AST_void_k");
         break;
@@ -1130,7 +1113,7 @@ void AST_dump_type
 
             /* print out the type node address to simplify look up */
             indent (indentation + 1);
-            printf("Type node address = %08lX H \n", ptype);
+            printf("Type node address = %08lX H \n", (unsigned long)ptype);
         }
         else
             AST_dump_type (type_n_p->type_structure.pointer->pointee_type,

@@ -6,9 +6,10 @@ AC_CANONICAL_SYSTEM
 case $target_cpu in
 	i?86)	target_cpu="i386";;
 esac
+AC_SUBST(target_cpu)
+AC_SUBST(target_os)
 
 AM_INIT_AUTOMAKE(freedce, 1.1.0.7)
-
 AC_PREFIX_DEFAULT(/opt/dce)
 
 dnl Checks for programs.
@@ -21,13 +22,18 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LEX
 AC_PROG_YACC
+AC_PATH_PROG(GENCAT, gencat)
+AC_PATH_PROG(SED, sed)
+AC_SUBST(GENCAT)
+AC_SUBST(SED)
+AC_OBJEXT
+AC_C_INLINE
 
 dnl Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
 AC_CHECK_LIB(dl, dlopen)
 
 THREADS_DIRS="/opt/dce"
-
 AC_ARG_WITH(dcethreads-dir, [  --with-dcethreads-dir   Specify where you have installed dcethreads],
 [THREADS_DIRS="$withval $THREADS_DIRS"])
 
@@ -35,14 +41,12 @@ RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, $THREADS_DIRS,,
 AC_MSG_ERROR([freedce requires libdcethreads!]))
 
 dnl Checks for header files.
-AC_CHECK_HEADERS(features.h sys/cdefs.h)
+AC_CHECK_HEADERS(features.h sys/cdefs.h dlfcn.h)
 RPC_CHECK_INCDIR(dce/pthread_exc.h, dcethreads, $THREADS_DIRS,,
 AC_MSG_ERROR([freedce requires dcethreads include files!]))
 DCETHREADINCLUDES="${rpc_incdir_dcethreads+-I$rpc_incdir_dcethreads}"
 AC_SUBST(DCETHREADINCLUDES)
 
-dnl Make sure we link our libs to dcethreads
-AC_CHECK_LIB(pthd4exc_create, dcethreads)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -50,13 +54,10 @@ dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
 
-AC_DEFINE(_REENTRANT)
-
 dnl _GNU_SOURCE pulls in the definition of _pthread_push_defer
+AC_DEFINE(_REENTRANT)
 AC_DEFINE(_GNU_SOURCE)
-
-AC_SUBST(target_cpu)
-AC_SUBST(target_os)
+AC_DEFINE(_BSD)
 
 dnl This allows us to re-use AC_OUTPUT which makes things more maintainable
 dnl and helps us to use automake nicely.
@@ -82,8 +83,9 @@ sinclude(dcelib/config.m4)
 sinclude(rpcd/config.m4)
 sinclude(demos/config.m4)
 sinclude(dcom/config.m4)
+sinclude(perf/config.m4)
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile config.mk)
 AC_OUTPUT(freedce.spec)
 
 dnl restore original AC_OUTPUT definition

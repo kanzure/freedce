@@ -572,7 +572,8 @@ GLOBAL rpc_authn_protocol_id_elt_t rpc_g_authn_protocol_id[RPC_C_AUTHN_PROTOCOL_
         dce_c_rpc_authn_protocol_none, 
         NULL,
 		  NULL
-    },
+    }
+	 ,
     {                               /* 1 */
         NULL,
         rpc_c_authn_dce_private,

@@ -284,7 +284,7 @@ void DDBE_spell_type_kind
     AST_type_n_t        *type_p;
     char const          *type_name;
 #ifdef DUMPERS
-    char                *comment;   /* Comment for entry */
+    char const                *comment;   /* Comment for entry */
 #endif
 
     if (vec_p->kind != DDBE_vec_type_kind_k)
@@ -1117,7 +1117,7 @@ static void DDBE_init_tags
     DDBE_dt_full_ptr            = NAMETABLE_add_id("IDL_DT_FULL_PTR");
     DDBE_dt_hyper               = NAMETABLE_add_id("IDL_DT_HYPER");
     DDBE_dt_ignore              = NAMETABLE_add_id("IDL_DT_IGNORE");
-    DDBE_dt_interface           = NAMETABLE_add_id("IDL_DT_INTERFACE");
+    DDBE_dt_interface           = NAMETABLE_add_id("IDL_DT_ORPC_INTERFACE");
     DDBE_dt_in_context          = NAMETABLE_add_id("IDL_DT_IN_CONTEXT");
     DDBE_dt_in_out_context      = NAMETABLE_add_id("IDL_DT_IN_OUT_CONTEXT");
     DDBE_dt_last_is_limit       = NAMETABLE_add_id("IDL_LIMIT_LAST_IS");
@@ -3466,12 +3466,12 @@ static void DDBE_op_interface
 		*  addr: wire rep to object ref routine
 		*/
 		DDBE_name_vec_entry(&vip->rtn_p,
-				NAMETABLE_add_id("rpc_ss_ndr_oref_to_wire_rep"), "");
+				NAMETABLE_add_id("rpc_ss_ndr_orpc_oref_to_wire_rep"), "");
 		/* Store routine vector pointer for this type */
 		type_i_p->rtn_vec_p = vip->rtn_p;
 
 		DDBE_name_vec_entry(&vip->rtn_p,
-				NAMETABLE_add_id("rpc_ss_ndr_wire_rep_to_oref"), "");
+				NAMETABLE_add_id("rpc_ss_ndr_orpc_wire_rep_to_oref"), "");
 
 		sprintf(comment, "interface %s routines", type_name);
 		DDBE_reference_vec_entry(&vip->defn_p, type_i_p->rtn_vec_p, comment);
@@ -4728,7 +4728,7 @@ boolean DDBE_main
 
         printf("\nDump of DDBE routine vector data:\n");
         printf(  "---------------------------------\n");
-        DDBE_spell_rtn_vec(stdout, vip, cmd_opt, cmd_val);
+        DDBE_spell_rtn_vec(stdout, vip, cmd_opt, cmd_val, TRUE);
 
         printf("\nDump of DDBE type/definition vector data:\n");
         printf(  "-----------------------------------------\n");
@@ -4767,7 +4767,7 @@ static void DDBE_test_marsh_spellers
 {
     AST_export_n_t      *export_p;  /* Ptr to AST export node */
     AST_operation_n_t   *oper_p;    /* Ptr to AST operation node */
-    char                *oper_name; /* Operation name */
+    char const               *oper_name; /* Operation name */
 
     printf("\nDump of generated marshalling code:\n");
     printf(  "-----------------------------------\n");

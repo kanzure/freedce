@@ -20,7 +20,17 @@
  */
 #if	!defined(DCE_ERROR_H)
 #define DCE_ERROR_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef char dce_error_string_t[160];
 void dce_error_inq_text (unsigned long status_to_convert,
 		unsigned char* error_text, int* status);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif	/* !defined(DCE_ERROR_H) */

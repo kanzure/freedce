@@ -86,7 +86,7 @@ typedef struct rpc_mutex_stats_t
     unsigned32 try_lock;        /* total try_locks */
     unsigned32 unlock;          /* total unlocks */
     unsigned32 init;            /* total inits */
-    unsigned32 delete;          /* total deletes */
+    unsigned32 deletes;          /* total deletes */
     unsigned32 lock_assert;     /* total lock_asserts */
     unsigned32 unlock_assert;
 } rpc_mutex_stats_t, *rpc_mutex_stats_p_t;
@@ -116,7 +116,7 @@ typedef struct rpc_mutex_t
 typedef struct rpc_cond_stats_t
 {
     unsigned32 init;            /* total inits */
-    unsigned32 delete;          /* total deletes */
+    unsigned32 deletes;          /* total deletes */
     unsigned32 wait;            /* total waits */
     unsigned32 signals;         /* total signals + broadcasts */
 } rpc_cond_stats_t, *rpc_cond_stats_p_t;

@@ -45,6 +45,7 @@
 #include <perf_c.h>
 #include <perf_p.h>
 
+void print_binding_info(char *text, handle_t h);
 
 
 #ifdef vms
@@ -98,19 +99,13 @@ void perf_init
 /***************************************************************************/
 
 void perf_info 
-#ifdef IDL_PROTOTYPES
 (
-    handle_t                h,
+    handle_t                h __attribute__((unused)),
     unsigned32           *n, 
     unsigned32           *nm,
     unsigned32           *nb,
     unsigned32           *nbm
 )
-#else
-    (h, n, nm, nb, nbm)
-    handle_t                h;
-    unsigned long           *n, *nm, *nb, *nbm;
-#endif
 {
     *n = n_calls;
     *nm = n_maybe;
@@ -123,7 +118,7 @@ void perf_info
 void perf_null 
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h
+    handle_t                h __attribute__((unused))
 )
 #else
     (h)
@@ -138,7 +133,7 @@ void perf_null
 void perf_null_idem 
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h
+    handle_t                h __attribute__((unused))
 )
 #else
     (h)
@@ -153,7 +148,7 @@ void perf_null_idem
 void perf_in 
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h,
+    handle_t                h __attribute__((unused)),
     perf_data_t             d,
     unsigned32           l,
     idl_boolean             verify,
@@ -190,7 +185,7 @@ void perf_in
 void perf_in_idem 
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h,
+    handle_t                h __attribute__((unused)),
     perf_data_t             d,
     unsigned32           l,
     idl_boolean             verify,
@@ -213,7 +208,7 @@ void perf_in_idem
 void perf_out 
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h,
+    handle_t                h __attribute__((unused)),
     perf_data_t             d,
     unsigned32           *l,
     unsigned32           m,
@@ -332,7 +327,7 @@ void perf_brd_maybe
 void perf_fp_test 
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h,
+    handle_t                h __attribute__((unused)),
     float                   *f1,
     float                   *f2,
     double                  d1,
@@ -369,7 +364,7 @@ void perf_register_b
 #ifdef IDL_PROTOTYPES
 (
     handle_t                h,
-    idl_boolean             global,
+    idl_boolean             global __attribute__((unused)),
     unsigned32              *st
 )
 #else
@@ -381,7 +376,7 @@ void perf_register_b
 {
     unsigned_char_p_t       bstr;
     unsigned_char_p_t       protseq;
-    int                     i;
+    unsigned int                     i;
     unsigned32              xst;
     extern rpc_if_handle_t    perfb_v1_0_s_ifspec;
     extern perfb_v1_0_epv_t   perfb_mgr_epv; 
@@ -563,10 +558,10 @@ void perf_exception
 
 /***************************************************************************/
 
-static slow
+static void slow
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h,
+    handle_t                h __attribute__((unused)),
     perf_slow_mode_t        mode,
     unsigned32           secs
 )
@@ -577,9 +572,7 @@ static slow
     unsigned32           secs;
 #endif
 {
-    extern long             time();      
     long                    start_time;
-    unsigned32              fst, st;
 
     common();
 
@@ -597,7 +590,7 @@ static slow
 
             case perf_slow_cpu: 
                 printf("+ CPU looping for %lu seconds...\n", secs);
-                while (time(0) - start_time < secs)
+                while ((unsigned32)(time(0) - start_time) < secs)
                 {
                     ;
                 }
@@ -614,7 +607,7 @@ static slow
                 char TempFileName [] = "/tmp/perfXXXXXX";
 
                 t = (char *) mktemp(TempFileName);
-                printf("+ Writing file \"%s\" (size=%d bytes)\n", t, secs);
+                printf("+ Writing file \"%s\" (size=%ld bytes)\n", t, secs);
                 f = open(t, (O_TRUNC | O_RDWR | O_CREAT), 0777);
                 if (f < 0)
                 {
@@ -640,7 +633,7 @@ static slow
                         perror("Read failed");
                         goto DONE;
                     }
-                    printf("    ...read %d bytes (%d)\n", n, i);
+                    printf("    ...read %d bytes (%ld)\n", n, i);
                 }
 
 
@@ -712,7 +705,7 @@ void perf_null_slow
     unsigned32           secs;
 #endif
 {
-  int oc;
+  int oc = 0;
   
   if (mode == perf_slow_cpu)
     oc = pthread_setcancel(CANCEL_OFF);
@@ -741,7 +734,7 @@ void perf_null_slow_idem
     unsigned32           secs;
 #endif
 {
-  int oc;
+  int oc =0;
   
   if (mode == perf_slow_cpu)
     oc = pthread_setcancel(CANCEL_OFF);
@@ -818,7 +811,7 @@ static void *shutdown_thread
 void perf_shutdown2
 #ifdef IDL_PROTOTYPES
 (
-    handle_t                h,
+    handle_t                h __attribute__((unused)),
     unsigned32              secs
 )
 #else
@@ -827,7 +820,6 @@ void perf_shutdown2
     unsigned32              secs;
 #endif
 {
-    unsigned32          st;
     struct shutdown_info *p;
     pthread_t           thread;
 
@@ -859,7 +851,7 @@ void perf_call_callback
     unsigned32          idem;
 #endif
 {
-    int                     i;
+    unsigned                     i;
     unsigned32           c, passes;
     unsigned32          st;
 
@@ -883,7 +875,7 @@ void perf_call_callback
 
     if ((! idem) && c != passes)
     {
-        printf("    ...count mismatch [%lu, %u]\n", c, passes);
+        printf("    ...count mismatch [%lu, %lu]\n", c, passes);
         st = 1;
 #ifdef NOTDEF
         pfm_$signal(st);
@@ -917,7 +909,7 @@ void perf_context_t_rundown
 
     if (p->magic != CONTEXT_MAGIC)
     {
-        fprintf(stderr, "*** context mismatch; %08x != %08x\n", p->magic, CONTEXT_MAGIC);
+        fprintf(stderr, "*** context mismatch; %08lx != %08x\n", p->magic, CONTEXT_MAGIC);
         return;
     }
 
@@ -969,7 +961,7 @@ idl_boolean perf_test_context
 
     if (p->magic != CONTEXT_MAGIC)
     {
-        fprintf(stderr, "*** context mismatch; %08x != %08x\n", p->magic, CONTEXT_MAGIC);
+        fprintf(stderr, "*** context mismatch; %08lx != %08x\n", p->magic, CONTEXT_MAGIC);
         return (false);
     }
 
@@ -998,7 +990,7 @@ idl_boolean perf_free_context
 
     if (p->magic != CONTEXT_MAGIC)
     {
-        fprintf(stderr, "*** context mismatch; %08x != %08x\n", p->magic, CONTEXT_MAGIC);
+        fprintf(stderr, "*** context mismatch; %08lx != %08x\n", p->magic, CONTEXT_MAGIC);
         return (false);
     }
 

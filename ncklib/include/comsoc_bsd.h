@@ -292,7 +292,7 @@ recvfrom_again:
 	if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);
 	RPC_LOG_SOCKET_RECVFROM_NTR;
 	*(ccp) = recvfrom ((int) sock, (char *) buf, (int) buflen, (int) 0,
-			(struct sockaddr *) (&(from)->sa), (int *) (&(from)->len));
+			(struct sockaddr *) (&(from)->sa), (unsigned int *) (&(from)->len));
 	*(serrp) = (*(ccp) == -1) ? errno : RPC_C_SOCKET_OK;
 	RPC_LOG_SOCKET_RECVFROM_XIT;
 	RPC_SOCKET_FIX_ADDRLEN(from);

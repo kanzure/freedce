@@ -91,6 +91,8 @@ PRIVATE void rpc__register_authn_protocol(rpc_authn_protocol_id_elt_p_t auth, in
 {
 	int i;
 	for (i=0; i<number; i++)	{
+		RPC_DBG_PRINTF(rpc_es_dbg_general, 1, ("Register authn protocol 0x%0x\n", auth[i].authn_protocol_id));	
+
 		memcpy(&rpc_g_authn_protocol_id[auth[i].authn_protocol_id],
 				&auth[i],
 				sizeof(rpc_authn_protocol_id_elt_t)
@@ -103,7 +105,7 @@ PRIVATE void rpc__register_protseq(rpc_protseq_id_elt_p_t elt, int number)
 {
 	int i;
 	for (i=0; i<number; i++)	{
-/*		printf("%s: %s\n", __FUNCTION__, elt[i].rpc_protseq); */
+		RPC_DBG_PRINTF(rpc_es_dbg_general, 1, ("Register protseq 0x%0x %s\n", elt[i].rpc_protseq_id, elt[i].rpc_protseq));	
 		memcpy(&rpc_g_protseq_id[elt[i].rpc_protseq_id],
 				&elt[i],
 				sizeof(rpc_protseq_id_elt_t));
@@ -116,6 +118,12 @@ PRIVATE void rpc__register_tower_prot_id(rpc_tower_prot_ids_p_t tower_prot, int 
 	int i;
 	for (i=0; i<number; i++) {
 		rpc_tower_prot_ids_p_t tower = &tower_prot[i];
+		
+		RPC_DBG_PRINTF(rpc_es_dbg_general, 1,
+				("Register tower protocol for %s\n",
+				 	rpc_g_protseq_id[tower->rpc_protseq_id].rpc_protseq
+				)
+		);	
 
 		memcpy(&rpc_g_tower_prot_ids[rpc_g_tower_prot_id_number],
 				tower, sizeof(rpc_tower_prot_ids_t));
@@ -128,6 +136,10 @@ PRIVATE void rpc__register_protocol_id(rpc_protocol_id_elt_p_t prot, int number)
 {
 	int i;
 	for (i=0; i<number; i++)	{
+		RPC_DBG_PRINTF(rpc_es_dbg_general, 1,
+				("Register protocol id 0x%x\n", prot[i].rpc_protocol_id));	
+
+
 		memcpy(&rpc_g_protocol_id[prot[i].rpc_protocol_id],
 				&prot[i],
 				sizeof(rpc_protocol_id_elt_t));
@@ -138,6 +150,10 @@ PRIVATE void rpc__register_naf_id(rpc_naf_id_elt_p_t naf, int number)
 {
 	int i;
 	for (i=0; i < number; i++)	{
+		RPC_DBG_PRINTF(rpc_es_dbg_general, 1,
+				("Register network address family id 0x%x\n", naf[i].naf_id));	
+
+
 		memcpy(&rpc_g_naf_id[naf[i].naf_id],
 				&naf[i],
 				sizeof(rpc_naf_id_elt_t));
@@ -157,13 +173,17 @@ PRIVATE void rpc__load_modules(void)
 	memset(rpc_g_naf_id, 0, sizeof(rpc_g_naf_id));
 	memset(rpc_g_authn_protocol_id, 0, sizeof(rpc_g_authn_protocol_id));
 
+	/* Fake loading no auth */
+	rpc_g_authn_protocol_id[rpc_c_authn_none].authn_protocol_id = rpc_c_authn_none;
+	rpc_g_authn_protocol_id[rpc_c_authn_none].dce_rpc_authn_protocol_id = dce_c_rpc_authn_protocol_none;
+	
 	n = scandir(IMAGE_DIR, &namelist, select_module, sort_modules);
 	for(i = 0; i < n; i++)	{
 		
 		sprintf(buf, "%s/%s", IMAGE_DIR, namelist[i]->d_name);
-#if 0
-		printf("Loading module %s\n", buf);
-#endif
+
+		RPC_DBG_PRINTF(rpc_es_dbg_general, 1, ("Loading module %s\n", buf));	
+		
 		image = dlopen(buf, RTLD_LAZY);
 		if (image)	{
 			void (*func)(void);
@@ -174,10 +194,8 @@ PRIVATE void rpc__load_modules(void)
 			else			
 				dlclose(image);
 		}
-#if 0
 		else
-			printf("failed to load module %s %s\n", buf, dlerror());
-#endif
+			RPC_DBG_PRINTF(rpc_es_dbg_general, 1, ("failed to load module %s %s\n", buf, dlerror()));
 	}
 	free(namelist);
 #endif

@@ -76,7 +76,7 @@
 #include <dce/dce.h>
 #endif
 
-int pthd4_get_expiration_np(struct timespec *delta, struct timespec *abstime);
+/*int pthd4_get_expiration_np(struct timespec *delta, struct timespec *abstime);*/
 
 
 /***********************************************************************/

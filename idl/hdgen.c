@@ -44,7 +44,10 @@
 #include <files.h>
 #include <genpipes.h>
 #include <hdgen.h>
+#include <bedeck.h>
 #include <dutils.h>
+
+static AST_interface_n_t * the_interface = NULL;
 
 extern int yylineno;
 
@@ -116,7 +119,8 @@ static void CSPELL_constant_def
                 fprintf (fid, "NULL");
                 break;
             case AST_int_const_k:
-                fprintf (fid, "(%ld)", cp->value.int_val);
+                /*fprintf (fid, "(%ld)", cp->value.int_val);*/
+                fprintf (fid, "(0x%lx)", cp->value.int_val); /* prevent signed-edness problems with cxx */
                 break;
             case AST_hyper_int_const_k:
                 fprintf (fid, "{%ld,%lu}",
@@ -218,6 +222,8 @@ static void CSPELL_exports
                 CSPELL_constant_def (fid, ep->thing_p.exported_constant, "");
                 break;
             case AST_operation_k:
+					 /* skip the op for now; we will pick it up in the epv */
+					 if (!AST_OBJECT_SET(the_interface))
                     CSPELL_operation_def (fid, ep->thing_p.exported_operation);
                 break;
             case AST_type_k:
@@ -255,11 +261,91 @@ static void CSPELL_epv_field
     pointer_node.be_info.other = NULL;
     pointer_node.pointee_type = &type_node_b;
 
+	 fprintf(fid, "\t");
     CSPELL_typed_name (fid, &type_node_a, op->name, NULL, false, true,
                         (AST_ENCODE_SET(op) || AST_DECODE_SET(op)));
     fprintf (fid, ";\n");
 }
 
+int BE_is_handle_param(AST_parameter_n_t * p)
+{
+	if (p == NULL)
+		return FALSE;
+	if (p->type == NULL)
+		return FALSE;
+	if (p->type->kind == AST_handle_k)
+		return TRUE;
+	if (p->type->kind == AST_pointer_k &&
+			p->type->type_structure.pointer->pointee_type->kind == AST_handle_k)
+		return TRUE;
+	return FALSE;
+
+}
+
+void BE_gen_orpc_defs(FILE * fid, AST_interface_n_t * ifp, enum orpc_class_def_type deftype)
+{
+	char const * if_name_str;
+	char const * if_ancestor_str = NULL;
+    AST_export_n_t *ep;
+	
+
+	NAMETABLE_id_to_string(ifp->name, &if_name_str);
+	if (ifp->inherited_interface_name != NAMETABLE_NIL_ID)
+		NAMETABLE_id_to_string(ifp->inherited_interface_name, &if_ancestor_str);
+
+	switch(deftype)	{
+		case class_def:
+			fprintf(fid, "\n\n/*---------- %s interface ----------*/\n", if_name_str);
+			fprintf(fid, "\nclass %s", if_name_str);
+			if (if_ancestor_str)
+				fprintf(fid, " : public %s", if_ancestor_str);
+			break;
+		case proxy_def:
+			fprintf(fid, "\nclass %sProxy: public %s", if_name_str, if_name_str);
+			break;
+		case stub_def:
+			fprintf(fid, "\nclass %sStub: public %s", if_name_str, if_name_str);
+	}
+	
+	fprintf(fid, "\n{\npublic:\n");
+
+	for (ep = ifp->exports; ep; ep = ep->next)	{
+		if (ep->kind == AST_operation_k)	{
+			AST_operation_n_t *op = ep->thing_p.exported_operation;
+			AST_type_n_t 		func_type_node;
+			NAMETABLE_id_t		method_name;
+			AST_parameter_n_t	*handle_param;
+
+			/* function type for spellers */
+			func_type_node = *BE_function_p;
+			func_type_node.type_structure.function = op;
+			method_name = op->name;
+
+			fprintf(fid, "\tvirtual ");
+
+			/* suppress handle_t parameters */
+			handle_param = NULL;
+			if (BE_is_handle_param(op->parameters))	{
+				handle_param = op->parameters;
+				op->parameters = op->parameters->next;
+			}
+			CSPELL_typed_name(fid, &func_type_node, method_name,
+					BE_ulong_int_p, FALSE, TRUE, FALSE);
+
+			if (handle_param != NULL)
+				op->parameters = handle_param;
+		
+			/* pure virtual */
+			if (deftype == class_def)
+				fprintf(fid, " = 0;\n");
+			else
+				fprintf(fid, ";\n");
+		}
+	}
+	fprintf(fid, "};\n\n\n");
+
+
+}
 
 static void CSPELL_epv_type_and_var
 #ifdef PROTO
@@ -279,34 +365,32 @@ static void CSPELL_epv_type_and_var
     boolean declare_cepv;
 #endif
 {
+	AST_operation_n_t *op;
 
-    /*  emit the declaration of the client/manager EPV type
-        and, conditional on declare_cepv, an extern declaration
-        for the client EPV
-    */
+	/*  emit the declaration of the client/manager EPV type
+		and, conditional on declare_cepv, an extern declaration
+		for the client EPV
+		*/
 
-    AST_operation_n_t *op;
+	fprintf (fid, "typedef struct ");
+	spell_name (fid, if_name);
+	fprintf (fid, "_v%ld_%ld_epv_t {\n", (if_version%65536), (if_version/65536));
+	for (; ep; ep = ep->next)
+		if (ep->kind == AST_operation_k) {
+			op = ep->thing_p.exported_operation;
+			CSPELL_epv_field (fid, op);
+		}
+	fprintf (fid, "} ");
+	spell_name (fid, if_name);
+	fprintf (fid, "_v%ld_%ld_epv_t;\n", (if_version%65536), (if_version/65536));
 
-    fprintf (fid, "typedef struct ");
-    spell_name (fid, if_name);
-    fprintf (fid, "_v%ld_%ld_epv_t {\n", (if_version%65536), (if_version/65536));
-    for (; ep; ep = ep->next)
-        if (ep->kind == AST_operation_k) {
-            op = ep->thing_p.exported_operation;
-            CSPELL_epv_field (fid, op);
-        }
-    fprintf (fid, "} ");
-    spell_name (fid, if_name);
-    fprintf (fid, "_v%ld_%ld_epv_t;\n", (if_version%65536), (if_version/65536));
-
-    if (declare_cepv) {
-        fprintf(fid, "extern ");
-        spell_name(fid, if_name);
-        fprintf(fid, "_v%ld_%ld_epv_t ", if_version%65536, if_version/65536);
-        spell_name(fid, if_name);
-        fprintf(fid, "_v%ld_%ld_c_epv;\n", if_version%65536, if_version/65536);
-    }
-
+	if (declare_cepv) {
+		fprintf(fid, "extern ");
+		spell_name(fid, if_name);
+		fprintf(fid, "_v%ld_%ld_epv_t ", if_version%65536, if_version/65536);
+		spell_name(fid, if_name);
+		fprintf(fid, "_v%ld_%ld_c_epv;\n", if_version%65536, if_version/65536);
+	}
 }
 
 static void CSPELL_if_spec_refs
@@ -615,6 +699,8 @@ boolean             cepv_opt;
     char        include_var_name[max_string_len];
     char const  *fn_str, *if_name;
 
+	the_interface = ifp;
+	 
     NAMETABLE_id_to_string(ifp->name, &if_name);
     sprintf (include_var_name, "%s_v%ld_%ld_included", if_name,
                                (ifp->version%65536), (ifp->version/65536));
@@ -649,7 +735,9 @@ boolean             cepv_opt;
         fprintf (fid, USER_INCLUDE_H_TEMPLATE, fn_str);
     }
 
-    fprintf (fid, "\n#ifdef __cplusplus\n    extern \"C\" {\n#endif\n\n");
+		/* ORPC is C++ only for now */
+	 if (!AST_OBJECT_SET(ifp))
+		fprintf (fid, "\n#ifdef __cplusplus\n    extern \"C\" {\n#endif\n\n");
 
     for (impp = ifp->imports; impp; impp=impp->next) {
         STRTAB_str_to_string (impp->file_name, &fn_str);
@@ -688,13 +776,19 @@ boolean             cepv_opt;
         fprintf (fid, ";\n");
         }
 
-    if (!AST_LOCAL_SET(ifp) && (ifp->op_count > 0)) {
+	if (AST_OBJECT_SET(ifp))
+		BE_gen_orpc_defs(fid, ifp, class_def);
+
+	 
+    if (!AST_LOCAL_SET(ifp) && (ifp->op_count > 0) && !AST_OBJECT_SET(ifp)) {
         CSPELL_epv_type_and_var(fid, ifp->name, ifp->version, ifp->exports,
             cepv_opt);
         CSPELL_if_spec_refs (fid, ifp->name, ifp->version);
     }
 
-    fprintf (fid, "\n#ifdef __cplusplus\n    }\n#endif\n\n");
+	 if (!AST_OBJECT_SET(ifp))
+		fprintf (fid, "\n#ifdef __cplusplus\n    }\n#endif\n\n");
 
     fprintf (fid, "#endif\n");
+	 the_interface = NULL;
 }

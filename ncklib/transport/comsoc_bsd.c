@@ -195,7 +195,8 @@ rpc_addr_p_t        addr;
     /*
      * Check if the address has a well-known endpoint.
      */
-    if (addr->rpc_protseq_id == RPC_C_PROTSEQ_ID_NCACN_IP_TCP)
+    if (addr->rpc_protseq_id == RPC_C_PROTSEQ_ID_NCACN_IP_TCP ||
+			 addr->rpc_protseq_id == RPC_C_PROTSEQ_ID_NCALRPC)
     {
         unsigned_char_t *endpoint;
 

@@ -47,9 +47,11 @@
 #include <cstubmts.h>
 #include <user_exc.h>
 #include <icharsup.h>
+#include <hdgen.h>
 
 BE_handle_info_t BE_handle_info;
 
+static AST_interface_n_t * the_interface = NULL;
 
 /******************************************************************************/
 /*                                                                            */
@@ -105,26 +107,43 @@ void CSPELL_test_transceive_status
 void CSPELL_csr_header
 (
     FILE *fid,
-    char const *p_interface_name __attribute__((__unused__)),       /* Ptr to name of interface */
+    char const *p_interface_name,       /* Ptr to name of interface */
     AST_operation_n_t *p_operation, /* Ptr to operation node */
     boolean use_internal_name       /* use internal name if true */
 )
 {
-    NAMETABLE_id_t emitted_name;
+	char op_internal_name[3 * MAX_ID];
+	NAMETABLE_id_t emitted_name;
+	AST_parameter_n_t * handle_param = NULL;
+	
+	if (use_internal_name) {
+		sprintf(op_internal_name, "op%d_csr", p_operation->op_number);
+		emitted_name = NAMETABLE_add_id(op_internal_name);
+		fprintf(fid, "\nstatic ");
+	}
+	else if (AST_OBJECT_SET(the_interface))	{
+		sprintf(op_internal_name, "%sProxy::%s", p_interface_name,
+				BE_get_name(p_operation->name));
+		emitted_name = NAMETABLE_add_id(op_internal_name);
 
-    if (use_internal_name) {
-        char op_internal_name[45];
-        sprintf(op_internal_name, "op%d_csr", p_operation->op_number);
-        emitted_name = NAMETABLE_add_id(op_internal_name);
-        fprintf(fid, "\nstatic ");
-    }
-    else
-    {
-        fprintf (fid, "\n");
-            emitted_name = p_operation->name;
-    }
-        CSPELL_function_def_header (fid, p_operation, emitted_name);
-        CSPELL_finish_synopsis (fid, p_operation->parameters);
+		/* Skip handle params */
+		if (BE_is_handle_param(p_operation->parameters))	{
+			handle_param = p_operation->parameters;
+			p_operation->parameters = p_operation->parameters->next;
+		}
+	} else {
+		fprintf (fid, "\n");
+		emitted_name = p_operation->name;
+	}
+
+	CSPELL_function_def_header (fid, p_operation, emitted_name);
+
+	CSPELL_finish_synopsis (fid, p_operation->parameters);
+
+	/* restore skipped handle params */
+	if (handle_param)
+		p_operation->parameters->next = handle_param;
+	
 }
 
 
@@ -154,23 +173,44 @@ static void CSPELL_client_stub_routine
     BE_get_comm_stat_info( p_operation, &comm_stat_info );
     BE_get_fault_stat_info( p_operation, &fault_stat_info );
 
+	 
     /* Routine header */
     CSPELL_csr_header(fid, p_interface_name, p_operation,
         use_internal_name);
 
     fprintf (fid, "{\n");
 
+	 if (AST_OBJECT_SET(p_interface))	{
+		 /* If we skipped a handle param, add it as a local var */
+		 if (BE_is_handle_param(p_operation->parameters))
+			 CSPELL_var_decl(fid, p_operation->parameters->type,
+					 p_operation->parameters->name);
+
+	 }
+
+    /*
+     * Analyze the association handle the call is being made on;
+     * declare assoc_handle if necessary
+     */
+    BE_setup_client_handle (fid, p_interface, p_operation, &BE_handle_info);
+
+    /*
+     * Does operation use I-char machinery? If so, declare any needed variables
+     */
+    BE_cs_analyze_and_spell_vars(fid, p_operation, BE_client_side, &cs_info);
+
     /*
      * Standard local variables
      */
-    fprintf(fid, "rpc_transfer_syntax_t IDL_transfer_syntax;\n");
-    fprintf(fid, "rpc_iovector_elt_t IDL_outs;\n");
-    fprintf(fid, "volatile ndr_ulong_int IDL_fault_code=error_status_ok;\n");
-    fprintf(fid, "volatile ndr_ulong_int IDL_user_fault_id;\n");
+    fprintf(fid, "rpc_transfer_syntax_t\t\tIDL_transfer_syntax;\n");
+    fprintf(fid, "rpc_iovector_elt_t\t\tIDL_outs;\n");
+    fprintf(fid, "volatile ndr_ulong_int\t\tIDL_fault_code=error_status_ok;\n");
+    fprintf(fid, "volatile ndr_ulong_int\t\tIDL_user_fault_id;\n");
     fprintf(fid,
            "volatile RPC_SS_THREADS_CANCEL_STATE_T IDL_async_cancel_state;\n");
-    fprintf(fid, "IDL_ms_t IDL_ms;\n");
-    fprintf(fid, "idl_byte IDL_stack_packet[IDL_STACK_PACKET_SIZE];\n");
+    fprintf(fid, "IDL_ms_t\t\tIDL_ms;\n");
+    fprintf(fid, "idl_byte\t\tIDL_stack_packet[IDL_STACK_PACKET_SIZE];\n");
+
     DDBE_spell_param_vec_def( fid, p_operation, BE_client_side,
                               BE_cmd_opt, BE_cmd_val );
 
@@ -185,22 +225,9 @@ static void CSPELL_client_stub_routine
     }
 
     /*
-     * Analyze the association handle the call is being made on;
-     * declare assoc_handle if necessary
-     */
-    BE_setup_client_handle (fid, p_interface, p_operation, &BE_handle_info);
-
-    /*
-     * Does operation use I-char machinery? If so, declare any needed variables
-     */
-    BE_cs_analyze_and_spell_vars(fid, p_operation, BE_client_side, &cs_info);
-
-    fprintf(fid, "\n");
-
-    /*
      * Start of executable code
      */
-    fprintf(fid, "RPC_SS_INIT_CLIENT\n");
+    fprintf(fid, "\nRPC_SS_INIT_CLIENT\n");
     fprintf(fid, "RPC_SS_THREADS_DISABLE_ASYNC(IDL_async_cancel_state);\n");
     if ( BE_handle_info.handle_type == BE_auto_handle_k )
     {
@@ -267,6 +294,9 @@ static void CSPELL_client_stub_routine
     /*          And call the [cs_tag_rtn] if there is one */
     BE_spell_cs_tag_rtn_call(fid, "IDL_ms.", p_operation, BE_client_side,
                              &BE_handle_info, &cs_info, false);
+
+/* WEZ:setup the handle here ? */
+	 
 
     CSPELL_call_start(fid, &BE_handle_info, p_interface, p_operation, op_num,
                         &comm_stat_info, &fault_stat_info);
@@ -397,6 +427,7 @@ static void CSPELL_client_stub_routine
        )
         fprintf(fid, "return IDL_function_result;\n");
     fprintf (fid, "}\n");
+/* WEZ:we could spell out c -> c++ mappings here */
 }
 
 /******************************************************************************/
@@ -592,6 +623,8 @@ void DDBE_gen_cstub
     int num_declared_exceptions;
     int num_extern_exceptions;
 
+	the_interface = p_interface;
+    NAMETABLE_id_to_string(p_interface->name, &p_interface_name);
     /*
      * Emit a #pragma nostandard to suppress warnings on non-standard C usage
      */
@@ -608,10 +641,15 @@ void DDBE_gen_cstub
     CSPELL_interface_def(fid, p_interface, BE_client_stub_k, false);
 
     /* If necessary, emit statics needed for [auto_handle] */
-    if ( AST_AUTO_HANDLE_SET(p_interface) )
+    if ( AST_AUTO_HANDLE_SET(p_interface) || AST_OBJECT_SET(p_interface))
     {
         CSPELL_auto_handle_statics( fid );
     }
+
+	 /* Declare the Proxy class for ORPC */
+	 if (AST_OBJECT_SET(p_interface))	{
+		 BE_gen_orpc_defs(fid, p_interface, proxy_def);
+	 }
 
     /* If there is an implicit handle, declare it */
     if (p_interface->implicit_handle_name != NAMETABLE_NIL_ID)
@@ -641,7 +679,6 @@ void DDBE_gen_cstub
     DDBE_spell_rtn_vec( fid, dd_vip, cmd_opt, cmd_val, TRUE );
     DDBE_spell_type_vec( fid, dd_vip, cmd_opt, cmd_val );
 
-    NAMETABLE_id_to_string(p_interface->name, &p_interface_name);
 
     /*
      * Emit operation definitions
@@ -703,4 +740,6 @@ void DDBE_gen_cstub
      * Emit a closing #pragma standard to match the nostandard pragma above
      */
     fprintf(fid, "#ifdef VMS\n#pragma standard\n#endif\n");
+
+	 the_interface = NULL;
 }

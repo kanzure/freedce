@@ -120,6 +120,22 @@ void twr_dds_lower_flrs_from_sa
     );
 
 /*
+ * T W R _ U X D _ L O W E R _ F L R S _ F R O M _ S A
+ *
+ *                   *** NON-API ***
+ *
+ * Create the canonical representation of a Unix Domain Socket
+ * protocol tower from a LRPC sockaddr
+ */
+void twr_uxd_lower_flrs_from_sa
+    (
+        [in]    sockaddr_p_t      sa,
+        [out]   twr_p_t           *tower,
+        [out]   unsigned32        *status
+    );
+
+
+/*
  * T W R _ I P _ L O W E R _ F L R S _ T O _ S A
  *
  *                   *** NON-API ***
@@ -134,7 +150,6 @@ void twr_ip_lower_flrs_to_sa
         [out]   unsigned32       *sa_len,
         [out]   unsigned32       *status
     );
-
 /*
  * T W R _ D N E T _ L O W E R _ F L R S _ T O _ S A
  *
@@ -182,4 +197,21 @@ void twr_dds_lower_flrs_to_sa
         [out]   unsigned32       *sa_len,
         [out]   unsigned32       *status
     );
+/*
+ * T W R _ U X D _ L O W E R _ F L R S _ T O _ S A
+ *
+ *                   *** NON-API ***
+ *
+ * Create an UXD sockaddr (sockaddr_un) from the canonical representation of 
+ * an LRPC protocol tower.
+ */
+void twr_uxd_lower_flrs_to_sa 
+    (
+        [in]    byte_p_t         tower_octet_string,
+        [out]   sockaddr_p_t     *sa,
+        [out]   unsigned32       *sa_len,
+        [out]   unsigned32       *status
+    );
+
+
 }

@@ -483,6 +483,16 @@ void rpc_ss_ndr_unmar_struct
                 rpc_ss_ndr_unmar_xmit_as(field_defn_index,
                                  (idl_byte *)struct_addr+offset, NULL, IDL_msp);
                 break;
+#if 0
+            case IDL_DT_INTERFACE:
+                defn_vec_ptr++;     /* Skip over properties byte */
+                IDL_GET_LONG_FROM_VECTOR(field_defn_index, defn_vec_ptr);
+                offset = *offset_vec_ptr;
+                offset_vec_ptr++;
+                rpc_ss_ndr_unmar_interface(field_defn_index, (idl_byte *)struct_addr+offset, NULL, IDL_msp);
+                break;
+#endif
+
             case IDL_DT_V1_ARRAY:
                 type_byte = *defn_vec_ptr;  /* DT_VARYING or DT_OPEN */
                 defn_vec_ptr += 2;   /* DT_VARYING/DT_OPEN and properties */
@@ -980,6 +990,11 @@ void rpc_ss_ndr_u_fix_or_conf_arr
         IDL_DISCARD_LONG_FROM_VECTOR( defn_vec_ptr );   /* Full array defn */
         IDL_GET_LONG_FROM_VECTOR( element_defn_index, defn_vec_ptr );
     }
+	 else if (base_type == IDL_DT_INTERFACE)	{
+		 element_size = sizeof(void*);
+		 defn_vec_ptr += 2; /* skip base type and props */
+		 IDL_GET_LONG_FROM_VECTOR(element_defn_index, defn_vec_ptr);
+	 }
     else element_defn_index = 0;
 
         rpc_ss_ndr_unmar_by_looping( element_count,
@@ -1510,6 +1525,9 @@ void rpc_ss_ndr_unmar_interp
     idl_boolean is_string = idl_false;
     idl_byte *struct_defn_ptr;
     idl_ulong_int offset_index;
+#if 0
+	 idl_ulong_int rtn_index, iid_index;
+#endif
     idl_ulong_int *struct_offset_vec_ptr; /* Start of offsets for this struct */
     idl_ulong_int array_defn_index;
     idl_byte *array_defn_ptr;
@@ -2028,6 +2046,24 @@ void rpc_ss_ndr_unmar_interp
                                              IDL_param_vector[param_index],
                                              NULL, IDL_msp );
                     break;
+#if 0
+                case IDL_DT_INTERFACE:
+                    type_vec_ptr++;     /* Properties byte */
+                    IDL_GET_LONG_FROM_VECTOR(defn_index, type_vec_ptr);
+                    rpc_ss_ndr_unmar_interface(defn_index,
+                        		       IDL_param_vector[param_index],
+                        		       NULL, IDL_msp );
+                   break;
+                case IDL_DT_DYN_INTERFACE:
+                    type_vec_ptr++;     /* Properties byte */
+                    IDL_GET_LONG_FROM_VECTOR(rtn_index, type_vec_ptr);
+                    IDL_GET_LONG_FROM_VECTOR(iid_index, type_vec_ptr);
+                    rpc_ss_ndr_unmar_dyn_interface(rtn_index,
+                        		       IDL_param_vector[param_index],
+                        		       ((uuid_t *) IDL_param_vector[iid_index]),
+                        		       NULL, IDL_msp );
+                   break;
+#endif
                 case IDL_DT_ALLOCATE:
                     /* Indicates an [out]-only conformant or open array must
                         be allocated. Should only appear on server side */

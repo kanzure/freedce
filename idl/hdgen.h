@@ -63,5 +63,8 @@ char *mapchar
     boolean warning_flag    /* TRUE => log warning on nonportable escape char */
 #endif
 );
+int BE_is_handle_param(AST_parameter_n_t * p);
+enum orpc_class_def_type { class_def, proxy_def, stub_def };
+void BE_gen_orpc_defs(FILE * fid, AST_interface_n_t * ifp, enum orpc_class_def_type deftype);
 
 #endif

@@ -624,6 +624,7 @@ unsigned32                  *status;
 
     if (*status != rpc_s_ok)
     {
+		 RPC_DBG_PRINTF(rpc_es_dbg_general, 1, (("inq_protseqs failed\n")));
         return;
     }
 
@@ -2491,6 +2492,7 @@ unsigned32              *status;
     CODING_ERROR (status);
     RPC_VERIFY_INIT ();
 
+	RPC_DBG_PRINTF(rpc_es_dbg_general, 1, ("use_protseq %s[%s]\n", rpc_protseq, endpoint));
 	 
     /*
      * Until both protocol services fully implement this argument, we'll

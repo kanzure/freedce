@@ -533,6 +533,14 @@ void rpc_ss_ndr_unmar_pointee
             IDL_GET_LONG_FROM_VECTOR(pointee_defn_index, defn_vec_ptr);
             rpc_ss_ndr_unmar_xmit_as(pointee_defn_index, p_node, NULL, IDL_msp);
             break;
+#if 0
+        case IDL_DT_INTERFACE:
+            defn_vec_ptr++;     /* Properties byte */
+            IDL_GET_LONG_FROM_VECTOR(pointee_defn_index, defn_vec_ptr);
+            rpc_ss_ndr_unmar_interface(pointee_defn_index,p_node,NULL,IDL_msp);
+            break;
+#endif
+
         case IDL_DT_CS_ARRAY:
             defn_vec_ptr++;     /* Move to IDL_DT_FIXED_ARRAY */
             rpc_ss_ndr_unmar_cs_array(p_node, NULL, NULL, 0, &defn_vec_ptr,

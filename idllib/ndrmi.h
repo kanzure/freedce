@@ -453,6 +453,24 @@ void rpc_ss_ndr_marsh_scalar
     IDL_msp_t IDL_msp
 #endif
 );
+void rpc_ss_ndr_marsh_interface
+(
+#ifdef IDL_PROTOTYPES
+    idl_ulong_int defn_index,
+    void 	  *param_addr,
+    IDL_msp_t     IDL_msp
+#endif
+);
+
+void rpc_ss_ndr_marsh_dyn_interface
+(
+#ifdef IDL_PROTOTYPES
+    idl_ulong_int rtn_index,
+    void 	  *param_addr,
+    uuid_t	  *piid,
+    IDL_msp_t     IDL_msp
+#endif
+);
 
 void rpc_ss_ndr_marsh_struct
 (

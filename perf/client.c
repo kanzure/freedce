@@ -43,6 +43,8 @@
 #include <sys/times.h>
 #include <unistd.h>
 #endif  /* NO_TIMES */
+#include <stdlib.h>
+#include <sys/wait.h>
 
 
 typedef struct
@@ -119,7 +121,7 @@ struct tinfo_t
                 "host[+ep] forward? idempotent?"},
     };
 
-#define N_TESTS (sizeof tinfo / sizeof (struct tinfo_t))
+#define N_TESTS (int)(sizeof tinfo / sizeof (struct tinfo_t))
 
 
 #ifdef _POSIX_THREADS
@@ -556,7 +558,7 @@ char                *argv[];
 
 {
     handle_t            rh;
-    unsigned32          st, xst;
+    unsigned32          st;
     unsigned_char_p_t   name, name2;
     idl_char            result[256];
 
@@ -813,11 +815,11 @@ char *name;
         exit(1);
     }
 
-    printf ("%d interface ids returned for %s.\n", if_ids->count, pstring);
+    printf ("%ld interface ids returned for %s.\n", if_ids->count, pstring);
     for (i = 0; i < if_ids->count; i++)
     {
         uuid_to_string (&if_ids->if_id[i]->uuid, &uuid_string, &st);
-        printf ("%d:\tuuid:\t%s\n\tvers_major:\t%d\tvers_minor\t%d\n",
+        printf ("%ld:\tuuid:\t%s\n\tvers_major:\t%d\tvers_minor\t%d\n",
             (i+1), uuid_string, if_ids->if_id[i]->vers_major,
             if_ids->if_id[i]->vers_minor );
         rpc_string_free (&uuid_string, &temp_status);
@@ -922,14 +924,14 @@ char                *argv[];
  * Auxiliary routine for forwarding test.
  */
 
-static forwarding_mgmt_test (rh, obj, msg)
+static void forwarding_mgmt_test (rh, obj, msg)
 
 handle_t            rh;
 uuid_p_t            obj;
 char                *msg;
 
 {
-    int                 i;
+    unsigned int                 i;
     rpc_if_id_vector_p_t if_ids;
     rpc_if_id_t         perfb_if_id;
     unsigned32          st;
@@ -1010,12 +1012,14 @@ char                *argv[];
     idl_boolean         global;
 #define FSIZE 4000
     unsigned32       d[FSIZE];
-    unsigned32          fst;
     int                 i;
     unsigned32          sum, rsum;
     idl_char            result[256];
     unsigned_char_p_t   pstring;
 
+	DO_NOT_CLOBBER(rh);
+	DO_NOT_CLOBBER(rsum);
+	 
     if (argc < 4)
     {
         usage(test);
@@ -1182,8 +1186,6 @@ char                *argv[];
 
 {
     handle_t            rh;
-    unsigned32          st = rpc_s_ok;
-
 
     if (argc < 3)
     {
@@ -1235,7 +1237,7 @@ static unsigned long callback_passes, callback_count;
 
 void perfc_init (h, p)
 
-handle_t            h;
+handle_t            h __attribute__((unused));
 unsigned32       *p;
 
 {
@@ -1245,7 +1247,7 @@ unsigned32       *p;
 
 void perfc_cb (h, c)
 
-handle_t            h;
+handle_t            h __attribute__((unused));
 unsigned32       *c;
 
 {
@@ -1255,7 +1257,7 @@ unsigned32       *c;
 
 void perfc_cb_idem (h, c)
 
-handle_t            h;
+handle_t            h __attribute__((unused));
 unsigned32       *c;
 
 {
@@ -1414,8 +1416,6 @@ char                *argv[];
     ENDTRY
 
     TRY {
-        unsigned32 st;
-
         rh = binding_from_string_binding(&ZotObj, argv[2]);
         perfg_op1(rh, 17, &x);
         fprintf(stderr,
@@ -1490,7 +1490,7 @@ static boolean32 cancel_was_pending()
  * Perform a RPC that doesn't call a cancellable operation
  * and verify that a cancel is pending upon completion.
  */
-static_cancel_test1(rh, idem, slow_secs)
+void static_cancel_test1(rh, idem, slow_secs)
 
 rpc_binding_handle_t    rh;
 unsigned32              idem;
@@ -1498,7 +1498,6 @@ unsigned long           slow_secs;
 
 {
 
-  int oc;
   boolean32 pending;
 
   printf("    Static Cancel Test 1 (server should NOT detect cancel):\n");
@@ -1559,7 +1558,7 @@ unsigned long           slow_secs;
  * Perform a RPC that does call a cancellable operation
  * and verify that a cancel is detected.
  */
-static_cancel_test2(rh, idem, slow_secs)
+void static_cancel_test2(rh, idem, slow_secs)
 
 rpc_binding_handle_t    rh;
 unsigned32              idem;
@@ -1622,7 +1621,7 @@ unsigned long           slow_secs;
  * Perform a RPC that doesn't call a cancellable operation followed
  * by one that does and verify that a cancel is detected.
  */
-static_cancel_test3(rh, idem, slow_secs)
+void static_cancel_test3(rh, idem, slow_secs)
 
 rpc_binding_handle_t    rh;
 unsigned32              idem;
@@ -1714,7 +1713,7 @@ char                *argv[];
     handle_t            rh;
     int                 idem;
     int                 has_ctmo = false;
-    signed32            ctmo;
+    signed32            ctmo = 0;
     unsigned short      i, passes;
     unsigned long       slow_secs = 5;
     unsigned32          st;
@@ -1737,7 +1736,7 @@ char                *argv[];
         ctmo = atoi(argv[6]);
     }
 
-    printf("    passes: %d; idem: %s; slow secs: %d; cancel timeout secs: %s\n",
+    printf("    passes: %d; idem: %s; slow secs: %ld; cancel timeout secs: %s\n",
             passes, idem ? "yes" : "no", slow_secs,
             has_ctmo ? argv[6] : "<default>");
 
@@ -1793,7 +1792,7 @@ char                *argv[];
     delay.tv_sec = atoi(argv[5]);
     delay.tv_nsec = 0;
 
-    printf("    passes: %d; die: %s; sleep secs: %d\n",
+    printf("    passes: %d; die: %s; sleep secs: %ld\n",
             passes, die ? "yes" : "no", delay.tv_sec);
 
     for (i = 0; i < passes; i++)
@@ -1815,7 +1814,7 @@ char                *argv[];
 
         if (delay.tv_sec > 0)
         {
-            printf ("        Sleeping for %d seconds...\n", delay.tv_sec);
+            printf ("        Sleeping for %ld seconds...\n", delay.tv_sec);
             pthread_delay_np(&delay);
             printf ("        ...awake\n");
         }
@@ -1852,7 +1851,7 @@ char                *argv[];
 
 {
 #define MSIZE (1024 * 1024)
-    unsigned32          i,j,k;
+    unsigned32          i;
     unsigned short      passes;
     handle_t            rh;
     unsigned32          st;
@@ -1865,14 +1864,13 @@ char                *argv[];
     unsigned short      cpp;
     unsigned32          *d;
     unsigned32          len;
-    unsigned32          sum, rsum;
+    unsigned32          sum=0, rsum=0;
     unsigned32          n_calls, n_brd, n_maybe, n_brd_maybe;
     idl_boolean         idem;
     idl_boolean         verify;
     unsigned short      pass, calln;
-    unsigned32          slow_secs;
-    float               f;
-    perf_slow_mode_t    slow_mode;
+    unsigned32          slow_secs=0;
+    perf_slow_mode_t    slow_mode=0;
     static char         *slow_mode_names[4] = {"sleep", "I/O", "CPU", "Fork sleep"};
 #ifdef _POSIX_THREADS
     static handle_t     first_handle = NULL;
@@ -2194,12 +2192,12 @@ char                *argv[];
         }
 #else
         if (avg_time.u_msec == 0 || avg_time.s_msec == 0)
-            printf("        pass %3d; ms/call: %lu.%03u (ms/pass: %lu/%lu)",
+            printf("        pass %3d; ms/call: %lu.%03lu (ms/pass: %lu/%lu)",
                    pass, avg_time.r_msec, avg_time.r_usec,
                    avg_time.ptime.tms_utime*(1000/clock_ticks),
                    avg_time.ptime.tms_stime*(1000/clock_ticks));
         else
-            printf("        pass %3d; ms/call: %lu.%03u (%lu/%lu)",
+            printf("        pass %3d; ms/call: %lu.%03lu (%lu/%lu)",
                    pass, avg_time.r_msec, avg_time.r_usec,
                    avg_time.u_msec, avg_time.s_msec);
 
@@ -2280,6 +2278,15 @@ char                *argv[];
  * Start test.  Catch and print any exceptions that are raised.
  */
 
+void rpc__cn_set_sock_buffsize (
+        unsigned32	  /* rsize */,
+        unsigned32	  /* ssize */,
+        error_status_t	* /* st */);
+void rpc__cn_inq_sock_buffsize (
+        unsigned32	* /* rsize */,
+        unsigned32	* /* ssize */,
+        error_status_t  * /* st */);
+
 static void start_test(test, argc, argv)
 
 int test;
@@ -2292,21 +2299,21 @@ char *argv[];
     rpc__cn_set_sock_buffsize(socket_buf_size, socket_buf_size, &status);
     if (status != rpc_s_ok)
     {
-	fprintf(stderr,"*** rpc__cn_set_sock_buffsize failed (0x%x)\n", status);
+	fprintf(stderr,"*** rpc__cn_set_sock_buffsize failed (0x%lx)\n", status);
         exit(1);
     }
 
     rpc__cn_inq_sock_buffsize(&rsize, &ssize, &status);
     if (status != rpc_s_ok)
     {
-	fprintf(stderr,"*** rpc__cn_inq_sock_buffsize failed (0x%x)\n", status);
+	fprintf(stderr,"*** rpc__cn_inq_sock_buffsize failed (0x%lx)\n", status);
         exit(1);
     }
     if (socket_buf_size != rsize || socket_buf_size != ssize)
     {
         fprintf(stderr, "*** CN socket buffer sizes dont match:\n");
-        fprintf(stderr, "*** READ desired: %u   actual: %u\n", socket_buf_size, rsize);
-        fprintf(stderr, "*** WRITE desired: %u  actual: %u\n", socket_buf_size, ssize);
+        fprintf(stderr, "*** READ desired: %lu   actual: %lu\n", socket_buf_size, rsize);
+        fprintf(stderr, "*** WRITE desired: %lu  actual: %lu\n", socket_buf_size, ssize);
         exit(1);
     }
 
@@ -2366,7 +2373,7 @@ struct task_info_t
 static void multi_task (info, len)
 
 struct task_info_t  *info;
-int                 len;
+int                 len __attribute__((unused));
 
 {
     unsigned32  st;
@@ -2415,11 +2422,11 @@ int                 argc;
 char                *argv[];
 {
     int                 i;
-    unsigned32          st;
     volatile idl_boolean  done;
     pthread_t           tasks[MAX_TASKS];
 
-
+	DO_NOT_CLOBBER(i);
+	 
     if (n_tasks > MAX_TASKS)
     {
         fprintf(stderr, "%d is too many tasks (max is %d)\n", n_tasks, MAX_TASKS);
@@ -2481,6 +2488,7 @@ char                *argv[];
 /*
  * Parse authentication (-p) option.
  */
+extern int lookup_name(char *table[], char *s);
 
 static void parse_auth_option()
 {
@@ -2529,21 +2537,25 @@ static void parse_auth_option()
 /*
  * Main program
  */
+extern void rpc__dbg_set_switches    (
+        char            * /*s*/,
+        unsigned32      * /*st*/
+    );
+extern void dump_stg_info(void);
 
-main (argc, argv)
+int main (argc, argv)
 
 int                 argc;
 char                *argv[];
 
 {
-    int                 test, save_argc;
-    unsigned32          fst, st;
+    int                 test, save_argc=0;
+    unsigned32          st;
     int                 c;
     idl_boolean         stats = false;
-    idl_boolean         lossy = false;
     extern int          optind;
     extern char         *optarg;
-    char                *s, **save_argv;
+    char                *s, **save_argv=NULL;
     int                 do_fork = 0;
     int                 fork_count = 0;
     pid_t               cpid = 0;
@@ -2624,7 +2636,7 @@ fork_test_replay:
 
                 if ((tmp = (char *)malloc(strlen(optarg)+1)) == NULL)
                 {
-                    fprintf(stderr, "*** No more memery\n");
+                    fprintf(stderr, "*** No more memory\n");
                     exit(1);
                 }
 
@@ -2705,7 +2717,7 @@ fork_test_replay:
     if (authenticate)
     {
         VRprintf(2, ("  -----------------\n  Authentication params:\n    authn protocol: %s\n    authz protocol: %s\n    level: %s\n    server princ: \"%s\"\n  -----------------\n",
-                authn_protocol == rpc_c_authn_default ?
+                authn_protocol == (unsigned32)rpc_c_authn_default ?
                     "default" : authn_names[authn_protocol],
                 authz_names[authz_protocol],
                 authn_level_names[authn_level],

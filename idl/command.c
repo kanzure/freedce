@@ -440,7 +440,7 @@ static void dump_cmd_data()
 
         case string:
             if (cmd_val[i] != NULL)
-                printf(" %s\n", cmd_val[i]);
+                printf(" %s\n", (char*)cmd_val[i]);
             else
                 printf(" \n");
             break;
@@ -914,9 +914,10 @@ boolean CMD_parse_args          /* Returns TRUE on success */
 
         case dump_yy:
             {
-            extern int yydebug;
+            extern int nidl_yydebug;
+            extern int acf_yydebug;
             cmd_opt[opt_dump_yy] = TRUE;
-            yydebug = (int)TRUE;
+            nidl_yydebug = acf_yydebug = (int)TRUE;
             break;
             }
         }

@@ -18,10 +18,10 @@ libprot_ncadg_la_SOURCES= conv.c dg.c dgcall.c dgccall.c \
 libprot_ncadg_la_LIBADD=$(idlobjs)
 
 conv_cstub.lo:	$(IDL_INCLUDE_DIR)/conv.idl
-	$(IDL) $(NCK_IDLFLAGS) -cepv -server none -cc_cmd '$(LIBTOOL) --mode=compile $(CC) -c ' $<
+	$(IDL) $(NCK_IDLFLAGS) -cepv -server none $<
 
 convc_cstub.lo convc_sstub.lo convc_cstub.c convc_sstub.c: $(IDL_INCLUDE_DIR)/convc.idl
-	$(IDL) $(NCK_IDLFLAGS) -cepv -cc_cmd '$(LIBTOOL) --mode=compile $(CC) -c ' $<
+	$(IDL) $(NCK_IDLFLAGS) -cepv $<
 
 CLEANFILES=conv.h convc.h
 endif

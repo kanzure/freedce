@@ -55,6 +55,10 @@
 #ifndef STUBBASE_H
 #define STUBBASE_H	1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <dce/dce.h>
 
 /***************************************************************************/
@@ -1706,5 +1710,9 @@ void rpc_ss_bind_authn_client _DCE_PROTOTYPE_ ((
 
 #pragma standard
 #endif /* VMS  */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* _STUBBASE_H */

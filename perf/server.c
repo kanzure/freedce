@@ -40,6 +40,9 @@
 #include <string.h>
 #include <perf_c.h>
 #include <perf_p.h>
+#include <getopt.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #ifdef AUTH_KRB
 #include <dce/id_base.h>
@@ -88,7 +91,7 @@ idl_boolean shut_ok = true;
 
 static boolean32 mgmt_auth_fn (h, op, st)
 
-handle_t            h;
+handle_t            h __attribute__((unused));
 unsigned32          op;
 unsigned32          *st;
 
@@ -173,7 +176,7 @@ unsigned32              *status;
  */
 static int setup_thread_pools()
 {
-    unsigned32 st, tst;
+    unsigned32 st;
 
     if (! use_reserved_threads)
         return 0;
@@ -213,7 +216,7 @@ static int setup_thread_pools()
 int teardown_thread_pools(wait_flg)
 idl_boolean wait_flg;
 {
-    unsigned32 st, tst;
+    unsigned32 st;
 
     if (! use_reserved_threads)
         return 0;
@@ -348,7 +351,7 @@ unsigned32          max_calls;
 
     i = 2;
 
-    while (i < argc)
+    while (i < (unsigned)argc)
     {
         if (strcmp(argv[i], "all") == 0)
         {
@@ -416,7 +419,7 @@ unsigned32          max_calls;
  * U S A G E
  */
 
-usage()
+void usage(void)
 
 {
     fprintf(stderr, "usage: server [-sD] [-S <server loops>] [-d <debug switches>]\n");
@@ -449,7 +452,7 @@ usage()
  * routine is called (selectively) from manager routines.
  */ 
 
-print_binding_info(text, h)
+void print_binding_info(text, h)
 
 char        *text;
 handle_t    h;
@@ -548,15 +551,30 @@ handle_t    h;
  *
  * Main program.
  */
+extern void dump_stg_info(void);
+extern void rpc__dbg_set_switches    (
+        char            * /*s*/,
+        unsigned32      * /*st*/
+    );
+void rpc__cn_set_sock_buffsize (
+        unsigned32	  /* rsize */,
+        unsigned32	  /* ssize */,
+        error_status_t	* /* st */);
+void rpc__cn_inq_sock_buffsize (
+        unsigned32	* /* rsize */,
+        unsigned32	* /* ssize */,
+        error_status_t  * /* st */);
 
-main (argc, argv)
+
+extern int lookup_name(char *table[], char *s);
+
+int main (argc, argv)
 
 int                 argc;
 char                *argv[];
 
 {
     unsigned32      st;
-    unsigned32      fst;
     idl_boolean     debug = false;
     idl_char        *auth_principal, *auth_principal_2;
     char            *s;
@@ -571,6 +589,8 @@ char                *argv[];
     idl_char        *keytab;
     unsigned32      ssize,rsize;
 
+	 DO_NOT_CLOBBER(i);
+	 DO_NOT_CLOBBER(ep_reg);
 
     while ((c = getopt(argc, argv, "beslrDB:d:p:S:v:")) != EOF)
     {
@@ -601,7 +621,7 @@ char                *argv[];
             keytab = (idl_char *) strtok(NULL, " ");
 
             VRprintf(2, ("+ Authentication params; authn_protocol: %s, auth_principal: %s, keytab: %s\n",
-                authn_protocol == rpc_c_authn_default ? 
+                authn_protocol == (unsigned32)rpc_c_authn_default ? 
                     "default" : authn_names[authn_protocol], 
                 auth_principal,
                 keytab == NULL ?
@@ -620,7 +640,7 @@ char                *argv[];
                 (NULL, authn_protocol, &auth_principal_2, &st);
             if (st != rpc_s_ok)
             {
-                fprintf(stderr, "*** Can't get my principal name\n", error_text(st));
+                fprintf(stderr, "*** Can't get my principal name %s\n", error_text(st));
                 exit(1);
             }
             VRprintf(2, ("+ Server principal name set to \"%s\"\n", auth_principal_2));
@@ -679,21 +699,21 @@ char                *argv[];
     rpc__cn_set_sock_buffsize(socket_buf_size, socket_buf_size, &st);
     if (st != rpc_s_ok)
     {
-	fprintf(stderr,"*** rpc__cn_set_sock_buffsize failed (0x%x)\n", st);
+	fprintf(stderr,"*** rpc__cn_set_sock_buffsize failed (0x%lx)\n", st);
 	exit(1);
     }
 
     rpc__cn_inq_sock_buffsize(&rsize, &ssize, &st);
     if (st != rpc_s_ok)
     {
-	fprintf(stderr,"*** rpc__cn_inq_sock_buffsize failed (0x%x)\n", st);
+	fprintf(stderr,"*** rpc__cn_inq_sock_buffsize failed (0x%lx)\n", st);
 	exit(1);
     }
     if (socket_buf_size != rsize || socket_buf_size != ssize)
     {
         fprintf(stderr, "*** CN socket buffer sizes dont match:\n");
-        fprintf(stderr, "*** READ desired: %u   actual: %u\n", socket_buf_size, rsize);
-        fprintf(stderr, "*** WRITE desired: %u  actual: %u\n", socket_buf_size, ssize);
+        fprintf(stderr, "*** READ desired: %lu   actual: %lu\n", socket_buf_size, rsize);
+        fprintf(stderr, "*** WRITE desired: %lu  actual: %lu\n", socket_buf_size, ssize);
 	exit(1);
     }
 
@@ -778,4 +798,5 @@ char                *argv[];
     ENDTRY
 
     VRprintf(1, ("Exiting\n"));
+	 return 0;
 }

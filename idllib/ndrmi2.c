@@ -349,6 +349,13 @@ void rpc_ss_ndr_marsh_pointee
             IDL_GET_LONG_FROM_VECTOR(pointee_defn_index,defn_vec_ptr);
             rpc_ss_ndr_marsh_xmit_as(pointee_defn_index, pointee_addr, IDL_msp);
             break;
+#if 0
+        case IDL_DT_INTERFACE:
+            defn_vec_ptr += 2;      /* Byte after properties byte */
+            IDL_GET_LONG_FROM_VECTOR(pointee_defn_index,defn_vec_ptr);
+            rpc_ss_ndr_marsh_interface(pointee_defn_index,pointee_addr,IDL_msp);
+            break;
+#endif
         case IDL_DT_CS_TYPE:
             defn_vec_ptr += 2;      /* Byte after properties byte */
             IDL_GET_LONG_FROM_VECTOR(pointee_defn_index,defn_vec_ptr);

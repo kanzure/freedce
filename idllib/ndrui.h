@@ -579,6 +579,24 @@ void rpc_ss_ndr_unmar_struct
     IDL_msp_t IDL_msp
 #endif
 );
+void rpc_ss_ndr_unmar_interface(
+#ifdef IDL_PROTOTYPES
+    idl_ulong_int defn_index,
+    void         *param_addr,
+    void         *xmit_data_buff,
+    IDL_msp_t     IDL_msp
+#endif
+);
+
+void rpc_ss_ndr_unmar_dyn_interface(
+#ifdef IDL_PROTOTYPES
+    idl_ulong_int rtn_index,
+    void         *param_addr,
+    uuid_t       *piid,
+    void         *xmit_data_buff,
+    IDL_msp_t     IDL_msp
+#endif
+);
 
 void rpc_ss_ndr_unmar_v1_string
 (

@@ -385,7 +385,8 @@ static boolean uuid_init_done = FALSE;
 ( \
     (((uuid)->clock_seq_hi_and_reserved & 0x80) == 0x00) || /* var #0 */ \
     (((uuid)->clock_seq_hi_and_reserved & 0xc0) == 0x80) || /* var #1 */ \
-    (((uuid)->clock_seq_hi_and_reserved & 0xe0) == 0xc0)    /* var #2 */ \
+    (((uuid)->clock_seq_hi_and_reserved & 0xe0) == 0xc0) || /* var #2 */ \
+    (((uuid)->clock_seq_hi_and_reserved & 0xe0) == 0xe0)    /* var #DAMNMICROSOFT */ \
 )
 
 /*

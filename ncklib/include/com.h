@@ -147,13 +147,13 @@ EXTERNAL unsigned32    rpc_g_fork_count;
 #define RPC_C_PROTSEQ_ID_NCACN_OSI_DNA  2
 #define RPC_C_PROTSEQ_ID_NCADG_IP_UDP   3
 #define RPC_C_PROTSEQ_ID_NCADG_DDS      4
-
+#define RPC_C_PROTSEQ_ID_NCALRPC			 5
 #ifdef TEST_PROTOCOL
-#define RPC_C_PROTSEQ_ID_NCATP_IP_TCP   5
-#define RPC_C_PROTSEQ_ID_MAX            6
-#else
-#define RPC_C_PROTSEQ_ID_MAX            5
+#define RPC_C_PROTSEQ_ID_NCATP_IP_TCP   6
 #endif /* TEST_PROTOCOL */
+
+/* Allow for dynamic protocols */
+#define RPC_C_PROTSEQ_ID_MAX            16
 
 typedef unsigned32       rpc_protseq_id_t, *rpc_protseq_id_p_t;
 
@@ -178,6 +178,7 @@ typedef unsigned_char_t rpc_protseq_t[RPC_C_PROTSEQ_MAX];
 #define RPC_PROTSEQ_NCACN_OSI_DNA       "ncacn_osi_dna"
 #define RPC_PROTSEQ_NCADG_IP_UDP        "ncadg_ip_udp"
 #define RPC_PROTSEQ_NCADG_DDS           "ncadg_dds"
+#define RPC_PROTSEQ_NCALRPC             "ncalrpc"
 
 #ifdef PROT_NCATP
 #define RPC_PROTSEQ_NCATP_IP_TCP        "ncatp_ip_tcp"
@@ -196,10 +197,9 @@ typedef unsigned_char_t rpc_protseq_t[RPC_C_PROTSEQ_MAX];
 
 #ifdef PROT_NCATP
 #define RPC_C_PROTOCOL_ID_NCATP         2
-#define RPC_C_PROTOCOL_ID_MAX           3
-#else
-#define RPC_C_PROTOCOL_ID_MAX           2
 #endif
+/* allow for more of these */
+#define RPC_C_PROTOCOL_ID_MAX           16
 
 typedef unsigned32       rpc_protocol_id_t, *rpc_protocol_id_p_t;
 
@@ -220,6 +220,7 @@ typedef unsigned32       rpc_protocol_id_t, *rpc_protocol_id_p_t;
  * sockaddr", but that's another matter.)
  */
 
+#define RPC_C_NAF_ID_UXD     1
 #define RPC_C_NAF_ID_IP      2
 #define RPC_C_NAF_ID_DNET    12
 #define RPC_C_NAF_ID_DDS     13         /* ###Check this one ###*/
@@ -236,6 +237,7 @@ typedef unsigned32       rpc_naf_id_t, *rpc_naf_id_p_t;
  * The Network Protocol IDs.
  */
 
+#define RPC_C_NETWORK_PROTOCOL_ID_UXD   0 /* FIXME: is that OK? */
 #define RPC_C_NETWORK_PROTOCOL_ID_TCP   6
 #define RPC_C_NETWORK_PROTOCOL_ID_UDP   17
 #define RPC_C_NETWORK_PROTOCOL_ID_NSP   1
@@ -648,7 +650,7 @@ typedef struct
  */
 typedef unsigned32 rpc_authn_protocol_id_t;
 
-#define RPC_C_AUTHN_PROTOCOL_ID_MAX     5
+#define RPC_C_AUTHN_PROTOCOL_ID_MAX     16
 
 /*
  * R P C _ A U T H Z _ P R O T O C O L _ I D _ T

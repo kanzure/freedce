@@ -5,7 +5,7 @@ dceincludedir = $(includedir)/dce
 commonidl= codesets.idl conv.idl convc.idl ep.idl \
 		iovector.idl lbase.idl mgmt.idl nbase.idl ncastat.idl \
 		ndrold.idl rpc.idl rpcbase.idl rpcpvt.idl rpcsts.idl rpctypes.idl \
-		twr.idl uuid.idl
+		twr.idl uuid.idl obase.idl objex.idl wtypes.idl remact.idl objex.idl
 
 commonheaders=codesets_stub.h stubbase.h idl_es.h idlbase.h idlddefs.h \
 	rpcexc.h

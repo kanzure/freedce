@@ -153,7 +153,7 @@ void add_param_to_list(acf_param_t *, acf_param_t **);
 static void append_parameter(AST_operation_n_t *, char const *, acf_attrib_t *);
 static void process_rep_as_type(AST_interface_n_t *, AST_type_n_t *, char const *);
 static void process_cs_char_type(AST_interface_n_t *, AST_type_n_t *, char const *);
-/*static void dump_attributes(char *, char *, acf_attrib_t *);*/
+static void dump_attributes(char *, char const *, acf_attrib_t *);
 
 /*
  * Warning and Error stuff
@@ -1081,7 +1081,7 @@ acf_parameter:
 #ifdef DUMPERS
         if (cmd_opt[opt_dump_acf])
         {
-            char *param_name;
+            char const *param_name;
             NAMETABLE_id_to_string($<y_id>2, &param_name);
             dump_attributes("ACF parameter", param_name, &parameter_attr);
         }
@@ -1961,7 +1961,7 @@ static void dump_attributes
 #ifdef PROTO
 (
     char            *header_text,       /* [in] Initial output text */
-    char            *node_name,         /* [in] Name of tree node */
+    char const            *node_name,         /* [in] Name of tree node */
     acf_attrib_t    *node_attr_p        /* [in] Node attributes ptr */
 )
 #else
@@ -2008,7 +2008,7 @@ static void dump_attributes
         if (node_attr.bit.extern_exceps && ASTP_parsing_main_idl)
         {
             AST_exception_n_t   *excep_p;
-            char                *name;
+            char const               *name;
             strcat(attr_text, "extern_exceptions(");
             for (excep_p = the_interface->exceptions;
                  excep_p != NULL;

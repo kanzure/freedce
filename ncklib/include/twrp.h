@@ -42,6 +42,7 @@
 /*
  * Protocol identifiers for each lower tower floor.
  */
+#define TWR_C_FLR_PROT_ID_UXD           0x01 /* Unix-Domain Socket */
 #define TWR_C_FLR_PROT_ID_DNA           0x02 /* DNA     */
 #define TWR_C_FLR_PROT_ID_OSI           0x03 /* OSI     */
 #define TWR_C_FLR_PROT_ID_NSP           0x04 /* NSP     */
@@ -54,6 +55,7 @@
 /*
  * Number of lower floors in each address family.
  */
+#define TWR_C_NUM_UXD_LOWER_FLRS      2  /* Number lower flrs in uxd tower  */
 #define TWR_C_NUM_IP_LOWER_FLRS       2  /* Number lower flrs in ip tower  */
 #define TWR_C_NUM_DNA_LOWER_FLRS      3  /* Number lower flrs in dna tower */
 #define TWR_C_NUM_OSI_LOWER_FLRS      3  /* Number lower flrs in osi tower */

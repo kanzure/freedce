@@ -52,6 +52,11 @@ EXTERNAL ept_v3_0_epv_t ept_v3_0_mgr_epv;
 EXTERNAL llb__v4_0_epv_t llb_v4_0_mgr_epv;
 #endif
 
+#if ENABLE_DCOM
+# include <dce/objex.h>
+EXTERNAL	IObjectExporter_v0_0_epv_t objex_mgr_epv;
+#endif
+
 #include <comfwd.h>
 
 #include <dsm.h>
@@ -176,7 +181,13 @@ GLOBAL   boolean32      dflag = false;
 
 INTERNAL boolean32      foreground = false;
 
-INTERNAL char           rpcd_version_str[] = "rpcd version dce 1.1";
+
+INTERNAL char           rpcd_version_str[] =
+#if ENABLE_DCOM
+	"rpcd/orpcd version freedce 1.1";
+#else
+	"rpcd version freedce 1.1";
+#endif
 
 GLOBAL   uuid_t         nil_uuid;
 
@@ -339,6 +350,14 @@ error_status_t  *status;
     if (check_st_bad("Unable to rpc_server_register_if for llb", status))
         return;
 #endif
+
+#if ENABLE_DCOM
+	 rpc_server_register_if(IObjectExporter_v0_0_s_ifspec, (uuid_p_t)NULL,
+			 (rpc_mgr_epv_t)&objex_mgr_epv, status);
+	 if (check_st_bad("Unable to rpc_server_register_if for orpc", status))
+		 return;
+#endif
+	 
 }
 
 /*

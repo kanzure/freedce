@@ -96,7 +96,10 @@ typedef enum {
     rpc_es_dbg_dg_max_psock,             /* 33 */
     rpc_es_dbg_dg_max_window_size,       /* 34 */
     rpc_es_dbg_threads,       	 	 /* 35 */
-
+    rpc_es_dbg_uxd_max_pth_unfrag_tpdu,   /*  36 */
+    rpc_es_dbg_uxd_max_loc_unfrag_tpdu,   /*  37 */
+    rpc_es_dbg_uxd_max_tsdu,              /* 38 */
+ 
     /* 
      * Add new switches above this comment and adjust the
      * "last_switch" value if necessary.  We keep a few
