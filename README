@@ -1,0 +1,12 @@
+===========================================================================
+DCE Threads Compatibility Library for Linux
+A DCE Threads emulation layer ontop of LinuxThreads.
+===========================================================================
+Maintainers:	Miroslaw Dobrzanski-Neumann <mne@mosaic-ag.com>	
+					Wez Furlong <wez+dce@thebrainroom.com>
+
+This packages implements pthreads draft 4.
+
+For information about copyrights, see the file `COPYING' included with this
+package.
+
