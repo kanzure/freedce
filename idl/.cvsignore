@@ -5,7 +5,7 @@ acf_y.c
 acf_l.c
 nidl_y.h
 nidl_y.c
-idl
+dceidl
 acf_y.h
 *.lo
 *.la

@@ -7,7 +7,7 @@ INCLUDES+=$(dce_includes)
 
 SUFFIXES=.idl
 
-IDL=$(top_builddir)/idl/idl
+IDL=$(top_builddir)/idl/dceidl
 IDL_INCLUDE_DIR=$(top_srcdir)/include/dce
 
 IDLFLAGS=-cepv -client none -server none -I$(IDL_INCLUDE_DIR)/..

@@ -81,6 +81,7 @@ sinclude(demos/config.m4)
 sinclude(dcom/config.m4)
 
 AC_OUTPUT(Makefile)
+AC_OUTPUT(freedce.spec)
 
 dnl restore original AC_OUTPUT definition
 popdef([AC_OUTPUT])
