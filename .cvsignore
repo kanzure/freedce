@@ -13,6 +13,8 @@ missing
 install-sh
 libtool
 freedce.spec
+*.tar.bz2
+ltconfig
 *.lo
 *.la
 .libs
