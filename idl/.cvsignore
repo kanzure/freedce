@@ -1,0 +1,7 @@
+Makefile
+*.lo
+*.la
+.libs
+*.tar.gz
+*.tgz
+.deps

@@ -1,0 +1,14 @@
+Makefile
+*.lo
+*.la
+.libs
+*.tar.gz
+*.tgz
+.deps
+ndr_rep.h
+ndrtypes.h
+sec_authn.h
+dce_error.h
+marshall.h
+dce.h
+dce_utils.h
