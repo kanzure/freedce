@@ -201,6 +201,10 @@ void rpc_ss_ndr_unmar_struct
     IDL_GET_LONG_FROM_VECTOR(offset_index,defn_vec_ptr);
     struct_offset_vec_ptr = IDL_msp->IDL_offset_vec + offset_index;
 
+    RPC_DBG_NDR(("rpc_ss_ndr_unmar_struct: %10p %s\n",
+		    struct_offset_vec_ptr,
+		    rpc_dbg_ndr_struct_type(struct_type)));
+
     if ( (struct_type == IDL_DT_CONF_STRUCT)
         || (struct_type == IDL_DT_V1_CONF_STRUCT) )
     {
@@ -226,6 +230,8 @@ void rpc_ss_ndr_unmar_struct
     /* Loop over the fields of the structure */
     do {
         type_byte = *defn_vec_ptr;
+	    RPC_DBG_NDR(("rpc_ss_ndr_unmar_struct loop: %10p %s\n",
+			    defn_vec_ptr, rpc_dbg_ndr_type(type_byte)));
         defn_vec_ptr++;
         switch(type_byte)
         {
@@ -663,6 +669,10 @@ void rpc_ss_ndr_unmar_by_looping
     unsigned long xmit_data_size;   /* [transmit_as] - size of xmitted type */
     rpc_void_p_t xmit_data_buff = NULL;     /* Address of storage [transmit_as]
                                                 type can be unmarshalled into */
+
+    RPC_DBG_NDR(("rpc_ss_ndr_unmar_by_looping: base type %s element count: %d\n",
+			    rpc_dbg_ndr_type(base_type),
+			    element_count));
 
     if (base_type == IDL_DT_REF_PTR)
     {
@@ -1141,6 +1151,9 @@ void rpc_ss_ndr_u_var_or_open_arr
     idl_byte *inner_slice_address;  /* Address of 1-dim subset of array */
     int dim;    /* Index through array dimensions */
 
+    RPC_DBG_NDR(("rpc_ss_ndr_u_var_or_open_arr: %10p\n",
+			    defn_vec_ptr));
+
     if ( (*defn_vec_ptr == IDL_DT_STRING)
         || (*defn_vec_ptr == IDL_DT_V1_STRING) )
     {
@@ -1301,6 +1314,8 @@ void rpc_ss_ndr_unmar_Z_values
     idl_ulong_int *Z_values;
     unsigned32 i;
 
+    RPC_DBG_NDR(("rpc_ss_ndr_unmar_Z_values: dimensionality: %d\n",
+			    dimensionality));
     if (*p_Z_values == NULL)
     {
         Z_values = (idl_ulong_int *)rpc_ss_mem_alloc(&IDL_msp->IDL_mem_handle,
@@ -1346,6 +1361,9 @@ void rpc_ss_ndr_unmar_varying_arr
     idl_ulong_int normal_Z_values[IDL_NORMAL_DIMS];
     IDL_bound_pair_t *range_list;
     IDL_bound_pair_t normal_range_list[IDL_NORMAL_DIMS];
+
+    RPC_DBG_NDR(("rpc_ss_ndr_unmar_varying_arr %10p\n",
+			    array_defn_ptr));
 
     array_dims = (idl_ulong_int)*array_defn_ptr;
     array_defn_ptr++;
@@ -1589,6 +1607,8 @@ void rpc_ss_ndr_unmar_interp
         param_addr = IDL_param_vector[param_index];
         do {
             type_byte = *type_vec_ptr;
+	    RPC_DBG_NDR(("rpc_ss_ndr_unmar_interp loop: %10p %s\n",
+			    type_vec_ptr, rpc_dbg_ndr_type(type_byte)));
             type_vec_ptr++;
             switch(type_byte)
             {

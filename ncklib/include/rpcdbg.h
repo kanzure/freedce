@@ -99,6 +99,7 @@ typedef enum {
     rpc_es_dbg_uxd_max_pth_unfrag_tpdu,   /*  36 */
     rpc_es_dbg_uxd_max_loc_unfrag_tpdu,   /*  37 */
     rpc_es_dbg_uxd_max_tsdu,              /* 38 */
+    rpc_es_dbg_verbose_ndr,              /* 39 */
  
     /* 
      * Add new switches above this comment and adjust the

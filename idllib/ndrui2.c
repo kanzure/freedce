@@ -75,6 +75,10 @@ static void rpc_ss_ndr_unmar_ptr_ptee
     idl_ulong_int node_number;
     idl_ulong_int unique_flag;  /* Wire form of [unique] pointer */
 
+   RPC_DBG_NDR(("rpc_ss_ndr_unmar_ptr_ptee: %10p %s\n",
+				    defn_vec_ptr,
+				    rpc_dbg_ndr_type(pointee_type)));
+
     switch(pointee_type)
     {
         case IDL_DT_FULL_PTR:
@@ -154,7 +158,7 @@ void rpc_ss_ndr_unmar_pointee
     idl_ulong_int node_number = 0;
     idl_ulong_int node_size = 0;
     rpc_void_p_t p_node;    /* Pointer to storage for pointee */
-    long already_unmarshalled;
+    long already_unmarshalled = idl_false;
     long new_node;
     idl_byte pointee_type;
     idl_boolean type_has_pointers;
@@ -169,6 +173,12 @@ void rpc_ss_ndr_unmar_pointee
     idl_byte *constr_defn_ptr;   /* Pointer to definition of constructed type */
     idl_ulong_int switch_value;  /* Also used for [cs_char] machinery */
     IDL_cs_shadow_elt_t *struct_cs_shadow = NULL;
+
+   RPC_DBG_NDR(("rpc_ss_ndr_unmar_pointee: %10p ptype %s pointee type: %s already marshalled: %d\n",
+				    defn_vec_ptr,
+				    rpc_dbg_ndr_type(pointer_type),
+				    rpc_dbg_ndr_type(*defn_vec_ptr),
+				    p_pointee_desc->already_unmarshalled));
 
     if ( (pointer_type == IDL_DT_FULL_PTR) 
             || (pointer_type == IDL_DT_UNIQUE_PTR) )
@@ -285,6 +295,8 @@ void rpc_ss_ndr_unmar_pointee
             node_size = rpc_ss_type_size(defn_vec_ptr, IDL_msp);
     }
 
+    RPC_DBG_NDR(("rpc_ss_ndr_unmar_pointee: node size:%d\n", node_size));
+
     if (pointer_type == IDL_DT_FULL_PTR)
     {
         p_node = (rpc_void_p_t)rpc_ss_return_pointer_to_node(
@@ -297,8 +309,13 @@ void rpc_ss_ndr_unmar_pointee
         if (p_node == NULL)
             RAISE( rpc_x_no_memory );
         *p_pointer = p_node;
+	RPC_DBG_NDR(("rpc_ss_ndr_unmar_pointee: %10p already unmarshalled: %d\n",
+				p_node,
+				already_unmarshalled));
         if ( already_unmarshalled )
+	{
             return;
+	}
     }
     else if (*p_pointer == IDL_NEW_NODE)
     {
@@ -312,8 +329,13 @@ void rpc_ss_ndr_unmar_pointee
         p_node = *p_pointer;
     }
 
+    RPC_DBG_NDR(("rpc_ss_ndr_unmar_pointee: ptr: %10p new: %d already_unmar: %d\n",
+				    p_node, new_node, already_unmarshalled));
     if ( new_node )
     {
+	RPC_DBG_NDR(("rpc_ss_ndr_unmar_pointee: new node pointee_type %s\n",
+				    rpc_dbg_ndr_type(pointee_type)));
+
         /* Fill in any [ref] or [unique] pointers */
         switch (pointee_type)
         {
@@ -609,6 +631,10 @@ void rpc_ss_ndr_u_struct_pointees
     IDL_GET_LONG_FROM_VECTOR(offset_index,defn_vec_ptr);
     struct_offset_vec_ptr = IDL_msp->IDL_offset_vec + offset_index;
 
+   RPC_DBG_NDR(("rpc_ss_ndr_u_struct_pointees: %10p %s\n",
+				    defn_vec_ptr,
+				    rpc_dbg_ndr_struct_type(struct_type)));
+
     if (struct_type == IDL_DT_CONF_STRUCT)
     {
         IDL_DISCARD_LONG_FROM_VECTOR(defn_vec_ptr);
@@ -620,6 +646,10 @@ void rpc_ss_ndr_u_struct_pointees
     /* Loop over the fields of the structure */
     do {
         type_byte = *defn_vec_ptr;
+	   RPC_DBG_NDR(("rpc_ss_ndr_u_struct_pointees: loop %10p %s\n",
+					    defn_vec_ptr,
+					    rpc_dbg_ndr_type(type_byte)));
+
         defn_vec_ptr++;
         switch(type_byte)
         {
@@ -1522,6 +1552,9 @@ void rpc_ss_init_new_array_ptrs
     }
 
     base_type = *defn_vec_ptr;
+	RPC_DBG_NDR(("rpc_ss_init_new_array_ptrs: %10p dims: %d %s\n",
+				defn_vec_ptr, dimensionality,
+				    rpc_dbg_ndr_type(base_type)));
     defn_vec_ptr++;
     if (base_type == IDL_DT_FIXED_STRUCT)
     {
@@ -1731,6 +1764,11 @@ void rpc_ss_ndr_unmar_pointee_desc
     idl_ulong_int dimensionality;
     rpc_void_p_t p_node;
     long already_unmarshalled;
+
+   RPC_DBG_NDR(("rpc_ss_ndr_unmar_pointee_desc %10p pointer: %s type: %s\n",
+				    defn_vec_ptr,
+				    rpc_dbg_ndr_type(pointer_type),
+				    rpc_dbg_ndr_type(*defn_vec_ptr)));
 
     if (*defn_vec_ptr == IDL_DT_STRING)
         defn_vec_ptr++;

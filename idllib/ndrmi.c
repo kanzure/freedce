@@ -37,7 +37,7 @@
 #include <dce/idlddefs.h>
 #include <ndrmi.h>
 #include <lsysdep.h>
-#include <stdio.h>
+#include "ndrdebug.h"
 
 /*
  *  Forward function references
@@ -362,6 +362,9 @@ void rpc_ss_ndr_marsh_struct
     offset_vec_ptr = struct_offset_vec_ptr + 1;
                                         /* Skip over size at start of offsets */
 
+	RPC_DBG_NDR(("rpc_ss_ndr_marsh_struct: %s %lx\n",
+			rpc_dbg_ndr_struct_type(struct_type), offset_index));
+
     if ( (struct_type == IDL_DT_CONF_STRUCT)
         || (struct_type == IDL_DT_V1_CONF_STRUCT) )
     {
@@ -417,6 +420,10 @@ void rpc_ss_ndr_marsh_struct
     do {
         type_byte = *defn_vec_ptr;
         defn_vec_ptr++;
+
+	RPC_DBG_NDR(("rpc_ss_ndr_marsh_struct: %s\n",
+			rpc_dbg_ndr_type(type_byte)));
+
         switch(type_byte)
         {
             case IDL_DT_CS_SHADOW:
@@ -725,11 +732,8 @@ void rpc_ss_ndr_marsh_struct
             case IDL_DT_EOL:
                 break;
             default:
-#ifdef DEBUG_INTERP
-                printf("rpc_ss_ndr_marsh_struct:unrecognized type %d\n",
-                        type_byte);
-                exit(0);
-#endif
+                RPC_DBG_NDR(("rpc_ss_ndr_marsh_struct:unrecognized type %d\n",
+                        type_byte));
                 RAISE(rpc_x_coding_error);
         }
     } while (type_byte != IDL_DT_EOL);
@@ -928,12 +932,9 @@ void rpc_ss_ndr_marsh_by_looping
 					 break;
 #endif
             default:
-#ifdef DEBUG_INTERP
-                printf(
-                      "rpc_ss_ndr_marsh_by_looping:unrecognized type %d\n",
-                        base_type);
-                exit(0);
-#endif
+                RPC_DBG_NDR(
+                      ("rpc_ss_ndr_marsh_by_looping:unrecognized type %d\n",
+                        base_type));
                 RAISE(rpc_x_coding_error);
         }
     }
@@ -1704,11 +1705,8 @@ void rpc_ss_discard_allocate_ref
             IDL_DISCARD_LONG_FROM_VECTOR( type_vec_ptr );   /* Pointee defn */
             break;
         default:
-#ifdef DEBUG_INTERP
-            printf("rpc_ss_discard_allocate_ref:unrecognized type %d\n",
-                        type_byte);
-            exit(0);
-#endif
+            RPC_DBG_NDR(("rpc_ss_discard_allocate_ref:unrecognized type %d\n",
+                        type_byte));
             RAISE(rpc_x_coding_error);
     }
     *p_type_vec_ptr = type_vec_ptr;
@@ -2114,11 +2112,8 @@ void rpc_ss_ndr_marsh_interp
                 case IDL_DT_EOL:
                     break;
                 default:
-#ifdef DEBUG_INTERP
-                    printf("rpc_ss_ndr_marsh_interp:unrecognized type %d\n",
-                        type_byte);
-                    exit(0);
-#endif
+                    RPC_DBG_NDR(("rpc_ss_ndr_marsh_interp:unrecognized type %d\n",
+                        type_byte));
                     RAISE(rpc_x_coding_error);
             }
         } while (type_byte != IDL_DT_EOL);

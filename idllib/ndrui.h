@@ -34,6 +34,8 @@
 **
 */
 
+#include <ndrdebug.h>
+
 /******************************************************************************/
 /*                                                                            */
 /*  Check whether there is an item to unmarshall in the existing buffer       */
@@ -81,6 +83,10 @@
     rpc_ss_ndr_unmar_check_buffer( IDL_msp ); \
     marshalling_macro( IDL_msp->IDL_drep, ndr_g_local_drep, \
                         IDL_msp->IDL_mp, *(type *)(param_addr)); \
+    RPC_DBG_NDR(("IDL_UNMAR_1_BYTE_SCALAR, %010p %010p %d %02d\n", \
+		param_addr, \
+                IDL_msp->IDL_mp, IDL_msp->IDL_left_in_buff, \
+		*(unsigned char *)(param_addr) ));\
     IDL_msp->IDL_mp += 1; \
     IDL_msp->IDL_left_in_buff -= 1; \
 }
@@ -96,24 +102,30 @@
 #define IDL_UNMAR_CHAR( param_addr ) \
     IDL_UNMAR_1_BYTE_SCALAR( rpc_convert_char, idl_char, param_addr )
 
-#define IDL_UNMAR_ALIGNED_SCALAR( marshalling_macro, size, type, param_addr ) \
+#define IDL_UNMAR_ALIGNED_SCALAR( marshalling_macro, size, type, type_str, param_addr ) \
 { \
     IDL_UNMAR_ALIGN_MP( IDL_msp, size ); \
     rpc_ss_ndr_unmar_check_buffer( IDL_msp ); \
     marshalling_macro( IDL_msp->IDL_drep, ndr_g_local_drep, \
                         IDL_msp->IDL_mp, *(type *)(param_addr)); \
+    RPC_DBG_NDR_ADD(("IDL_UNMAR_ALIGNED_SCALAR, %010p %010p %d %-9s ", \
+		param_addr, \
+                IDL_msp->IDL_mp, IDL_msp->IDL_left_in_buff,  \
+		type_str));\
+	RPC_DBG_NDR_DATA(param_addr, size); \
+    RPC_DBG_NDR(("\n")); \
     IDL_msp->IDL_mp += size; \
     IDL_msp->IDL_left_in_buff -= size; \
 }
 
 #define IDL_UNMAR_DOUBLE( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_long_float, 8, idl_long_float, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_long_float, 8, idl_long_float, "double", param_addr )
 
 #define IDL_UNMAR_ENUM( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_enum, 2, int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_enum, 2, int, "int", param_addr )
 
 #define IDL_UNMAR_FLOAT( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_short_float, 4, idl_short_float, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_short_float, 4, idl_short_float, "float", param_addr )
 
 #define IDL_UNMAR_SMALL( param_addr ) \
 { \
@@ -121,13 +133,13 @@
 }
 
 #define IDL_UNMAR_SHORT( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_short_int, 2, idl_short_int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_short_int, 2, idl_short_int, "short", param_addr )
 
 #define IDL_UNMAR_LONG( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_long_int, 4, idl_long_int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_long_int, 4, idl_long_int, "long", param_addr )
 
 #define IDL_UNMAR_HYPER( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_hyper_int, 8, idl_hyper_int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_hyper_int, 8, idl_hyper_int, "hyper", param_addr )
 
 #define IDL_UNMAR_USMALL( param_addr ) \
 { \
@@ -136,17 +148,17 @@
 
 #define IDL_UNMAR_USHORT( param_addr ) \
 { \
-        IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_ushort_int, 2, idl_ushort_int, param_addr ); \
+        IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_ushort_int, 2, idl_ushort_int, "ushort", param_addr ); \
 }
 
 #define IDL_UNMAR_ULONG( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_ulong_int, 4, idl_ulong_int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_ulong_int, 4, idl_ulong_int, "ulong", param_addr )
 
 #define IDL_UNMAR_UHYPER( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_uhyper_int, 8, idl_uhyper_int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_uhyper_int, 8, idl_uhyper_int, "uhyper", param_addr )
 
 #define IDL_UNMAR_V1_ENUM( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_v1_enum, 4, int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_v1_enum, 4, int, "v1enum", param_addr )
 
 #ifdef IDL_ENABLE_STATUS_MAPPING
 #define IDL_UNMAR_ERROR_STATUS( param_addr ) \
@@ -155,6 +167,10 @@
     rpc_ss_ndr_unmar_check_buffer( IDL_msp ); \
     rpc_convert_ulong_int( IDL_msp->IDL_drep, ndr_g_local_drep, \
                         IDL_msp->IDL_mp, *(idl_ulong_int *)(param_addr)); \
+    RPC_DBG_NDR(("IDL_UNMAR_ERROR_STATUS, %010p %d %d %02d\n", \
+		param_addr, \
+                IDL_msp->IDL_mp, IDL_msp->IDL_left_in_buff, \
+		*(idl_ulong_int*)(param_addr) ));\
     rpc_ss_map_dce_to_local_status((error_status_t *)(param_addr)); \
     IDL_msp->IDL_mp += 4; \
     IDL_msp->IDL_left_in_buff -= 4; \
@@ -166,6 +182,10 @@
     rpc_ss_ndr_unmar_check_buffer( IDL_msp ); \
     rpc_convert_ulong_int( IDL_msp->IDL_drep, ndr_g_local_drep, \
                         IDL_msp->IDL_mp, *(idl_ulong_int *)(param_addr)); \
+    RPC_DBG_NDR(("IDL_UNMAR_ERROR_STATUS, %010p %d %d %02d\n", \
+		param_addr, \
+                IDL_msp->IDL_mp, IDL_msp->IDL_left_in_buff, \
+		*(idl_ulong_int*)(param_addr) ));\
     IDL_msp->IDL_mp += 4; \
     IDL_msp->IDL_left_in_buff -= 4; \
 }
@@ -176,7 +196,7 @@
     IDL_UNMAR_1_BYTE_SCALAR( rpc_convert_usmall_int, idl_usmall_int, param_addr )
 
 #define IDL_UNMAR_CUSHORT( param_addr ) \
-    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_short_int, 2, idl_ushort_int, param_addr )
+    IDL_UNMAR_ALIGNED_SCALAR( rpc_convert_short_int, 2, idl_ushort_int, "cushort", param_addr )
 
 /* Function prototypes */
 void rpc_ss_ndr_u_struct_cs_shadow
