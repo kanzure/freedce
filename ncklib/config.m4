@@ -1,0 +1,7 @@
+AC_OUTPUT(ncklib/Makefile)
+sinclude(ncklib/transport/config.m4)
+sinclude(ncklib/auth/config.m4)
+sinclude(ncklib/rpc/config.m4)
+sinclude(ncklib/codeset/config.m4)
+sinclude(ncklib/com/config.m4)
+sinclude(ncklib/naf/config.m4)

@@ -1,0 +1,5 @@
+[ explicit_handle ] 
+interface echo {
+
+	ReverseIt([comm_status, fault_status] status);
+}

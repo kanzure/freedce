@@ -1,0 +1,311 @@
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+#include $(top_builddir)/config.mk
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ../..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+AS = @AS@
+AWK = @AWK@
+CC = @CC@
+CPP = @CPP@
+CXX = @CXX@
+DCETHREADINCLUDES = @DCETHREADINCLUDES@
+DLLTOOL = @DLLTOOL@
+LD = @LD@
+LEX = @LEX@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+MAKEINFO = @MAKEINFO@
+NM = @NM@
+OBJDUMP = @OBJDUMP@
+PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
+VERSION = @VERSION@
+YACC = @YACC@
+target_cpu = @target_cpu@
+target_os = @target_os@
+
+dce_includes = -I$(top_srcdir)/include $(DCETHREADINCLUDES)
+
+CFLAGS = -g -Wall -W -O -pipe -Werror
+INCLUDES =  $(dce_includes)
+
+SUFFIXES = .idl
+
+IDL = $(top_builddir)/idl/idl
+IDL_INCLUDE_DIR = $(top_srcdir)/include/dce
+
+IDLFLAGS = -cepv -client none -server none -I$(IDL_INCLUDE_DIR)/..
+NCK_IDLFLAGS = -keep object -no_cpp -v -no_mepv -I$(IDL_INCLUDE_DIR)/.. -I$(top_srcdir)/include $(DCETHREADINCLUDES) $(TARGET_OS)
+
+dceincludedir = $(includedir)/dce
+
+commonidl = codesets.idl conv.idl convc.idl ep.idl 		iovector.idl lbase.idl mgmt.idl nbase.idl ncastat.idl 		ndrold.idl rpc.idl rpcbase.idl rpcpvt.idl rpcsts.idl rpctypes.idl 		twr.idl uuid.idl
+
+
+commonheaders = codesets_stub.h stubbase.h idl_es.h idlbase.h idlddefs.h 	rpcexc.h
+
+
+osdepheaders = dce_utils.h sec_authn.h dce.h dce_error.h
+osdepsymlinks = $(osdepheaders:%=$(srcdir)/$(target_os))
+
+cpudepheaders = marshall.h ndr_rep.h ndrtypes.h
+cpudepsymlinks = $(cpudepheaders:%=$(srcdir)/$(target_cpu))
+
+IDLHEADERS = $(commonidl:.idl=.h)
+OSDEPHEADERS = $(osdepheaders:%=$(target_os)/%)
+CPUDEPHEADERS = $(cpudepheaders:%=$(target_cpu)/%)
+
+dceinclude_HEADERS = $(IDLHEADERS) $(OSDEPHEADERS) $(CPUDEPHEADERS) $(commonheaders) $(commonidl)
+dceincludeuninstallfiles = $(commonidl) $(commonheaders) $(osdepheaders) $(cpudepheaders)
+
+inteldirs = i486 i586 i686 i786
+
+CLEANFILES = $(IDLHEADERS) $(osdepheaders) $(cpudepheaders) $(inteldirs)
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_CLEAN_FILES = 
+HEADERS =  $(dceinclude_HEADERS)
+
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .idl
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/include.mk
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu include/dce/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = include/dce
+
+distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu include/dce/Makefile
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+	$(MAKE) $(AM_MAKEFLAGS) top_distdir="$(top_distdir)" distdir="$(distdir)" dist-hook
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am:
+install-exec: install-exec-am
+
+install-data-am: install-dceincludeHEADERS
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-dceincludeHEADERS
+uninstall: uninstall-am
+all-am: Makefile $(HEADERS) all-local
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(dceincludedir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-tags clean-generic mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-tags distclean-generic clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-tags maintainer-clean-generic \
+		distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: uninstall-dceincludeHEADERS install-dceincludeHEADERS tags \
+mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
+distdir info-am info dvi-am dvi check check-am installcheck-am \
+installcheck install-exec-am install-exec install-data-am install-data \
+install-am install uninstall-am uninstall all-local all-redirect all-am \
+all installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+# The return code of the IDL compiler is ignored so that we can "build" in the
+# include directory on pass 1 (this creates osdep symlinks) and on pass 2
+# (after the IDL compiler has been built) we can generate headers.
+%.h: %.idl
+	-$(IDL) $(IDLFLAGS) -no_mepv $<
+
+install-dceincludeHEADERS: $(dceinclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(dceincludedir)
+	@list='$(dceinclude_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(dceincludedir)/$$p"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(dceincludedir); \
+	done
+
+uninstall-dceincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(dceincludeuninstallfiles)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(dceincludedir)/$$p; \
+	done
+
+dist-hook:
+	@echo ============ dist hook =============
+	@-cp -pr $(srcdir)/* $(distdir) 2>/dev/null
+	@echo removing symlinks from dist package
+	-rm -rf $(inteldirs:%=$(distdir)/%)
+
+.PHONY: do-header-symlinks
+
+all-local: do-header-symlinks $(IDLHEADERS)
+
+$(CPUDEPHEADERS) $(cpudepsymlinks) $(osdepsymlinks): do-header-symlinks
+
+do-header-symlinks:
+	list='$(osdepheaders)'; for include in $$list; do \
+		ln -sf $(srcdir)/$(target_os)/$$include $(srcdir)/$$include; \
+		done;
+	list='$(cpudepheaders)'; for include in $$list; do \
+		ln -sf $(srcdir)/$(target_cpu)/$$include $(srcdir)/$$include; \
+		done;
+	list='$(inteldirs)'; for item in $$list; do \
+		ln -sf $(srcdir)/i386 $$item; \
+		done;
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:
