@@ -617,6 +617,10 @@ void rpc_ss_ndr_unmar_by_copying
     idl_ulong_int bytes_required;   /* Number of bytes left to copy */
     idl_ulong_int bytes_to_copy;  /* Number of bytes to copy from this buffer */
 
+    RPC_DBG_NDR(("rpc_ss_ndr_unmar_by_copying: %10p, %10p elem: %d count: %d %10p\n",
+			    IDL_msp, array_addr, 
+			    element_count, element_size,
+			    IDL_msp->IDL_mp));
     bytes_required = element_count * element_size;
     while (bytes_required != 0)
     {
@@ -625,6 +629,10 @@ void rpc_ss_ndr_unmar_by_copying
             bytes_to_copy = IDL_msp->IDL_left_in_buff;
         else
             bytes_to_copy = bytes_required;
+        RPC_DBG_NDR(("rpc_ss_ndr_unmar_by_copying: %10p, %10p bytes req: %d bytes_to_copy: %d %10p\n",
+			    IDL_msp, array_addr, bytes_required,
+			    bytes_to_copy,
+			    IDL_msp->IDL_mp));
         memcpy(array_addr, IDL_msp->IDL_mp, bytes_to_copy);
         IDL_msp->IDL_mp += bytes_to_copy;
         IDL_msp->IDL_left_in_buff -= bytes_to_copy;
@@ -1217,6 +1225,10 @@ void rpc_ss_ndr_u_var_or_open_arr
             }
             if (element_count != 0)
             {
+		    RPC_DBG_NDR(("rpc_ss_ndr_u_var_or_open_arr: %10p, %10p elem: %d count: %d %10p\n",
+				    IDL_msp, copy_addr, 
+				    element_count, element_size,
+				    IDL_msp->IDL_mp));
                 rpc_ss_ndr_unmar_by_copying( element_count, element_size,
                                          copy_addr, IDL_msp );
             }

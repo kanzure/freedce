@@ -40,6 +40,7 @@
 #include <dce/idlddefs.h>
 #include <lsysdep.h>
 #include <stdio.h>
+#include <ndrdebug.h>
 
 /******************************************************************************/
 /*                                                                            */
@@ -777,6 +778,11 @@ void rpc_ss_build_bounds_list
     idl_ulong_int string_field_offset;  /* Offset index for string field */
 	byte func_code = 0;
 
+	RPC_DBG_NDR(("rpc_ss_build_bounds_list: %10p %s dims: %d\n",
+			defn_vec_ptr,
+			rpc_dbg_ndr_bounds_type(*defn_vec_ptr),
+			dimensionality));
+
     if (*p_bounds_list == NULL)
     {
         bounds_list = (IDL_bound_pair_t *)rpc_ss_mem_alloc
@@ -932,6 +938,11 @@ void rpc_ss_build_range_list
     idl_ulong_int attribute_index;
     rpc_void_p_t limit_addr;
 	byte func_code = 0;
+
+	RPC_DBG_NDR(("rpc_ss_build_range_list: %10p %s dims: %d\n",
+			defn_vec_ptr,
+			rpc_dbg_ndr_bounds_type(*defn_vec_ptr),
+			dimensionality));
 
     *p_add_null = idl_false;
     if (*p_range_list == NULL)

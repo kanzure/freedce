@@ -17,6 +17,8 @@
 #define RPC_DBG_NDR_DATA(data, len) rpc_dbg_ndr_data(data, len);
 
 char *rpc_dbg_ndr_struct_type(idl_byte struct_type);
+char *rpc_dbg_ndr_bounds_type(idl_byte struct_type);
+char *rpc_dbg_ndr_limit_type(idl_byte struct_type);
 char *rpc_dbg_ndr_type(idl_byte type_byte);
 void rpc_dbg_ndr_data(void *type_byte, size_t len);
 

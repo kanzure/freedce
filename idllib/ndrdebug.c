@@ -3,6 +3,42 @@
 #include <ndrdebug.h>
 #include <dce/idlddefs.h>
 
+char *rpc_dbg_ndr_limit_type(idl_byte limit_type)
+{
+	switch (limit_type)
+	{
+		case IDL_LIMIT_UPPER_CONF:
+			return "IDL_LIMIT_UPPER_CONF";
+		case IDL_LIMIT_LAST_IS:
+			return "IDL_LIMIT_LAST_IS";
+		case IDL_LIMIT_FIRST_IS:
+			return "IDL_LIMIT_FIRST_IS";
+		case IDL_LIMIT_LENGTH_IS:
+			return "IDL_LIMIT_LENGTH_IS";
+		case IDL_LIMIT_STRING:
+			return "IDL_LIMIT_STRING";
+		case IDL_LIMIT_FIXED:
+			return "IDL_LIMIT_FIXED";
+	}
+	return "<unknown limit type>";
+}
+
+char *rpc_dbg_ndr_bounds_type(idl_byte bounds_type)
+{
+	switch (bounds_type)
+	{
+		case IDL_BOUND_MAX_IS:
+			return "IDL_BOUND_MAX_IS";
+		case IDL_BOUND_SIZE_IS:
+			return "IDL_BOUND_SIZE_IS";
+		case IDL_BOUND_STRING:
+			return "IDL_BOUND_STRING";
+		case IDL_BOUND_FIXED:
+			return "IDL_BOUND_FIXED";
+	}
+	return "<unknown bounds type>";
+}
+
 char *rpc_dbg_ndr_struct_type(idl_byte struct_type)
 {
 	switch (struct_type)
@@ -12,7 +48,7 @@ char *rpc_dbg_ndr_struct_type(idl_byte struct_type)
 		case IDL_DT_V1_CONF_STRUCT:
 			return "IDL_DT_V1_CONF_STRUCT";
 	}
-	return "<unknown>";
+	return "<unknown struct type>";
 }
 
 char *rpc_dbg_ndr_type(idl_byte type_byte)
@@ -104,7 +140,7 @@ char *rpc_dbg_ndr_type(idl_byte type_byte)
 		case IDL_DT_EOL:
 			return "IDL_DT_EOL";
 	}
-	return "<unknown>";
+	return "<unknown ndr type>";
 }
 
 void rpc_dbg_ndr_data(void *type_byte, size_t len)
