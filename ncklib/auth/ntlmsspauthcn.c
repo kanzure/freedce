@@ -1118,8 +1118,7 @@ unsigned32                      *st;
     }
 #endif
 
-    if (sec->sec_info->authn_level >= rpc_c_authn_level_pkt ||
-        sec->sec_info->authn_level >= rpc_c_authn_level_connect)
+    if ( sec->sec_info->authn_level != rpc_c_authn_level_none)
     {
         if (*auth_value_len < 16)
         {

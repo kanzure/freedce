@@ -115,13 +115,14 @@ PRIVATE void rpc__ntlmsspauth_bnd_set_auth
         goto poison;
     }
 
+    /*
     if (level != rpc_c_authn_level_pkt_privacy &&
 		 level != rpc_c_authn_level_connect)
     {
         st = rpc_s_unsupported_authn_level;
         goto poison;
     }
-
+    */
     /*
      * If no server principal name was specified, go ask for it.
      */
