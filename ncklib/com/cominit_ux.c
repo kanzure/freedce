@@ -147,9 +147,6 @@ PRIVATE void rpc__load_modules(void)
 {
 #if HAVE_DLFCN_H
 #include <dlfcn.h>
-#include <comnafimage.h>
-#include <comauthimage.h>
-#include <comprotimage.h>
 
 	struct dirent ** namelist;
 	int i, n;
