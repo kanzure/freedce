@@ -12,6 +12,7 @@ mkinstalldirs
 missing
 install-sh
 libtool
+freedce.spec
 *.lo
 *.la
 .libs
