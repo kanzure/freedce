@@ -47,8 +47,12 @@ extern "C" {
 #endif
 
 /* Only one place needed for DCE to define these */
-#define FALSE 0
-#define TRUE 1
+#if !defined (FALSE)
+#  define FALSE 0
+#endif
+#if !defined(TRUE)
+#  define TRUE 1
+#endif
 
 #if !defined(MIN)
 #  define MIN(x, y)         ((x) < (y) ? (x) : (y))
