@@ -49,11 +49,11 @@
   
 [
  uuid(e1af8308-5d1f-11c9-91a4-08002b14a0fa), version(3.0), 
- endpoint("ncadg_ip_udp:[135]", "ncadg_dds:[12]", "ncacn_ip_tcp:[135]"
-          /*"ncacn_dnet_nsp:[#69]", "ncalrpc:[epmapper]"), */
+ endpoint("ncadg_ip_udp:[135]", "ncadg_dds:[12]", "ncacn_ip_tcp:[135]"),
  pointer_default(ptr) 
 ]
 
+/*"ncacn_dnet_nsp:[#69]", "ncalrpc:[epmapper]"),*/
 interface ept
 {
 
