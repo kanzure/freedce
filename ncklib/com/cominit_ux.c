@@ -43,22 +43,40 @@
 #include <comp.h>
 #include <cominitp.h>
 
-/* For now, we hard-code the list of module names; in the near
- * future we will need a config file listing the modules to load,
- * otherwise there is not much point to doing things this way... */
+#if HAVE_DLFCN_H
+#include <dirent.h>
+static int select_module(const struct dirent * dirent)
+{
+	int len = strlen(dirent->d_name);
+	const char * module_types[] = {"libnaf_", "libauth_", "libprot_", NULL};
+	int i;
+
+	for (i=0; module_types[i] != NULL; i++)	{
+		if (strncmp(dirent->d_name, module_types[i], strlen(module_types[i])) == 0)	{
+			/* prefix matches; now check for a matching suffix */
+			if (strcmp(&dirent->d_name[len-3], ".so") == 0)
+				return 1;
+		}
+	}
+	/* reject */
+	return 0;
+}
+#endif
+
 PRIVATE void rpc__load_modules(void)
 {
 #if HAVE_DLFCN_H
 #include <dlfcn.h>
 #include <comnafimage.h>
 #include <comauthimage.h>
-	const char * modules[] = { "libnaf_ip.so", NULL };
-	int i;
+	struct dirent ** namelist;
+	int i, n;
 	void * image;
 	char buf[PATH_MAX];
 
-	for (i=0; modules[i] != NULL; i++)	{
-		sprintf(buf, "%s/%s", IMAGE_DIR, modules[i]);
+	n = scandir(IMAGE_DIR, &namelist, select_module, alphasort);
+	for(i = 0; i < n; i++)	{
+		sprintf(buf, "%s/%s", IMAGE_DIR, namelist[i]->d_name);
 		image = dlopen(buf, RTLD_LAZY);
 		if (image)	{
 			rpc_module_naf_strap_func naf_func;
