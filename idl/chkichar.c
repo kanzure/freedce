@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1991 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1991 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1991 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -360,7 +360,7 @@ void CHK_type_cs
     AST_interface_n_t   *int_p;         /* [in] Ptr to interface node */
 #endif
 {
-    char                *type_name;     /* Type name */
+    char const          *type_name;     /* Type name */
     int                 type_len;       /* Length of type name */
     int                 max_len;        /* Maximum identifier length */
 
@@ -408,7 +408,7 @@ void CHK_type_cs
         && ASTP_lookup_binding(type_p->cs_char_type->type_name,
                                fe_type_n_k, FALSE) == NULL)
     {
-        char    *id_name;
+        char const *id_name;
         NAMETABLE_id_to_string(type_p->cs_char_type->type_name, &id_name);
         CHECKER_acf_warning(type_p, NIDL_INCLTYPE, id_name);
     }

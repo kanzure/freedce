@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1993 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1993 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1993 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **  NAME:
@@ -2008,7 +2008,7 @@ static void PROP_type_info
         ctx->has_rep_as = TRUE;
     if (type_p->xmit_as_type == NULL)
     {
-        char         *type_name;
+        char const   *type_name;
         AST_type_n_t *base_type_p = type_p;
 
         while (base_type_p->defined_as != NULL)

@@ -58,7 +58,7 @@ void CSPELL_constant_val_to_string
     char *str;
 #endif
 {
-    char       *str2;
+    char const *str2;
 
     switch (cp->kind) {
         case AST_nil_const_k:

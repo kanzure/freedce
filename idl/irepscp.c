@@ -538,8 +538,8 @@ STRTAB_str_t IR_field_expr              /* Returns field expression */
 #endif
 {
     AST_instance_n_t    *inst_p;        /* Instance node with struct scope */
-    char                *inst_name;     /* Instance name */
-    char                *field_name;    /* Field name */
+    char const          *inst_name;     /* Instance name */
+    char const          *field_name;    /* Field name */
     int                 level;          /* Scope level */
     int                 base_level;     /* Most deeply nested struct scope */
     int                 depth;          /* Depth of struct nesting */

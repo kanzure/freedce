@@ -353,7 +353,7 @@ void CSPELL_call_start
 #endif
 {
     AST_parameter_n_t *p_parameter;
-    char *parameter_name;
+    char const *parameter_name;
     char deref_context;
     boolean found_in_context_handle;
 

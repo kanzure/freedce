@@ -474,15 +474,15 @@ static boolean already_imported
     char                 base_file_ext[max_string_len];
     struct               stat stat_buf;
     FE_import_file_n_t * imported_file;
-    char              ** idir_list;
+    char const * *       idir_list;
     boolean              alr_imp;
-    char              * file_name;
+    char const        * file_name;
 
     /*
      * Get a string to lookup.
      */
     STRTAB_str_to_string (import_path_id, &file_name);
-    idir_list = (char **)saved_cmd_val[opt_idir];
+    idir_list = (char const * *)saved_cmd_val[opt_idir];
 
     /*
      * Note that a lookup failure will not report a failure here;
@@ -573,11 +573,11 @@ static boolean parse
     extern int nidl_yytext[];
     extern int nidl_yyparse(void);
 
-    char        *sf;                            /* Source filespec */
+    char const  *sf;                            /* Source filespec */
     char        full_path_name[max_string_len]; /* Full source pathname */
     char        temp_path_name[max_string_len]; /* Full temp file pathname */
     STRTAB_str_t full_pn_id;                    /* Full src path string id */
-    char        **idir_list;                    /* List of search directories */
+    char const * *idir_list;                    /* List of search directories */
     char        file_dir[max_string_len];       /* Directory part of src file */
     boolean     file_dir_is_cwd;                /* T => file_dir current dir */
     char        file_name[max_string_len];      /* File name part of src file */
@@ -599,9 +599,9 @@ static boolean parse
      * source file.  Otherwise, just use the filespec as is.
      */
     if (idir_valid)
-        idir_list = (char **)cmd_val[opt_idir];
+        idir_list = (char const * *)cmd_val[opt_idir];
     else
-        idir_list = (char **)NULL;
+        idir_list = NULL;
 
     if (idl_sid == STRTAB_NULL_STR)     /* stdin */
         full_path_name[0] = '\0';
@@ -723,7 +723,7 @@ static boolean parse
      * tack it on at the end of the include directory list.  Note: we assume
      * that there is enough room for a temporary extra entry in the idir list.
      */
-    idir_list = (char **)cmd_val[opt_idir];
+    idir_list = (char const **)cmd_val[opt_idir];
     file_dir_is_cwd = FILE_is_cwd(file_dir);
 
     if (!file_dir_is_cwd)
@@ -997,11 +997,11 @@ static boolean parse_idl        /* Returns true on success */
 {
     boolean status;                     /* Status to return */
     FE_import_file_n_t *imported_file;  /* Main IDL file info */
-    char    *file_name;                 /* Main IDL file name */
-    char    imported_fn[max_string_len];/* Main IDL full file name */
+    char const *file_name;                 /* Main IDL file name */
+    char       imported_fn[max_string_len];/* Main IDL full file name */
     struct stat stat_buf;               /* File lookup info */
-    char    file_name_part[max_string_len];/* Main IDL file name part */
-    char    file_type_part[max_string_len];/* Main IDL file type part */
+    char       file_name_part[max_string_len];/* Main IDL file name part */
+    char       file_type_part[max_string_len];/* Main IDL file type part */
     boolean name_warning = false;       /* Warn on name used */
 
     if (idl_sid != STRTAB_NULL_STR)
@@ -1036,7 +1036,7 @@ static boolean parse_idl        /* Returns true on success */
          * Note that a lookup failure will not report a failure here;
          * That will be reported when we actually try to parse it.
          */
-        if (FILE_lookup(file_name, (char **)NULL, &stat_buf, imported_fn))
+        if (FILE_lookup(file_name, NULL, &stat_buf, imported_fn))
         {
             imported_file = (FE_import_file_n_t *)
                             MALLOC(sizeof(FE_import_file_n_t));

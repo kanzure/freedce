@@ -113,14 +113,14 @@ static acf_attrib_t interface_attr,     /* Interface attributes */
                     operation_attr,     /* Operation attributes */
                     parameter_attr;     /* Parameter attributes */
 
-static char     *interface_name,        /* Interface name */
-                *impl_name,             /* Implicit handle name */
-                *type_name,             /* Current type name */
-                *repr_type_name,        /* Current represent_as type */
-                *cs_char_type_name,     /* Current cs_char type */
-                *operation_name,        /* Current operation name */
-                *cs_tag_rtn_name,       /* Current cs_tag_rtn name */
-                *binding_callout_name;  /* Current binding_callout name */
+static char const *interface_name;        /* Interface name */
+static char const *impl_name;             /* Implicit handle name */
+static char const *type_name;             /* Current type name */
+static char const *repr_type_name;        /* Current represent_as type */
+static char const *cs_char_type_name;     /* Current cs_char type */
+static char const *operation_name;        /* Current operation name */
+static char const *cs_tag_rtn_name;       /* Current cs_tag_rtn name */
+static char const *binding_callout_name;  /* Current binding_callout name */
 
 static boolean  named_type;             /* True if parsed type is named type */
 
@@ -141,18 +141,18 @@ static void         **cmd_val;      /* Array of command option values */
 void acf_init(boolean *, void **, char *);
 void acf_cleanup();
 static boolean lookup_exception(NAMETABLE_id_t, boolean, AST_exception_n_t **);
-static boolean lookup_type(char *, boolean, NAMETABLE_id_t *, AST_type_n_t **);
-static boolean lookup_operation(char *, boolean, NAMETABLE_id_t *, AST_operation_n_t **);
-static boolean lookup_parameter(AST_operation_n_t *, char *, boolean, NAMETABLE_id_t *, AST_parameter_n_t **);
-static boolean lookup_rep_as_name(AST_type_p_n_t *, NAMETABLE_id_t, AST_type_n_t **, char **);
-static boolean lookup_cs_char_name(AST_type_p_n_t *, NAMETABLE_id_t, AST_type_n_t **, char **);
+static boolean lookup_type(char const *, boolean, NAMETABLE_id_t *, AST_type_n_t **);
+static boolean lookup_operation(char const *, boolean, NAMETABLE_id_t *, AST_operation_n_t **);
+static boolean lookup_parameter(AST_operation_n_t *, char const *, boolean, NAMETABLE_id_t *, AST_parameter_n_t **);
+static boolean lookup_rep_as_name(AST_type_p_n_t *, NAMETABLE_id_t, AST_type_n_t **, char const **);
+static boolean lookup_cs_char_name(AST_type_p_n_t *, NAMETABLE_id_t, AST_type_n_t **, char const * *);
 static acf_param_t * alloc_param();
 static void free_param(acf_param_t *);
 static void free_param_list(acf_param_t **);
 void add_param_to_list(acf_param_t *, acf_param_t **);
-static void append_parameter(AST_operation_n_t *, char *, acf_attrib_t *);
-static void process_rep_as_type(AST_interface_n_t *, AST_type_n_t *, char *);
-static void process_cs_char_type(AST_interface_n_t *, AST_type_n_t *, char *);
+static void append_parameter(AST_operation_n_t *, char const *, acf_attrib_t *);
+static void process_rep_as_type(AST_interface_n_t *, AST_type_n_t *, char const *);
+static void process_cs_char_type(AST_interface_n_t *, AST_type_n_t *, char const *);
 /*static void dump_attributes(char *, char *, acf_attrib_t *);*/
 
 /*
@@ -283,7 +283,7 @@ acf_interface:
 acf_interface_header:
         acf_interface_attr_list INTERFACE_KW acf_interface_name
     {
-        char            *ast_int_name;  /* Interface name in AST node */
+        char const      *ast_int_name;  /* Interface name in AST node */
         NAMETABLE_id_t  type_id;        /* Nametable id of impl_handle type */
         NAMETABLE_id_t  impl_name_id;   /* Nametable id of impl_handle var */
         AST_type_n_t    *type_p;        /* Ptr to implicit_handle type node */
@@ -316,9 +316,9 @@ acf_interface_header:
 
         if (strcmp(interface_name, ast_int_name) != 0)
         {
-            char    *acf_int_name;      /* Ptr to permanent copy */
+            char const *acf_int_name;   /* Ptr to permanent copy */
             NAMETABLE_id_t name_id;     /* Handle on permanent copy */
-            char    *file_name;         /* Related file name */
+            char const *file_name;      /* Related file name */
 
             name_id = NAMETABLE_add_id(interface_name);
             NAMETABLE_id_to_string(name_id, &acf_int_name);
@@ -613,7 +613,7 @@ acf_include_name:
     {
         if (ASTP_parsing_main_idl)
         {
-            char            *parsed_include_file;
+            char const      *parsed_include_file;
             char            include_type[PATH_MAX];
             char            include_file[PATH_MAX];
             STRTAB_str_t    include_file_id;
@@ -822,7 +822,7 @@ acf_operation:
         AST_operation_n_t   *op_p;      /* Ptr to AST operation node */
         AST_parameter_n_t   *param_p;   /* Ptr to AST parameter node */
         boolean             log_error;  /* TRUE => error if name not found */
-        char                *param_name;/* character string of param id */
+        char const          *param_name;/* character string of param id */
 
         NAMETABLE_id_to_string($<y_id>1, &operation_name);
 #ifdef DUMPERS
@@ -1281,22 +1281,14 @@ void acf_cleanup()
 */
 
 static boolean lookup_exception
-#ifdef PROTO
 (
     NAMETABLE_id_t  excep_id,     /* [in] Nametable id of exception name */
     boolean         log_error,    /* [in] TRUE => log error if name not found */
     AST_exception_n_t **excep_ptr /*[out] Ptr to AST exception node */
 )
-#else
-(excep_id, log_error, excep_ptr)
-    NAMETABLE_id_t  excep_id;     /* [in] Nametable id of exception name */
-    boolean         log_error;    /* [in] TRUE => log error if name not found */
-    AST_exception_n_t **excep_ptr;/*[out] Ptr to AST exception node */
-#endif
-
 {
     AST_exception_n_t *excep_p;     /* Ptr to node bound to looked up name */
-    char            *perm_excep_name;   /* Ptr to permanent copy */
+    char const      *perm_excep_name;   /* Ptr to permanent copy */
     NAMETABLE_id_t  name_id __attribute__((__unused__));            /* Handle on permanent copy */
 
     if (excep_id != NAMETABLE_NIL_ID)
@@ -1330,24 +1322,15 @@ static boolean lookup_exception
 */
 
 static boolean lookup_type
-#ifdef PROTO
 (
-    char            *type_name, /* [in] Name to look up */
+    char const      *type_name, /* [in] Name to look up */
     boolean         log_error,  /* [in] TRUE => log error if name not found */
     NAMETABLE_id_t  *type_id,   /*[out] Nametable id of type name */
     AST_type_n_t    **type_ptr  /*[out] Ptr to AST type node */
 )
-#else
-(type_name, log_error, type_id, type_ptr)
-    char            *type_name; /* [in] Name to look up */
-    boolean         log_error;  /* [in] TRUE => log error if name not found */
-    NAMETABLE_id_t  *type_id;   /*[out] Nametable id of type name */
-    AST_type_n_t    **type_ptr; /*[out] Ptr to AST type node */
-#endif
-
 {
     AST_type_n_t    *type_p;    /* Ptr to node bound to looked up name */
-    char            *perm_type_name;    /* Ptr to permanent copy */
+    char const      *perm_type_name;    /* Ptr to permanent copy */
     NAMETABLE_id_t  name_id;            /* Handle on permanent copy */
 
     *type_id = NAMETABLE_lookup_id(type_name);
@@ -1384,24 +1367,15 @@ static boolean lookup_type
 */
 
 static boolean lookup_operation
-#ifdef PROTO
 (
-    char            *op_name,   /* [in] Name to look up */
+    char const      *op_name,   /* [in] Name to look up */
     boolean         log_error,  /* [in] TRUE => log error if name not found */
     NAMETABLE_id_t  *op_id,     /*[out] Nametable id of operation name */
     AST_operation_n_t **op_ptr  /*[out] Ptr to AST operation node */
 )
-#else
-(op_name, log_error, op_id, op_ptr)
-    char            *op_name;   /* [in] Name to look up */
-    boolean         log_error;  /* [in] TRUE => log error if name not found */
-    NAMETABLE_id_t  *op_id;     /*[out] Nametable id of operation name */
-    AST_operation_n_t **op_ptr; /*[out] Ptr to AST operation node */
-#endif
-
 {
     AST_operation_n_t   *op_p;  /* Ptr to node bound to looked up name */
-    char            *perm_op_name;      /* Ptr to permanent copy */
+    char const      *perm_op_name;      /* Ptr to permanent copy */
     NAMETABLE_id_t  name_id;            /* Handle on permanent copy */
 
     *op_id = NAMETABLE_lookup_id(op_name);
@@ -1438,28 +1412,18 @@ static boolean lookup_operation
 */
 
 static boolean lookup_parameter
-#ifdef PROTO
 (
     AST_operation_n_t   *op_p,          /* [in] Ptr to AST operation node */
-    char                *param_name,    /* [in] Parameter name to look up */
+    char const          *param_name,    /* [in] Parameter name to look up */
     boolean             log_error,      /* [in] TRUE=> log error if not found */
     NAMETABLE_id_t      *param_id,      /*[out] Nametable id of param name */
     AST_parameter_n_t   **param_ptr     /*[out] Ptr to AST parameter node */
 )
-#else
-(op_p, param_name, log_error, param_id, param_ptr)
-    AST_operation_n_t   *op_p;          /* [in] Ptr to AST operation node */
-    char                *param_name;    /* [in] Parameter name to look up */
-    boolean             log_error;      /* [in] TRUE=> log error if not found */
-    NAMETABLE_id_t      *param_id;      /*[out] Nametable id of param name */
-    AST_parameter_n_t   **param_ptr;    /*[out] Ptr to AST parameter node */
-#endif
-
 {
     AST_parameter_n_t   *param_p;       /* Ptr to operation parameter node */
-    char                *op_param_name; /* Name of an operation parameter */
-    char                *op_name;       /* Operation name */
-    char            *perm_param_name;   /* Ptr to permanent copy */
+    char const          *op_param_name; /* Name of an operation parameter */
+    char const          *op_name;       /* Operation name */
+    char const      *perm_param_name;   /* Ptr to permanent copy */
     NAMETABLE_id_t  name_id;            /* Handle on permanent copy */
 
     for (param_p = op_p->parameters ; param_p != NULL ; param_p = param_p->next)
@@ -1476,7 +1440,7 @@ static boolean lookup_parameter
 
     if (log_error)
     {
-        char    *file_name;     /* Related file name */
+        char const *file_name;     /* Related file name */
 
         NAMETABLE_id_to_string(op_p->name, &op_name);
         name_id = NAMETABLE_add_id(param_name);
@@ -1504,21 +1468,12 @@ static boolean lookup_parameter
 */
 
 static boolean lookup_rep_as_name
-#ifdef PROTO
 (
     AST_type_p_n_t  *typep_p,           /* [in] Listhead of type ptr nodes */
     NAMETABLE_id_t  repr_name_id,       /* [in] represent_as name to look up */
     AST_type_n_t    **ret_type_p,       /*[out] Type node if found */
-    char            **ret_type_name     /*[out] Type name if found */
+    char const      **ret_type_name     /*[out] Type name if found */
 )
-#else
-(typep_p, repr_name_id, ret_type_p, ret_type_name)
-    AST_type_p_n_t  *typep_p;           /* [in] Listhead of type ptr nodes */
-    NAMETABLE_id_t  repr_name_id;       /* [in] represent_as name to look up */
-    AST_type_n_t    **ret_type_p;       /*[out] Type node if found */
-    char            **ret_type_name;    /*[out] Type name if found */
-#endif
-
 {
     AST_type_n_t    *type_p;            /* Ptr to a type node */
 
@@ -1549,21 +1504,12 @@ static boolean lookup_rep_as_name
 */
 
 static boolean lookup_cs_char_name
-#ifdef PROTO
 (
     AST_type_p_n_t  *typep_p,           /* [in] Listhead of type ptr nodes */
     NAMETABLE_id_t  cs_char_name_id,    /* [in] cs_char name to look up */
     AST_type_n_t    **ret_type_p,       /*[out] Type node if found */
-    char            **ret_type_name     /*[out] Type name if found */
+    char const      **ret_type_name     /*[out] Type name if found */
 )
-#else
-(typep_p, cs_char_name_id, ret_type_p, ret_type_name)
-    AST_type_p_n_t  *typep_p;           /* [in] Listhead of type ptr nodes */
-    NAMETABLE_id_t  cs_char_name_id;    /* [in] cs_char name to look up */
-    AST_type_n_t    **ret_type_p;       /*[out] Type node if found */
-    char            **ret_type_name;    /*[out] Type name if found */
-#endif
-
 {
     AST_type_n_t    *type_p;            /* Ptr to a type node */
 
@@ -1729,19 +1675,11 @@ void add_param_to_list
 */
 
 static void append_parameter
-#ifdef PROTO
 (
     AST_operation_n_t   *op_p,          /* [in] Ptr to AST operation node */
-    char                *param_name,    /* [in] Parameter name */
+    char const          *param_name,    /* [in] Parameter name */
     acf_attrib_t        *param_attr     /* [in] Parameter attributes */
 )
-#else
-(op_p, param_name, param_attr)
-    AST_operation_n_t   *op_p;          /* [in] Ptr to AST operation node */
-    char                *param_name;    /* [in] Parameter name */
-    acf_attrib_t        *param_attr;    /* [in] Parameter attributes */
-#endif
-
 {
     NAMETABLE_id_t      new_param_id;   /* Nametable id of new parameter name */
     AST_parameter_n_t   *new_param_p;   /* Ptr to new parameter node */
@@ -1811,25 +1749,17 @@ static void append_parameter
 */
 
 static void process_rep_as_type
-#ifdef PROTO
 (
     AST_interface_n_t   *int_p,     /* [in] Ptr to AST interface node */
     AST_type_n_t        *type_p,    /* [in] Ptr to AST type node */
-    char            *ref_type_name  /* [in] Name in represent_as() clause */
+    char const      *ref_type_name  /* [in] Name in represent_as() clause */
 )
-#else
-(int_p, type_p, ref_type_name)
-    AST_interface_n_t   *int_p;     /* [in] Ptr to AST interface node */
-    AST_type_n_t        *type_p;    /* [in] Ptr to AST type node */
-    char            *ref_type_name; /* [in] Name in represent_as() clause */
-#endif
-
 {
     NAMETABLE_id_t  ref_type_id;    /* Nametable id of referenced name */
-    char            *file_name;     /* Related file name */
-    char            *perm_name;     /* Permanent copy of referenced name */
+    char const      *file_name;     /* Related file name */
+    char const      *perm_name;     /* Permanent copy of referenced name */
     AST_type_n_t    *parent_type_p; /* Parent type with same attribute */
-    char            *parent_name;   /* Name of parent type */
+    char const      *parent_name;   /* Name of parent type */
 
     ref_type_id = NAMETABLE_add_id(ref_type_name);
 
@@ -1860,8 +1790,8 @@ static void process_rep_as_type
 
         if (strcmp(perm_name, ref_type_name) != 0)
         {
-            char    *new_ref_type_name; /* Ptr to permanent copy */
-            NAMETABLE_id_t  name_id;    /* Handle on perm copy */
+            char const *new_ref_type_name; /* Ptr to permanent copy */
+            NAMETABLE_id_t  name_id;       /* Handle on perm copy */
 
             name_id = NAMETABLE_add_id(ref_type_name);
             NAMETABLE_id_to_string(name_id, &new_ref_type_name);
@@ -1917,25 +1847,17 @@ static void process_rep_as_type
 */
 
 static void process_cs_char_type
-#ifdef PROTO
 (
     AST_interface_n_t   *int_p,     /* [in] Ptr to AST interface node */
     AST_type_n_t        *type_p,    /* [in] Ptr to AST type node */
-    char            *ref_type_name  /* [in] Name in cs_char() clause */
+    char const      *ref_type_name  /* [in] Name in cs_char() clause */
 )
-#else
-(int_p, type_p, ref_type_name)
-    AST_interface_n_t   *int_p;     /* [in] Ptr to AST interface node */
-    AST_type_n_t        *type_p;    /* [in] Ptr to AST type node */
-    char            *ref_type_name; /* [in] Name in cs_char() clause */
-#endif
-
 {
     NAMETABLE_id_t  ref_type_id;    /* Nametable id of referenced name */
-    char            *file_name;     /* Related file name */
-    char            *perm_name;     /* Permanent copy of referenced name */
+    char const      *file_name;     /* Related file name */
+    char const      *perm_name;     /* Permanent copy of referenced name */
     AST_type_n_t    *parent_type_p; /* Parent type with same attribute */
-    char            *parent_name;   /* Name of parent type */
+    char const      *parent_name;   /* Name of parent type */
 
     ref_type_id = NAMETABLE_add_id(ref_type_name);
 
@@ -1967,7 +1889,7 @@ static void process_cs_char_type
 
         if (strcmp(perm_name, ref_type_name) != 0)
         {
-            char    *new_ref_type_name; /* Ptr to permanent copy */
+            char const *new_ref_type_name; /* Ptr to permanent copy */
             NAMETABLE_id_t  name_id;    /* Handle on perm copy */
 
             name_id = NAMETABLE_add_id(ref_type_name);

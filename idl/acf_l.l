@@ -1,7 +1,7 @@
 %{
 
 /*
- *  
+ *
  *  (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  *  (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  *  (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -18,7 +18,7 @@
  *  Packard Company, nor Digital Equipment Corporation makes any
  *  representations about the suitability of this software for any
  *  purpose.
- *  
+ *
  */
 
 /*
@@ -181,7 +181,7 @@ other           .
                  /* If id is too long, truncate it and issue a warning */
                  if (yyleng > MAX_ID) {
                     NAMETABLE_id_t id;
-                    char *identifier;
+                    char const *identifier;
                     id = NAMETABLE_add_id((char *)yytext);
                     NAMETABLE_id_to_string(id, &identifier);
                     log_warning(acf_yylineno, NIDL_IDTOOLONG, identifier, MAX_ID);

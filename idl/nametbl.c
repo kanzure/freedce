@@ -76,8 +76,8 @@ static int  currentLevel;                       /* Current scoping level    */
  * the heap. Also declare a cell to keep track of insertions since last
  * balancing.
  */
-NAMETABLE_n_t_p NAMETABLE_root;
-static long     NAMETABLE_unbalanced;
+NAMETABLE_id_t NAMETABLE_root;
+static long    NAMETABLE_unbalanced;
 /*
  * Definitions for the string table. This contains filenames, etc.
  */
@@ -107,7 +107,7 @@ static long NAMETABLE_names_are_temporary;
 #else
 
     /* Compiling for UNIX or AEGIS */
-#   define nameTable(id,member) ((NAMETABLE_n_t_p)(id))->member
+#   define nameTable(id,member) (id)->member
 #endif /*MSDOS*/
 
 
@@ -136,16 +136,10 @@ static long NAMETABLE_names_are_temporary;
 #define FIND_FIRST_SET find_first_set
 
 static void find_first_set
-#ifdef PROTO
 (
     long n_arg,
     long * position
 )
-#else
-(n_arg, position)
-    long n_arg;
-    long * position;
-#endif
 {
     long n, m, tp;
 
@@ -181,15 +175,15 @@ static void find_first_set
 #define balance_arr_size 33
 #define NAMETABLE_max_unbalance 10
 
-static void NAMETABLE_balance_tree ()
+static void NAMETABLE_balance_tree (void)
 {
-    NAMETABLE_n_t_p  this,
-                        temp = NULL,
-                        back,
-                        arr [balance_arr_size];
+    NAMETABLE_id_t  This,
+                    temp = NULL,
+                    back,
+                    arr [balance_arr_size];
 
-    long                i,
-                        n;
+    long            i,
+                    n;
 
 
     /*
@@ -204,7 +198,7 @@ static void NAMETABLE_balance_tree ()
     /*
      * Initialize our node pointers.  ("temp" is written before reading.)
      */
-    this = NAMETABLE_root;
+    This = NAMETABLE_root;
     back = NULL;
 
 
@@ -214,35 +208,35 @@ static void NAMETABLE_balance_tree ()
          * This works our way down to the bottom of the left most chain
          * of this subtree, the least valued member.
          */
-        for (; this != NULL;) {
-            temp = this->left;      /* Save the left pointer. */
-            this->left = back;      /* Store the back pointer. */
+        for (; This != NULL;) {
+            temp = This->left;      /* Save the left pointer. */
+            This->left = back;      /* Store the back pointer. */
             if  (back)              /* Maintain the parent pointer */
-                back->parent = this;
-            back = this;            /* We now have a new back pointer. */
-            this = temp;            /* And a new node to visit. */
-        };      /* for (; this != NULL;) */
+                back->parent = This;
+            back = This;            /* We now have a new back pointer. */
+            This = temp;            /* And a new node to visit. */
+        };      /* for (; This != NULL;) */
 
 
         /*
          * The loop above went one step too far. Back up one.
          * Also, if the result of backing up is NULL, we are done.
          */
-        if ((this = back) == NULL)
+        if ((This = back) == NULL)
             break;
 
 
-        back = this->left;          /* Get a new back pointer */
+        back = This->left;          /* Get a new back pointer */
         ++n;                        /* Processing a new node. */
         FIND_FIRST_SET (n, &i);     /* Find the first set bit */
-        arr [i+1] = this;           /* Save the current node  */
-        this->left = temp = arr [i];/* New left pointer for this node */
+        arr [i+1] = This;           /* Save the current node  */
+        This->left = temp = arr [i];/* New left pointer for this node */
         if (temp)                   /* Maintain the parent pointer */
-            temp->parent = this;
+            temp->parent = This;
         if ((temp = arr [i+2]) != NULL) {
-            temp->right = this;     /* Save this node as a right son. */
-            if (this)               /* Maintain the parent pointer */
-                this->parent = temp;
+            temp->right = This;     /* Save this node as a right son. */
+            if (This)               /* Maintain the parent pointer */
+                This->parent = temp;
         }
 
         /*
@@ -255,9 +249,9 @@ static void NAMETABLE_balance_tree ()
         /*
          * Set up for processing the next node.
          */
-        temp = this->right;
-        this->right = NULL;
-        this = temp;
+        temp = This->right;
+        This->right = NULL;
+        This = temp;
 
     };          /* for (;;) */
 
@@ -271,13 +265,13 @@ static void NAMETABLE_balance_tree ()
     NAMETABLE_root = temp;
     temp->parent = NULL;
 
-    this = temp;
+    This = temp;
 
     for (i--; i>0; i--) {
         if ((temp = arr [i]) != 0) {
-            this->right = temp;
-            temp->parent = this;
-            this = temp;
+            This->right = temp;
+            temp->parent = This;
+            This = temp;
         }
     }      /*for (i; i>0; i--)*/
 
@@ -300,27 +294,22 @@ static void NAMETABLE_balance_tree ()
  */
 
 void NAMETABLE_delete_node
-#ifdef PROTO
 (
     NAMETABLE_id_t node
 )
-#else
-(node)
-    NAMETABLE_id_t node;
-#endif
 {
 
-NAMETABLE_n_t_p n,       /* The node being deleted */
-                p,       /* The parent of the node being deleted */
-                l,       /* The left child of the node being deleted */
-                r,       /* The right child of the node being deleted */
-                t;       /* Used to search for an insertion point in the tree */
+    NAMETABLE_id_t  n,       /* The node being deleted */
+		    p,       /* The parent of the node being deleted */
+		    l,       /* The left child of the node being deleted */
+		    r,       /* The right child of the node being deleted */
+		    t;       /* Used to search for an insertion point in the tree */
 
 /*
  * Get local copy of pointer to the node, and pointers to the
  * other nodes of interest.
  */
-    n = (NAMETABLE_n_t_p) node;
+    n = node;
     p = n->parent;
     l = n->left;
     r = n->right;
@@ -432,19 +421,14 @@ NAMETABLE_n_t_p n,       /* The node being deleted */
  */
 
 NAMETABLE_id_t NAMETABLE_add_id
-#ifdef PROTO
 (
-    char * id
+    const char * id
 )
-#else
-(id)
-    char   *id;
-#endif
 {
-    NAMETABLE_n_t_p     this,
-                        parent = NULL,
-                        np,
-                      * insert_point = NULL;
+    NAMETABLE_id_t   This,
+                     parent = NULL,
+                     np,
+                   * insert_point = NULL;
     NAMETABLE_temp_name_t * new_temp_name_block;
     int                 i;
     char              * cp;
@@ -456,10 +440,10 @@ NAMETABLE_id_t NAMETABLE_add_id
         parent = NULL;
 
     } else {
-        for (this = NAMETABLE_root; this; ) {
-            if ((i = strcmp (id, this->id)) == 0) {
-                /* We have a match. Return with this node id. */
-                return (NAMETABLE_id_t) this;
+        for (This = NAMETABLE_root; This; ) {
+            if ((i = strcmp (id, This->id)) == 0) {
+                /* We have a match. Return with This node id. */
+                return This;
             }; /* if strcmp */
 
             /* No match, which subtree to use? */
@@ -468,21 +452,21 @@ NAMETABLE_id_t NAMETABLE_add_id
                  * The id is greater than that of this node.
                  * Use the right subtree.
                  */
-                if (this->right == NULL) {
-                    insert_point = &this->right;
-                    parent = this;
+                if (This->right == NULL) {
+                    insert_point = &This->right;
+                    parent = This;
                 }
-                this = this->right;
+                This = This->right;
             } else {
                 /*
                  * The id is less than that of this node.
                  * Use the left subtree.
                  */
-                if (this->left == NULL) {
-                    insert_point = &this->left;
-                    parent = this;
+                if (This->left == NULL) {
+                    insert_point = &This->left;
+                    parent = This;
                 }
-                this = this->left;
+                This = This->left;
             }; /* if (i > 0) */
 
         }; /* for */
@@ -496,32 +480,32 @@ NAMETABLE_id_t NAMETABLE_add_id
      * it into the tree.
      */
 
-    this = (NAMETABLE_n_t_p) MALLOC (sizeof (NAMETABLE_n_t) +
+    This = (NAMETABLE_id_t) MALLOC (sizeof (NAMETABLE_n_t) +
                                                 strlen (id) + 1);
 
     /* Get a pointer to the buffer after the nametable node. */
-    np = this;
+    np = This;
     cp = (char *) ++np;
 
     /* Copy the string into the buffer. */
     strcpy (cp, id);
 
     /* Initialize the nametable node. */
-    this -> left = NULL;
-    this -> right = NULL;
-    this -> id = cp;
-    this -> bindings = NULL;
-    this -> tagBinding = NULL;
+    This -> left = NULL;
+    This -> right = NULL;
+    This -> id = cp;
+    This -> bindings = NULL;
+    This -> tagBinding = NULL;
 
     /* Link it into the nametable. */
-    *insert_point = this;
-    this->parent = parent;
+    *insert_point = This;
+    This->parent = parent;
 
     /* If a temporary node, record it. */
     if (NAMETABLE_names_are_temporary) {
         new_temp_name_block = (NAMETABLE_temp_name_t*)MALLOC (sizeof (NAMETABLE_temp_name_t));
         new_temp_name_block->next = NAMETABLE_temp_chain;
-        new_temp_name_block->node = this;
+        new_temp_name_block->node = This;
         NAMETABLE_temp_chain = new_temp_name_block;
     }
 
@@ -532,7 +516,7 @@ NAMETABLE_id_t NAMETABLE_add_id
 
 
     /* Return the id (the address of) the new node. */
-    return (NAMETABLE_id_t) this;
+    return This;
 
 }
 
@@ -552,35 +536,31 @@ NAMETABLE_id_t NAMETABLE_add_id
  */
 
 NAMETABLE_id_t NAMETABLE_lookup_id
-#ifdef PROTO
 (
-    char * id
+    const char * id
 )
-#else
-(id)
-    char   *id;
-#endif
 {
-    NAMETABLE_n_t_p     this;
-    int                 i;
+    NAMETABLE_id_t     This;
+    int                i;
 
-    if (NAMETABLE_root != NULL) {
-        for (this = NAMETABLE_root; this; ) {
-            if ((i = strcmp (id, this->id)) == 0) {
-                /* We have a match. Return with this node id. */
-                return (NAMETABLE_id_t) this;
-            }; /* if strcmp */
+    if (NULL == NAMETABLE_root)
+	return NAMETABLE_NIL_ID;
 
-            /* No match, which subtree to use? */
-            if (i > 0) {
-                /* id is greater than this node. Use right subtree. */
-                this = this->right;
-            } else {
-                /* id is less than this node. Use the left subtree. */
-                this = this->left;
-            }; /* if (i > 0) */
-        }; /* for */
-    };  /* NAMETABLE_root != NULL */
+    for (This = NAMETABLE_root; This; ) {
+	if ((i = strcmp (id, This->id)) == 0) {
+	    /* We have a match. Return with this node id. */
+	    return This;
+	}; /* if strcmp */
+
+	/* No match, which subtree to use? */
+	if (i > 0) {
+	    /* id is greater than this node. Use right subtree. */
+	    This = This->right;
+	} else {
+	    /* id is less than this node. Use the left subtree. */
+	    This = This->left;
+	}; /* if (i > 0) */
+    }; /* for */
 
     return NAMETABLE_NIL_ID;
 }
@@ -600,24 +580,18 @@ NAMETABLE_id_t NAMETABLE_lookup_id
  */
 
 void NAMETABLE_id_to_string
-#ifdef PROTO
 (
     NAMETABLE_id_t NAMETABLE_id,
-    char ** str_ptr
+    const char ** str_ptr
 )
-#else
-(NAMETABLE_id, str_ptr)
-    NAMETABLE_id_t NAMETABLE_id;
-    char  **str_ptr;
-#endif
 {
-    NAMETABLE_n_t_p id;
+    NAMETABLE_id_t id;
 
 
     if (NAMETABLE_id == NAMETABLE_NIL_ID)
         *str_ptr = "";
     else {
-        id = (NAMETABLE_n_t_p) NAMETABLE_id;
+        id = NAMETABLE_id;
         *str_ptr = nameTable(id,id);
     };
 }
@@ -646,24 +620,18 @@ void NAMETABLE_id_to_string
  */
 
 boolean NAMETABLE_add_binding
-#ifdef PROTO
 (
     NAMETABLE_id_t id,
-    char * binding
+    const void * binding
 )
-#else
-(id, binding)
-    NAMETABLE_id_t id;
-    char   *binding;
-#endif
 {
-    NAMETABLE_n_t_p     idP;
+    NAMETABLE_id_t     idP;
 
     NAMETABLE_binding_n_t * bindingP;
     NAMETABLE_binding_n_t * newBindingP;
 
     /* Get a local handle on the nametable entry. */
-    idP = (NAMETABLE_n_t_p) id;
+    idP = id;
 
     if (!idP->bindings) {
         /*
@@ -721,24 +689,19 @@ boolean NAMETABLE_add_binding
  *
  */
 
-char   *NAMETABLE_lookup_binding
-#ifdef PROTO
+const void *NAMETABLE_lookup_binding
 (
     NAMETABLE_id_t identifier
 )
-#else
-(identifier)
-    NAMETABLE_id_t identifier;
-#endif
 {
     if (identifier == NAMETABLE_NIL_ID)
-        return NULL;
+	return NULL;
 
     if (nameTable(identifier,bindings) == NULL) {
-        return NULL;
-        };
+	return NULL;
+    };
 
-    return (char *) (nameTable(identifier,bindings)->theBinding);
+    return nameTable(identifier,bindings)->theBinding;
 }
 
 /*--------------------------------------------------------------------*/
@@ -764,24 +727,18 @@ char   *NAMETABLE_lookup_binding
  */
 
 boolean NAMETABLE_add_tag_binding
-#ifdef PROTO
 (
     NAMETABLE_id_t id,
-    char * binding
+    const void * binding
 )
-#else
-(id, binding)
-    NAMETABLE_id_t id;
-    char   *binding;
-#endif
 {
-    NAMETABLE_n_t_p     idP;
+    NAMETABLE_id_t     idP;
 
     NAMETABLE_binding_n_t * bindingP;
     NAMETABLE_binding_n_t * newBindingP;
 
     /* Get a local handle on the nametable entry. */
-    idP = (NAMETABLE_n_t_p) id;
+    idP = id;
 
     if (!idP->tagBinding) {
         /*
@@ -834,24 +791,19 @@ boolean NAMETABLE_add_tag_binding
  *
  */
 
-char   *NAMETABLE_lookup_tag_binding
-#ifdef PROTO
+const void *NAMETABLE_lookup_tag_binding
 (
     NAMETABLE_id_t identifier
 )
-#else
-(identifier)
-    NAMETABLE_id_t identifier;
-#endif
 {
     if (identifier == NAMETABLE_NIL_ID)
-        return NULL;
+	return NULL;
 
     if (nameTable(identifier,tagBinding) == NULL) {
-        return NULL;
-        };
+	return NULL;
+    };
 
-    return (char *) (nameTable(identifier,tagBinding)->theBinding);
+    return nameTable(identifier,tagBinding)->theBinding;
 }
 
 /*--------------------------------------------------------------------*/
@@ -870,28 +822,23 @@ char   *NAMETABLE_lookup_tag_binding
  *
  */
 
-char   *NAMETABLE_lookup_local
-#ifdef PROTO
+const void *NAMETABLE_lookup_local
 (
     NAMETABLE_id_t identifier
 )
-#else
-(identifier)
-    NAMETABLE_id_t identifier;
-#endif
 {
     if (identifier == NAMETABLE_NIL_ID)
-        return NULL;
+	return NULL;
 
     if (nameTable(identifier,bindings) == NULL){
-        return NULL;
-        };
+	return NULL;
+    };
 
     if (nameTable(identifier,bindings)->bindingLevel < currentLevel) {
-        return NULL;
-        };
+	return NULL;
+    };
 
-    return (char *) (nameTable(identifier,bindings)->theBinding);
+    return nameTable(identifier,bindings)->theBinding;
 }
 
 /*--------------------------------------------------------------------*/
@@ -909,7 +856,8 @@ char   *NAMETABLE_lookup_local
  *
  */
 
-void NAMETABLE_push_level () {
+void NAMETABLE_push_level (void)
+{
     if (currentLevel < MAX_LEVELS)
         levelStack[++currentLevel] = NULL;
     else
@@ -931,10 +879,11 @@ void NAMETABLE_push_level () {
  *
  */
 
-void NAMETABLE_pop_level () {
+void NAMETABLE_pop_level (void)
+{
     NAMETABLE_binding_n_t * bp;
     NAMETABLE_binding_n_t * obp;
-    NAMETABLE_n_t_p hsp;
+    NAMETABLE_id_t hsp;
 
     if (currentLevel == 0)
             INTERNAL_ERROR ("Attempt to pop symbol table too many times");
@@ -943,10 +892,10 @@ void NAMETABLE_pop_level () {
 
     while (bp) {
             hsp = bp->boundBy;
-            hsp->bindings = (struct NAMETABLE_binding_n_t  *) bp->oldBinding;
+            hsp->bindings = bp->oldBinding;
             obp = bp;
             bp = obp->nextBindingThisLevel;
-            FREE ((char *)obp);
+            FREE (obp);
     }
 }
 
@@ -966,14 +915,9 @@ void NAMETABLE_pop_level () {
  */
 
 STRTAB_str_t STRTAB_add_string
-#ifdef PROTO
 (
-    char * string
+    const char * string
 )
-#else
-(string)
-    char   *string;
-#endif
 {
 #ifdef MSDOS
     int     string_handle;
@@ -983,7 +927,7 @@ STRTAB_str_t STRTAB_add_string
     STRTAB_index += strlen (string) + 1;
     return string_handle;
 #else
-    return (STRTAB_str_t)NAMETABLE_add_id(string);
+    return NAMETABLE_add_id(string);
 #endif
 }
 
@@ -1003,21 +947,15 @@ STRTAB_str_t STRTAB_add_string
  */
 
 void STRTAB_str_to_string
-#ifdef PROTO
 (
     STRTAB_str_t str,
-    char ** strp
+    const char ** strp
 )
-#else
-(str, strp)
-    STRTAB_str_t str;
-    char  **strp;
-#endif
 {
 #ifdef MSDOS
     *strp = &STRTAB[str];
 #else
-    NAMETABLE_id_to_string((NAMETABLE_id_t)str, strp);
+    NAMETABLE_id_to_string(str, strp);
 #endif
 }
 
@@ -1122,19 +1060,13 @@ void STRTAB_init () {
  */
 
 NAMETABLE_id_t NAMETABLE_add_derived_name
-#ifdef PROTO
 (
     NAMETABLE_id_t identifier,
-    char * matrix
+    const char * matrix
 )
-#else
-(identifier, matrix)
-    NAMETABLE_id_t identifier;
-    char   *matrix;
-#endif
 {
-    char    new_name[max_string_len];
-    char   *old_name_p;
+    char        new_name[max_string_len];
+    char const *old_name_p;
 
     NAMETABLE_id_to_string (identifier, &old_name_p);
     sprintf (new_name, matrix, old_name_p);
@@ -1143,29 +1075,23 @@ NAMETABLE_id_t NAMETABLE_add_derived_name
 }
 
 NAMETABLE_id_t NAMETABLE_add_derived_name2
-#ifdef PROTO
 (
     NAMETABLE_id_t identifier1,
     NAMETABLE_id_t identifier2,
     char * matrix
 )
-#else
-(identifier1, identifier2, matrix)
-    NAMETABLE_id_t identifier1, identifier2;
-    char   *matrix;
-#endif
 {
     char    new_name[max_string_len];
-    char   *old_name1_p,
-           *old_name2_p;
-    NAMETABLE_n_t_p id1, id2;
+    char const *old_name1_p;
+    char const *old_name2_p;
+    NAMETABLE_id_t id1, id2;
 
-    id1 = (NAMETABLE_n_t_p) identifier1;
-    id2 = (NAMETABLE_n_t_p) identifier2;
+    id1 =  identifier1;
+    id2 =  identifier2;
 
 
-    NAMETABLE_id_to_string ((NAMETABLE_id_t)id1, &old_name1_p);
-    NAMETABLE_id_to_string ((NAMETABLE_id_t)id2, &old_name2_p);
+    NAMETABLE_id_to_string (id1, &old_name1_p);
+    NAMETABLE_id_to_string (id2, &old_name2_p);
     sprintf (new_name, matrix, old_name1_p, old_name2_p);
 
     return NAMETABLE_add_id (new_name);
@@ -1173,13 +1099,9 @@ NAMETABLE_id_t NAMETABLE_add_derived_name2
 
 
 void NAMETABLE_set_temp_name_mode
-#ifdef PROTO
 (
     void
 )
-#else
-()
-#endif
 {
 /*
  * Bugcheck if already in temporary mode.
@@ -1195,13 +1117,9 @@ void NAMETABLE_set_temp_name_mode
 
 
 void NAMETABLE_set_perm_name_mode
-#ifdef PROTO
 (
     void
 )
-#else
-()
-#endif
 {
 /*
  * Clear temporary mode.
@@ -1211,15 +1129,11 @@ void NAMETABLE_set_perm_name_mode
 
 
 void NAMETABLE_clear_temp_name_mode
-#ifdef PROTO
 (
     void
 )
-#else
-()
-#endif
 {
-    NAMETABLE_temp_name_t * this,
+    NAMETABLE_temp_name_t * This,
                           * next;
 
 /*
@@ -1231,11 +1145,11 @@ void NAMETABLE_clear_temp_name_mode
 /*
  * Walk the list of temp name blocks, freeing the name and then the block.
  */
-    for (this = NAMETABLE_temp_chain; this != NULL; ) {
-        NAMETABLE_delete_node ((NAMETABLE_id_t)this->node);
-        next = this->next;
-        FREE (this);
-        this = next;
+    for (This = NAMETABLE_temp_chain; This != NULL; ) {
+        NAMETABLE_delete_node (This->node);
+        next = This->next;
+        FREE (This);
+        This = next;
     }
 
 /*
@@ -1249,3 +1163,4 @@ void NAMETABLE_clear_temp_name_mode
     NAMETABLE_names_are_temporary = FALSE;
     NAMETABLE_temp_chain = NULL;
 }
+/* preverve coding style vim: set sw=4 tw=78 : */

@@ -53,9 +53,9 @@ typedef enum {
 
 typedef struct {
     BE_handle_type_k_t handle_type;  /* Type of handle for operation */
-    char *assoc_name;             /* Ptr to name to be used for assoc handle */
-    char *type_name;                /* Ptr to name of [handle] type */
-    char *user_handle_name;         /* Ptr to name of [handle] object */
+    char const *assoc_name;       /* Ptr to name to be used for assoc handle */
+    char const *type_name;        /* Ptr to name of [handle] type */
+    char const *user_handle_name; /* Ptr to name of [handle] object */
     char deref_assoc;         /* '*' if handle must be dereferenced, else ' ' */
     char deref_generic;      /* '*' if handle must be dereferenced, else ' ' */
     boolean auto_handle_idempotent_op;  /* Only used if op is [auto_handle]

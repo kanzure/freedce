@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
  */
@@ -116,8 +116,8 @@ static void ASTP_add_tag_binding
      */
     if (!NAMETABLE_add_tag_binding (name, (char *)type_node))
     {
-        char *identifier;       /* place to receive the identifier text pointer */
-        char *filename;         /* place to receive the filename text pointer */
+        char const *identifier; /* place to receive the identifier text pointer */
+        char const *filename;   /* place to receive the filename text pointer */
         ASTP_node_t *binding;
         NAMETABLE_id_to_string (name, &identifier);
         binding = (ASTP_node_t *)NAMETABLE_lookup_binding(name);
@@ -427,7 +427,7 @@ AST_type_n_t *AST_structure_node
             /* Make sure we have the correct kind of node */
             if (tag_type_node_ptr->kind != AST_structure_k)
             {
-                char *identifier_text; /* place to receive the identifier text */
+                char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
                 log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text);
 
@@ -435,7 +435,7 @@ AST_type_n_t *AST_structure_node
                 if ((tag_type_node_ptr->fe_info->source_line != 0) &&
                     (tag_type_node_ptr->fe_info->file != STRTAB_NULL_STR))
                 {
-                    char *filename;             /* place to receive the filename text pointer */
+                    char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
                     log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
                             filename, tag_type_node_ptr->fe_info->source_line);
@@ -447,14 +447,14 @@ AST_type_n_t *AST_structure_node
             }
             else if (tag_type_node_ptr->type_structure.structure != NULL)
             {
-                char *identifier_text; /* place to receive the identifier text */
+                char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
 
                 /* State where the name was previously declared, if known */
                 if ((tag_type_node_ptr->fe_info->source_line != 0) &&
                     (tag_type_node_ptr->fe_info->file != STRTAB_NULL_STR))
                 {
-                    char *filename;             /* place to receive the filename text pointer */
+                    char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
                     log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
                             filename, tag_type_node_ptr->fe_info->source_line);
@@ -703,7 +703,7 @@ AST_type_n_t *AST_disc_union_node
             /* Make sure we have the correct kind of node */
             if (tag_type_node_ptr->kind != AST_disc_union_k)
             {
-                char *identifier_text; /* place to receive the identifier text */
+                char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
                 log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text);
 
@@ -711,7 +711,7 @@ AST_type_n_t *AST_disc_union_node
                 if ((tag_type_node_ptr->fe_info->source_line != 0) &&
                     (tag_type_node_ptr->fe_info->file != STRTAB_NULL_STR))
                 {
-                    char *filename;             /* place to receive the filename text pointer */
+                    char const *filename;             /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
                     log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
                             filename, tag_type_node_ptr->fe_info->source_line);
@@ -723,14 +723,14 @@ AST_type_n_t *AST_disc_union_node
             }
             else if (tag_type_node_ptr->type_structure.disc_union != NULL)
             {
-                char *identifier_text; /* place to receive the identifier text */
+                char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
 
                 /* State where the name was previously declared, if known */
                 if ((tag_type_node_ptr->fe_info->source_line != 0) &&
                     (tag_type_node_ptr->fe_info->file != STRTAB_NULL_STR))
                 {
-                    char *filename;             /* place to receive the filename text pointer */
+                    char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
                     log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
                             filename, tag_type_node_ptr->fe_info->source_line);
@@ -1114,7 +1114,7 @@ AST_type_n_t *AST_type_from_tag
         /* Make sure we have the correct kind of node */
         if (tag_type_node_ptr->kind != kind)
         {
-            char *identifier_text; /* place to receive the identifier text */
+            char const *identifier_text; /* place to receive the identifier text */
             NAMETABLE_id_to_string (identifier, &identifier_text);
             log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text);
 
@@ -1122,7 +1122,7 @@ AST_type_n_t *AST_type_from_tag
             if ((tag_type_node_ptr->fe_info->source_line != 0) &&
                 (tag_type_node_ptr->fe_info->file != STRTAB_NULL_STR))
             {
-                char *filename;         /* place to receive the filename text pointer */
+                char const *filename;         /* place to receive the filename text pointer */
                 STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
                 log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
                         filename, tag_type_node_ptr->fe_info->source_line);
@@ -1216,7 +1216,7 @@ void ASTP_patch_tag_references
             /* It has been defined, so make sure the type is correct */
             if (tag_ref_node_ptr->ref_kind != type_node_ptr->kind)
             {
-                char *identifier; /* place to receive the identifier text */
+                char const *identifier; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (tag_ref_node_ptr->name, &identifier);
                 log_source_error (tag_ref_node_ptr->type_node_ptr->fe_info->file,
                         tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
@@ -1226,7 +1226,7 @@ void ASTP_patch_tag_references
                 if ((type_node_ptr->fe_info->source_line != 0) &&
                     (type_node_ptr->fe_info->file != STRTAB_NULL_STR))
                 {
-                    char *filename;             /* place to receive the filename text pointer */
+                    char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(type_node_ptr->fe_info->file, &filename);
                     log_source_error (tag_ref_node_ptr->type_node_ptr->fe_info->file,
                             tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
@@ -1244,7 +1244,7 @@ void ASTP_patch_tag_references
         }
         else
         {
-            char        *identifier;
+            char const  *identifier;
             /*
              * Allow undeclared name only if it is a struct tag which is part
              * of a type definition with the [context_handle] attribute.  This

@@ -103,20 +103,12 @@ void CSPELL_test_transceive_status
 /*                                                                            */
 /******************************************************************************/
 void CSPELL_csr_header
-#ifdef PROTO
 (
     FILE *fid,
-    char *p_interface_name __attribute__((__unused__)),       /* Ptr to name of interface */
+    char const *p_interface_name __attribute__((__unused__)),       /* Ptr to name of interface */
     AST_operation_n_t *p_operation, /* Ptr to operation node */
     boolean use_internal_name       /* use internal name if true */
 )
-#else
-(fid, p_interface_name, p_operation, use_internal_name)
-    FILE *fid;
-    char *p_interface_name;
-    AST_operation_n_t *p_operation;
-    boolean use_internal_name;
-#endif
 {
     NAMETABLE_id_t emitted_name;
 
@@ -142,31 +134,17 @@ void CSPELL_csr_header
 /*                                                                            */
 /******************************************************************************/
 static void CSPELL_client_stub_routine
-#ifdef PROTO
 (
     FILE *fid,                      /* Handle for emitted C text */
     AST_interface_n_t *p_interface, /* Ptr to AST interface node */
     language_k_t language __attribute__((__unused__)),          /* Language stub is to interface to */
     AST_operation_n_t *p_operation, /* Ptr to AST operation node */
-    char *p_interface_name,         /* Ptr to name of interface */
+    char const *p_interface_name,   /* Ptr to name of interface */
     unsigned long op_num,           /* Number of current operation */
     boolean use_internal_name,      /* use internal name if true */
     int num_declared_exceptions,    /* Count of user declared exceptions */
     int num_extern_exceptions       /* Count of user extern_exceptions */
 )
-#else
-(fid, p_interface, language, p_operation, p_interface_name,
- op_num, use_internal_name, num_declared_exceptions, num_extern_exceptions)
-    FILE *fid;
-    AST_interface_n_t *p_interface;
-    language_k_t language;
-    AST_operation_n_t *p_operation;
-    char *p_interface_name;
-    unsigned long op_num;
-    boolean use_internal_name;
-    int num_declared_exceptions;
-    int num_extern_exceptions;
-#endif
 {
     BE_stat_info_t comm_stat_info;
     BE_stat_info_t fault_stat_info;
@@ -427,22 +405,13 @@ static void CSPELL_client_stub_routine
 /*                                                                            */
 /******************************************************************************/
 void DDBE_spell_pickling_stub
-#ifdef PROTO
 (
     FILE *fid,
     AST_interface_n_t *p_interface, /* Ptr to AST interface node */
-    char *p_interface_name,       /* Ptr to name of interface */
+    char const *p_interface_name,   /* Ptr to name of interface */
     AST_operation_n_t *p_operation, /* Ptr to operation node */
     boolean use_internal_name       /* use internal name if true */
 )
-#else
-(fid, p_interface, p_interface_name, p_operation, use_internal_name)
-    FILE *fid;
-    AST_interface_n_t *p_interface;
-    char *p_interface_name;
-    AST_operation_n_t *p_operation;
-    boolean use_internal_name;
-#endif
 {
     boolean encode_decode;  /* True if operation has [encode] and [decode] */
     char *action_type;
@@ -617,7 +586,7 @@ void DDBE_gen_cstub
 {
     AST_export_n_t *p_export;
     AST_operation_n_t *p_operation;
-    char *p_interface_name;
+    char const *p_interface_name;
     boolean first;
     /* Exceptions may be declared or external. We need a count of both */
     int num_declared_exceptions;
@@ -687,7 +656,7 @@ void DDBE_gen_cstub
             if (!AST_NO_CODE_SET(p_operation))
             {
                 if (AST_ENCODE_SET(p_operation) || AST_DECODE_SET(p_operation))
-                    DDBE_spell_pickling_stub(fid, p_interface, 
+                    DDBE_spell_pickling_stub(fid, p_interface,
                         p_interface_name, p_operation, cmd_opt[opt_cepv]);
                 else
                     CSPELL_client_stub_routine(fid, p_interface, language,

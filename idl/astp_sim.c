@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -405,7 +405,7 @@ AST_parameter_n_t  *AST_declarator_to_param
          (type->kind == AST_structure_k)) &&
         (type->name == NAMETABLE_NIL_ID))
     {
-        char *identifier;
+        char const *identifier;
         NAMETABLE_id_to_string(declarator->name, &identifier);
         log_error(nidl_yylineno, NIDL_ANONTYPE, identifier);
     }
@@ -977,13 +977,13 @@ AST_exception_n_t *AST_exception_node
     binding = (ASTP_node_t *)NAMETABLE_lookup_binding(excep_name);
     if (binding != NULL)
     {
-        char *identifier;
+        char const *identifier;
         NAMETABLE_id_to_string(excep_name, &identifier);
         if ((binding->fe_info != (fe_info_t *)NULL) &&
             (binding->fe_info->source_line != 0) &&
             (binding->fe_info->file != STRTAB_NULL_STR))
         {
-            char *filename;
+            char const *filename;
             STRTAB_str_to_string(binding->fe_info->file, &filename);
             log_error(nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
                       filename, binding->fe_info->source_line);
@@ -1440,7 +1440,7 @@ AST_operation_n_t *AST_operation_node
     if ((declarator->last_op == NULL) ||
        (declarator->last_op->op_kind != AST_function_k))
     {
-        char *var_name;
+        char const *var_name;
         NAMETABLE_id_to_string(declarator->name, &var_name);
         log_error(nidl_yylineno, NIDL_VARDECLNOSUP, var_name);
         return NULL;
@@ -1528,7 +1528,7 @@ AST_operation_n_t *AST_operation_node
          (result_type->kind == AST_structure_k)) &&
         (result_type->name == NAMETABLE_NIL_ID))
     {
-        char *identifier;
+        char const *identifier;
         NAMETABLE_id_to_string(operation_node_p->name, &identifier);
         log_error(nidl_yylineno, NIDL_ANONTYPE, identifier);
     }
@@ -1700,7 +1700,7 @@ void ASTP_parse_port
     STRTAB_str_t endpoint_id;
     char protocol_buf[256];
     char endpoint_buf[256];
-    char *protocol_start;
+    char const *protocol_start;
     char *protocol_end;
     char *endpoint_start;
     char *endpoint_end;

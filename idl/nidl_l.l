@@ -311,7 +311,7 @@ other           .
     /* If id is too long, truncate it and issue a warning */
     if (yyleng > MAX_ID) {
         NAMETABLE_id_t id;
-        char *identifier;
+        char const *identifier;
         id = NAMETABLE_add_id((char *)yytext);
         NAMETABLE_id_to_string(id, &identifier);
         log_warning(nidl_yylineno, NIDL_IDTOOLONG, identifier, MAX_ID);
@@ -391,7 +391,7 @@ other           .
 
 
     if ((yytext[0] == '0') && (strlen((char *)yytext) != strspn((char *)yytext,"01234567"))) {
-        char    *int_text;              /* Text of integer */
+        char const *int_text;           /* Text of integer */
         STRTAB_str_t string_id;         /* Entry in string table of integer */
         string_id = STRTAB_add_string(yytext_p);
         STRTAB_str_to_string(string_id, &int_text);

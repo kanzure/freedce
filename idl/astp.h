@@ -911,10 +911,8 @@ AST_type_n_t *AST_propagate_type(
 );
 
 void ASTP_add_name_binding(
-#ifdef PROTO
     NAMETABLE_id_t name,
-    char *AST_node
-#endif
+    void	   *AST_node
 );
 
 AST_type_n_t *ASTP_chase_ptr_to_kind(

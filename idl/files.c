@@ -55,7 +55,7 @@ extern char *getcwd();
 /*
 **  Default filespec; only good for one call to FILE_parse.
 */
-char *FILE_def_filespec = NULL;
+char const *FILE_def_filespec = NULL;
 
 /*
 **  F I L E _ o p e n
@@ -137,23 +137,13 @@ boolean FILE_create             /* Returns TRUE on success */
 */
 
 boolean FILE_lookup             /* Returns TRUE on success */
-#ifdef PROTO
 (
-    char        *filespec,      /* [in] Filespec */
-    char        **idir_list,    /* [in] Array of directories to search */
+    char const  *filespec,      /* [in] Filespec */
+    char const  * const *idir_list,    /* [in] Array of directories to search */
                                 /*      NULL => just use filespec */
     struct stat *stat_buf,      /*[out] Stat buffer - see stat.h */
     char        *lookup_spec    /*[out] Filespec of found file (on success) */
 )
-#else
-(filespec, idir_list, stat_buf, lookup_spec)
-    char        *filespec;      /* [in] Filespec */
-    char        **idir_list;    /* [in] Array of directories to search */
-                                /*      NULL => just use filespec */
-    struct stat *stat_buf;      /*[out] Stat buffer - see stat.h */
-    char        *lookup_spec;   /*[out] Filespec of found file (on success) */
-#endif
-
 {
 #ifdef HASDIRTREE
     int     i;
@@ -232,44 +222,28 @@ boolean FILE_lookup             /* Returns TRUE on success */
 #endif
 
 boolean FILE_form_filespec      /* Returns TRUE on success */
-#ifdef PROTO
 (                               /* For all [in] args, NULL => none */
-    char        *in_filespec,   /* [in] Filespec (full or partial) */
-    char        *dirspec,       /* [in] Directory; used if in_filespec */
+    char const  *in_filespec,   /* [in] Filespec (full or partial) */
+    char const  *dirspec,       /* [in] Directory; used if in_filespec */
                                 /*      doesn't have directory field */
-    char        *type,          /* [in] Filetype; used if in_filespec */
+    char const  *type,          /* [in] Filetype; used if in_filespec */
                                 /*      doesn't have filetype field */
-    char        *rel_filespec,  /* [in] Related filespec; fields are used to */
+    char const  *rel_filespec,  /* [in] Related filespec; fields are used to */
                                 /*      fill in missing components after */
                                 /*      applying in_filespec, dir, type */
     char        *out_filespec   /*[out] Full filespec formed */
 )
-#else
-(in_filespec, dirspec, type, rel_filespec, out_filespec)
-                                /* Returns TRUE on success */
-                                /* For all [in] args, NULL => none */
-    char        *in_filespec;   /* [in] Filespec (full or partial) */
-    char        *dirspec;       /* [in] Directory; used if in_filespec */
-                                /*      doesn't have directory field */
-    char        *type;          /* [in] Filetype; used if in_filespec */
-                                /*      doesn't have filetype field */
-    char        *rel_filespec;  /* [in] Related filespec; fields are used to */
-                                /*      fill in missing components after */
-                                /*      applying in_filespec, dir, type */
-    char        *out_filespec;  /*[out] Full filespec formed */
-#endif
-
 {
-    char    *dir = NULL,        /* Directory specified */
-            in_dir[PATH_MAX],   /* Directory part of in_filespec */
-            in_name[PATH_MAX],  /* Filename part of in_filespec */
-            in_type[PATH_MAX],  /* Filetype part of in_filespec */
-            rel_dir[PATH_MAX],  /* Directory part of rel_filespec */
-            rel_name[PATH_MAX], /* Filename part of rel_filespec */
-            rel_type[PATH_MAX], /* Filetype part of rel_filespec */
-            *res_dir,           /* Resultant directory */
-            *res_name,          /* Resultant filename */
-            *res_type;          /* Resultant filetype */
+    char const *dir = NULL;        /* Directory specified */
+    char       in_dir[PATH_MAX];   /* Directory part of in_filespec */
+    char       in_name[PATH_MAX];  /* Filename part of in_filespec */
+    char       in_type[PATH_MAX];  /* Filetype part of in_filespec */
+    char       rel_dir[PATH_MAX];  /* Directory part of rel_filespec */
+    char       rel_name[PATH_MAX]; /* Filename part of rel_filespec */
+    char       rel_type[PATH_MAX]; /* Filetype part of rel_filespec */
+    char const *res_dir;           /* Resultant directory */
+    char const *res_name;          /* Resultant filename */
+    char const *res_type;          /* Resultant filetype */
 
     in_dir[0]   = '\0';
     in_name[0]  = '\0';
@@ -284,7 +258,7 @@ boolean FILE_form_filespec      /* Returns TRUE on success */
     /* Parse in_filespec into its components. */
     if (in_filespec != NULL && in_filespec[0] != '\0')
     {
-        /* 
+        /*
          * Setup the related or file type global FILE_def_filespec such that
          * any file lookup is handled appropriately in FILE_parse.
          */
@@ -354,7 +328,8 @@ boolean FILE_form_filespec      /* Returns TRUE on success */
 #endif  /* VMS */
     }
 
-    if (dir == NULL) dir = dirspec;
+    if (dir == NULL)
+	dir = dirspec;
 
     /* Parse rel_filespec into its components. */
     if (rel_filespec != NULL && rel_filespec[0] != '\0')
@@ -508,26 +483,17 @@ static int process_vms_filespec
 #endif
 
 boolean FILE_parse              /* Returns TRUE on success */
-#ifdef PROTO
 (
-    char        *filespec,      /* [in] Filespec */
+    char const  *filespec,      /* [in] Filespec */
     char        *dir,           /*[i,o] Directory portion; NULL =>don't want */
     char        *name,          /*[i,o] Filename portion;  NULL =>don't want */
     char        *type           /*[i,o] File type (ext);   NULL =>don't want */
 )
-#else
-(filespec, dir, name, type)
-    char        *filespec;      /* [in] Filespec */
-    char        *dir;           /*[i,o] Directory portion; NULL =>don't want */
-    char        *name;          /*[i,o] Filename portion;  NULL =>don't want */
-    char        *type;          /*[i,o] File type (ext);   NULL =>don't want */
-#endif
-
 #ifndef VMS     /* This code works partially on VMS; better version below */
 {
 #if defined(HASDIRTREE)
     FILE_k_t    filekind;       /* File kind */
-    char        *pn;
+    char const  *pn;
     int         pn_len,
                 leaf_len;
     int         i,
@@ -790,15 +756,9 @@ boolean FILE_parse              /* Returns TRUE on success */
 */
 
 boolean FILE_has_dir_info
-#ifdef PROTO
 (
-    char        *filespec       /* [in] Filespec */
+    char const  *filespec       /* [in] Filespec */
 )
-#else
-(filespec)
-    char        *filespec;      /* [in] Filespec */
-#endif
-
 {
     char    dir[PATH_MAX];      /* Directory part of filespec */
 
@@ -880,17 +840,10 @@ boolean FILE_is_cwd
 */
 
 boolean FILE_kind               /* Returns TRUE on success */
-#ifdef PROTO
 (
-    char        *filespec,      /* [in] Filespec */
+    char const  *filespec,      /* [in] Filespec */
     FILE_k_t    *filekind       /*[out] File kind (on success) */
 )
-#else
-(filespec, filekind)
-    char        *filespec;      /* [in] Filespec */
-    FILE_k_t    *filekind;      /*[out] File kind (on success) */
-#endif
-
 {
     struct stat fileinfo;
 
@@ -932,7 +885,7 @@ boolean FILE_contains_ev_ref    /* Returns TRUE if filespec contains an */
 #endif
 
 {
-    char        *pn;
+    char const  *pn;
     unsigned int         i;
 
     STRTAB_str_to_string(fs_id, &pn);

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -74,22 +74,18 @@ extern boolean FILE_create(
 );
 
 extern boolean FILE_lookup(
-#ifdef PROTO
-    char        *filespec,
-    char        **idir_list,
+    char const  *filespec,
+    char const  * const *idir_list,
     struct stat *stat_buf,
     char        *lookup_spec
-#endif
 );
 
 extern boolean FILE_form_filespec(
-#ifdef PROTO
-    char *in_filespec,
-    char *dir,
-    char *type,
-    char *rel_filespec,
-    char *out_filespec
-#endif
+    char const *in_filespec,
+    char const *dir,
+    char const *type,
+    char const *rel_filespec,
+    char       *out_filespec
 );
 
 #ifdef VMS
@@ -100,18 +96,14 @@ extern char *FILE_def_filespec;
 #endif
 
 extern boolean FILE_parse(
-#ifdef PROTO
-    char *filespec,
-    char *dir,
-    char *name,
-    char *type
-#endif
+    char const *filespec,
+    char       *dir,
+    char       *name,
+    char       *type
 );
 
 extern boolean FILE_has_dir_info(
-#ifdef PROTO
-    char *filespec
-#endif
+    char const *filespec
 );
 
 extern boolean FILE_is_cwd(
@@ -121,10 +113,8 @@ extern boolean FILE_is_cwd(
 );
 
 extern boolean FILE_kind(
-#ifdef PROTO
-    char        *filespec,
+    char const  *filespec,
     FILE_k_t    *filekind
-#endif
 );
 
 extern int FILE_execute_cmd(

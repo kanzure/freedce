@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1991 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1991 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1991 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **  NAME
@@ -92,21 +92,15 @@ static void ASTP_verify_non_anonymous (
  */
 
 void ASTP_add_name_binding
-#ifdef PROTO
 (
-    NAMETABLE_id_t      name,
-    char        *AST_node
+    NAMETABLE_id_t name,
+    void          *AST_node
 )
-#else
-(name, AST_node)
-    NAMETABLE_id_t      name;
-    char        *AST_node;
-#endif
 {
-    char *identifier;       /* place to receive the identifier text pointer */
+    char const *identifier; /* place to receive the identifier text pointer */
     ASTP_node_t *binding;   /* place to recieve binding */
-    char *filename;         /* place to receive the filename text pointer */
-    int issue_error;	    
+    char const *filename;   /* place to receive the filename text pointer */
+    int issue_error;
     int issue_case_warning __attribute__((__unused__));
 
     /*
@@ -162,14 +156,9 @@ void ASTP_add_name_binding
  */
 
 void ASTP_validate_forward_ref
-#ifdef PROTO
 (
     AST_type_n_t *type
 )
-#else
-(type)
-    AST_type_n_t *type;
-#endif
 {
     /*
      * Check that the base type is not an incomplete struct/union
@@ -179,7 +168,7 @@ void ASTP_validate_forward_ref
          (type->kind == AST_structure_k)) &&
         (type->type_structure.structure == NULL))
     {
-        char *identifier;
+        char const *identifier;
         NAMETABLE_id_to_string(type->fe_info->tag_name, &identifier);
         log_error(nidl_yylineno, NIDL_DEFNOTCOMP, identifier);
     }
@@ -197,16 +186,10 @@ void ASTP_validate_forward_ref
  */
 
 void ASTP_validate_forward_ref_scope
-#ifdef PROTO
 (
     AST_type_n_t *type,
     ASTP_node_t  *parent_node
 )
-#else
-(type, parent_node)
-    AST_type_n_t *type;
-    ASTP_node_t  *parent_node;
-#endif
 {
     /*
      * Check that the base type is not an incomplete struct/union
@@ -216,7 +199,7 @@ void ASTP_validate_forward_ref_scope
         && parent_node->fe_info->node_kind == fe_parameter_n_k)
     {
         /* Forward tag reference in this declaration is not ANSI C compliant */
-        char *identifier;
+        char const *identifier;
         NAMETABLE_id_to_string(type->fe_info->tag_name, &identifier);
         log_warning(nidl_yylineno, NIDL_FWDTAGREF, identifier);
     }
@@ -504,7 +487,7 @@ ASTP_node_t *ASTP_lookup_binding
 #endif
 {
     ASTP_node_t     *bound_node;
-    char            *identifier;
+    char const      *identifier;
 
     /*
      * Lookup binding
@@ -561,7 +544,7 @@ ASTP_node_t *ASTP_lookup_binding
             if ((bound_node->fe_info->source_line != 0) &&
                 (bound_node->fe_info->file != STRTAB_NULL_STR))
             {
-                char *filename;         /* place to receive the filename text pointer */
+                char const *filename; /* place to receive the filename text pointer */
                 STRTAB_str_to_string(bound_node->fe_info->file, &filename);
                 log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
                         filename, bound_node->fe_info->source_line);
@@ -1318,7 +1301,7 @@ static AST_type_n_t *AST_propagate_typedef
                           case 0:            /* No interface default */
                               if (!AST_LOCAL_SET(the_interface))
                               {
-                                  char *identifier;
+                                  char const *identifier;
                                   NAMETABLE_id_to_string (
                                       declarator_ptr->name, &identifier);
                                   log_warning(nidl_yylineno, NIDL_MISSPTRCLASS, identifier);
@@ -1489,7 +1472,7 @@ AST_type_n_t *AST_propagate_type
                     case 0:             /* No interface default */
                           if (!AST_LOCAL_SET(the_interface))
                           {
-                              char *identifier;
+                              char const *identifier;
                               NAMETABLE_id_to_string (
                                   declarator_ptr->name, &identifier);
                               log_warning(nidl_yylineno, NIDL_MISSPTRCLASS, identifier);
@@ -2094,7 +2077,7 @@ AST_field_attr_n_t *AST_set_field_attrs
                     }
                     else
                     {
-    							char *identifier;
+			char const *identifier;
                         NAMETABLE_id_to_string (attr_ptr->name,
                                                 &identifier);
                         log_error(nidl_yylineno, NIDL_NAMENOTFND, identifier) ;
@@ -2854,7 +2837,7 @@ NAMETABLE_id_t AST_generate_name
 #endif
 {
     char        gen_name[MAX_ID+1];  /* Buffer for generated tag name */
-    char        *int_name;      /* Interface name */
+    char const  *int_name;      /* Interface name */
 
     /* retrieve the interface name */
     NAMETABLE_id_to_string(int_p->name, &int_name);
@@ -2943,15 +2926,15 @@ static void ASTP_verify_non_anonymous
      */
     if (!AST_DEF_AS_TAG_SET(type) &&
         (type->name == NAMETABLE_NIL_ID) &&
-         (((type->kind == AST_disc_union_k) && 
+         (((type->kind == AST_disc_union_k) &&
             (type->type_structure.disc_union != NULL) &&
             (type->type_structure.disc_union->tag_name == NAMETABLE_NIL_ID))
         ||
-          ((type->kind == AST_structure_k) && 
+          ((type->kind == AST_structure_k) &&
             (type->type_structure.structure != NULL) &&
             (type->type_structure.structure->tag_name == NAMETABLE_NIL_ID))))
     {
-        char *identifier;
+        char const *identifier;
         NAMETABLE_id_to_string(declarator_ptr->name, &identifier);
         log_warning(nidl_yylineno, NIDL_ANONTYPE, identifier);
     }

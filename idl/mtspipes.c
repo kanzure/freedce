@@ -92,16 +92,10 @@ static void BE_get_next_pipe_index
 /*                                                                            */
 /******************************************************************************/
 static void BE_get_pipe_type_name
-#ifdef PROTO
 (
     AST_parameter_n_t *p_parameter,
-    char **p_p_name
+    char const **p_p_name
 )
-#else
-(p_parameter, p_p_name)
-    AST_parameter_n_t *p_parameter;
-    char **p_p_name;
-#endif
 {
     if (p_parameter->type->kind == AST_pipe_k)
     {
@@ -139,7 +133,7 @@ void DDBE_init_server_pipes
     long next_in_pipe_index;
     long next_out_pipe_index;
     AST_parameter_n_t *p_parameter;
-    char *p_pipe_type_name;
+    char const *p_pipe_type_name;
 
     /* Establish indices of first pipes */
     first_in_pipe = 0;
@@ -182,7 +176,7 @@ void DDBE_init_server_pipes
 	    AST_type_n_t *pipe_t = p_parameter->type;
 
 	    /* Find pipe type, if passed by reference */
-	    if (pipe_t->kind == AST_pointer_k) 
+	    if (pipe_t->kind == AST_pointer_k)
 		pipe_t = pipe_t->type_structure.pointer->pointee_type;
 
             curr_pipe_index++;

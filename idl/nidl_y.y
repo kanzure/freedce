@@ -1,6 +1,6 @@
 %{
 /*
- *  
+ *
  *  (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  *  (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  *  (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -17,7 +17,7 @@
  *  Packard Company, nor Digital Equipment Corporation makes any
  *  representations about the suitability of this software for any
  *  purpose.
- *  
+ *
  */
 /*
 **
@@ -1189,7 +1189,7 @@ version_number:
         }
    |    FLOAT_NUMERIC
         {
-            char    *float_text;
+            char const *float_text;
             unsigned int            major_version,minor_version;
             STRTAB_str_to_string($<y_string>1, &float_text);
             sscanf(float_text,"%d.%d",&major_version,&minor_version);
@@ -1472,11 +1472,11 @@ attribute:
                                   ASTP_case = $<y_label>3;
                                 }
     |   DEFAULT_KW              { $<y_attributes>$.attr_flags = ASTP_DEFAULT;
-                                  $<y_attributes>$.bounds = NULL;       
+                                  $<y_attributes>$.bounds = NULL;
                                 }
     |   IDENTIFIER      /* Not an attribute, so give an error */
         {
-                char *identifier;       /* place to receive the identifier text */
+                char const *identifier; /* place to receive the identifier text */
                 NAMETABLE_id_to_string ($<y_id>1, &identifier);
                 log_error (nidl_yylineno, NIDL_UNKNOWNATTR, identifier);
                 $<y_attributes>$.attr_flags = 0;

@@ -208,7 +208,7 @@ void spell_name
     NAMETABLE_id_t name;
 #endif
 {
-    char *str;
+    char const *str;
 
     NAMETABLE_id_to_string (name, &str);
     fprintf (fid, "%s", str);

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1992 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1992 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1992 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **      ddbe.c
@@ -279,9 +279,9 @@ void DDBE_spell_type_kind
 #endif
 {
     NAMETABLE_id_t      nameid = 0;     /* Interpreter tag name ID */
-    char                *name;      /* Interpreter tag name string */
+    char const          *name;      /* Interpreter tag name string */
     AST_type_n_t        *type_p;
-    char                *type_name;
+    char const          *type_name;
 #ifdef DUMPERS
     char                *comment;   /* Comment for entry */
 #endif
@@ -617,24 +617,16 @@ static void DDBE_noop_vec_entry
  *  (if any) and the passed instance expression.
  */
 static void DDBE_scalar_vec_entry
-#ifdef PROTO
 (
     DDBE_vec_rep_t  **p_defn_p,     /* [io] Ptr to vec entry to insert after */
     AST_type_n_t    *type_p,        /* [in] Ptr to AST scalar type node */
-    char            *inst_expr,     /* [in] Instance expression */
+    char const      *inst_expr,     /* [in] Instance expression */
     DDBE_vectors_t  *vip __attribute__((__unused__))           /* [in] vector information ptr */
 )
-#else
-(p_defn_p, type_p, inst_expr, vip)
-    DDBE_vec_rep_t  **p_defn_p;     /* [io] Ptr to vec entry to insert after */
-    AST_type_n_t    *type_p;        /* [in] Ptr to AST scalar type node */
-    char            *inst_expr;     /* [in] Instance expression */
-    DDBE_vectors_t  *vip;           /* [in] vector information ptr */
-#endif
 {
     DDBE_vec_rep_t  *new_p;         /* Ptr to new vector entry */
-    char            *type_name;     /* Scalar type name, if any */
-    char            *comment;       /* Comment string */
+    char const      *type_name;     /* Scalar type name, if any */
+    char const      *comment;       /* Comment string */
     char            comment_buf[DDBE_MAX_COMMENT];
 
     comment_buf[0] = '\0';
@@ -1478,7 +1470,7 @@ static void DDBE_op_marshall
     DDBE_vectors_t  *vip;           /* [io] vector information */
 #endif
 {
-    char            *inst_name;     /* Instance name */
+    char const      *inst_name;     /* Instance name */
 
     /*
      * If in a structure, offset vector entry:
@@ -1487,7 +1479,7 @@ static void DDBE_op_marshall
     if (IR_cur_scope(vip->ir_ctx_p) == IR_SCP_STRUCT)
     {
         AST_field_n_t   *field_p;       /* Ptr to AST field node */
-        char            *field_name;    /* Field name */
+        char const      *field_name;    /* Field name */
         char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
 
         field_p = tup_p->arg[IR_ARG_FIELD].field;
@@ -1545,7 +1537,7 @@ static void DDBE_op_struct_begin
 {
     IR_tup_n_t      *tup_p;         /* ptr to intermediate rep tuple */
     AST_type_n_t    *type_p;        /* Ptr to AST struct type node */
-    char            *type_name;     /* Type name */
+    char const      *type_name;     /* Type name */
     boolean     modified = FALSE;   /* TRUE => struct needs modifier tag */
     boolean         conformant;     /* TRUE => conformant struct */
     char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
@@ -1771,9 +1763,9 @@ static void DDBE_op_disc_union_begin
     IR_tup_n_t      *sw_tup_p;      /* ptr to switch_enc_k tuple, encap union */
     AST_type_n_t    *type_p;        /* Ptr to AST union type node */
     AST_disc_union_n_t *union_p;    /* Ptr to AST union node */
-    char            *type_name;     /* Type name */
-    char            *switch_name;   /* Name of union switch */
-    char            *union_name;    /* Name of encapsulated union field */
+    char const      *type_name;     /* Type name */
+    char const      *switch_name;   /* Name of union switch */
+    char const      *union_name;    /* Name of encapsulated union field */
     STRTAB_str_t    union_expr;     /* Expr for encapsulated union field */
     char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
     boolean     defn_done = TRUE;   /* Definition vec entries done for type */
@@ -1932,7 +1924,7 @@ static void DDBE_op_disc_union_begin
     if (IR_parent_scope(vip->ir_ctx_p) == IR_SCP_STRUCT)
     {
         AST_field_n_t   *field_p;       /* Ptr to AST field node */
-        char            *field_name;    /* Field name */
+        char const      *field_name;    /* Field name */
 
         field_p = (AST_field_n_t *)IR_cur_inst(vip->ir_ctx_p);
         NAMETABLE_id_to_string(field_p->name, &field_name);
@@ -1998,7 +1990,7 @@ static void DDBE_op_pipe_begin
 {
     IR_tup_n_t      *tup_p;         /* ptr to intermediate rep tuple */
     AST_type_n_t    *type_p;        /* Ptr to AST pipe type node */
-    char            *type_name;     /* Type name */
+    char const      *type_name;     /* Type name */
     char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
 
     tup_p = *p_tup_p;
@@ -2130,7 +2122,7 @@ static void DDBE_op_array
     if (IR_cur_scope(vip->ir_ctx_p) == IR_SCP_STRUCT && !in_flatarr)
     {
         AST_field_n_t   *field_p;       /* Ptr to AST field node */
-        char            *field_name;    /* Field name */
+        char const      *field_name;    /* Field name */
 
         field_p = tup_p->arg[IR_ARG_FIELD].field;
         NAMETABLE_id_to_string(field_p->name, &field_name);
@@ -2206,7 +2198,7 @@ static void DDBE_op_array_bounds
 #endif
 {
     AST_type_n_t    *type_p;        /* Ptr to AST struct type node */
-    char            *type_name;     /* Type name */
+    char const      *type_name;     /* Type name */
     char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
 
     /*
@@ -2260,8 +2252,8 @@ static void DDBE_op_bound
     AST_field_n_t       *ref_field_p;       /* Referenced field in bound attr */
     long                ref_index;          /* Referenced index in bound attr */
     NAMETABLE_id_t      ref_name_id;        /* Ref'd param/field name ID */
-    char                *ref_name;          /* Ref'd param/field name */
-    char                *ref_text;          /* "field" or "param" */
+    char const          *ref_name;          /* Ref'd param/field name */
+    char const          *ref_text;          /* "field" or "param" */
     STRTAB_str_t        octetsize_expr;     /* Expression for octetsize */
     char        ref_expr[DDBE_MAX_COMMENT]; /* Comment for type vector entry */
 
@@ -2389,8 +2381,8 @@ static void DDBE_op_limit
     AST_field_n_t       *ref_field_p;       /* Referenced field in limit attr */
     long                ref_index;          /* Referenced index in limit attr */
     NAMETABLE_id_t      ref_name_id;        /* Ref'd param/field name ID */
-    char                *ref_name;          /* Ref'd param/field name */
-    char                *ref_text;          /* "field" or "param" */
+    char const          *ref_name;          /* Ref'd param/field name */
+    char const          *ref_text;          /* "field" or "param" */
     STRTAB_str_t        octetsize_expr;     /* Expression for octetsize */
     char        ref_expr[DDBE_MAX_COMMENT]; /* Comment for type vector entry */
 
@@ -2651,7 +2643,7 @@ static void DDBE_op_pointer
     if (IR_cur_scope(vip->ir_ctx_p) == IR_SCP_STRUCT)
     {
         AST_field_n_t   *field_p;       /* Ptr to AST field node */
-        char            *field_name;    /* Field name */
+        char const      *field_name;    /* Field name */
         char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
 
         field_p = tup_p->arg[IR_ARG_FIELD].field;
@@ -2770,7 +2762,7 @@ static void DDBE_op_transmit_as
     IR_tup_n_t      *tup_p;         /* Ptr to intermediate rep tuple */
     AST_type_n_t    *type_p;        /* Ptr to transmissible type AST node */
     AST_type_n_t    *pres_p;        /* Ptr to presented type AST node */
-    char            *pres_name;     /* Presented type name */
+    char const      *pres_name;     /* Presented type name */
     char            rtn_name[MAX_ID]; /* Routine name */
     char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
 
@@ -2835,7 +2827,7 @@ static void DDBE_op_transmit_as
     if (IR_parent_scope(vip->ir_ctx_p) == IR_SCP_STRUCT)
     {
         AST_field_n_t   *field_p;       /* Ptr to AST field node */
-        char            *field_name;    /* Field name */
+        char const      *field_name;    /* Field name */
 
         field_p = (AST_field_n_t *)IR_cur_inst(vip->ir_ctx_p);
         NAMETABLE_id_to_string(field_p->name, &field_name);
@@ -2965,8 +2957,8 @@ static void DDBE_op_represent_as
     IR_tup_n_t      *tup_p;         /* Ptr to intermediate rep tuple */
     AST_type_n_t    *type_p;        /* Ptr to network type AST node */
     AST_rep_as_n_t  *rep_p;         /* Ptr to represent_as AST node */
-    char            *type_name;     /* Network type name */
-    char            *local_name;    /* Local type name */
+    char const      *type_name;     /* Network type name */
+    char const      *local_name;    /* Local type name */
     char            rtn_name[MAX_ID]; /* Routine name */
     char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
     char local_size[DDBE_MAX_EXPR]; /* Symbolic expr for sizeof local type */
@@ -3036,7 +3028,7 @@ static void DDBE_op_represent_as
     if (IR_parent_scope(vip->ir_ctx_p) == IR_SCP_STRUCT)
     {
         AST_field_n_t   *field_p;       /* Ptr to AST field node */
-        char            *field_name;    /* Field name */
+        char const      *field_name;    /* Field name */
 
         field_p = (AST_field_n_t *)IR_cur_inst(vip->ir_ctx_p);
         NAMETABLE_id_to_string(field_p->name, &field_name);
@@ -3166,8 +3158,8 @@ static void DDBE_op_cs_char
     IR_tup_n_t      *tup_p;         /* Ptr to intermediate rep tuple */
     AST_type_n_t    *type_p;        /* Ptr to network type AST node */
     AST_cs_char_n_t *ichar_p;       /* Ptr to cs_char AST node */
-    char            *type_name;     /* Network type name */
-    char            *local_name;    /* Local type name */
+    char const      *type_name;     /* Network type name */
+    char const      *local_name;    /* Local type name */
     char            rtn_name[MAX_ID]; /* Routine name */
     char comment[DDBE_MAX_COMMENT]; /* Comment buffer */
     char local_size[DDBE_MAX_EXPR]; /* Symbolic expr for sizeof local type */
@@ -3222,7 +3214,7 @@ static void DDBE_op_cs_char
     if (IR_parent_scope(vip->ir_ctx_p) == IR_SCP_STRUCT)
     {
         AST_field_n_t   *field_p;       /* Ptr to AST field node */
-        char            *field_name;    /* Field name */
+        char const      *field_name;    /* Field name */
 
         field_p = (AST_field_n_t *)IR_cur_inst(vip->ir_ctx_p);
         NAMETABLE_id_to_string(field_p->name, &field_name);
@@ -3360,8 +3352,8 @@ static DDBE_vec_rep_t *DDBE_gen_param_reps
 #endif
 {
     AST_type_n_t    *type_p;        /* Type node pointer */
-    char            *name;          /* Variable name */
-    char            *oper_name;     /* Operation name */
+    char const      *name;          /* Variable name */
+    char const      *oper_name;     /* Operation name */
     IR_tup_n_t      *tup_p;         /* Intermediate rep tuple pointer */
     IR_tup_n_t      *prev_tup_p;    /* Previous tuple pointer */
     DDBE_vec_rep_t  *first_entry;   /* Ptr to first type vec entry for param */

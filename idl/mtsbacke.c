@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1993 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1993 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1993 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **  NAME:
@@ -386,17 +386,12 @@ void CSPELL_mts_includes
  *
  * Returns a character string given a NAMETABLE_id_t
  */
-char *BE_get_name
-#ifdef PROTO
+char const *BE_get_name
 (
     NAMETABLE_id_t id
 )
-#else
-(id)
-    NAMETABLE_id_t id;
-#endif
 {
-    char *retval;
+    char const *retval;
 
     NAMETABLE_id_to_string(id, &retval);
     return retval;

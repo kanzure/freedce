@@ -61,10 +61,8 @@ void DDBE_gen_cstub
 
 void CSPELL_csr_header
 (
-#ifdef PROTO
     FILE *fid,
-    char *p_interface_name,       /* Ptr to name of interface */
+    char const *p_interface_name,   /* Ptr to name of interface */
     AST_operation_n_t *p_operation, /* Ptr to operation node */
     boolean use_internal_name       /* use internal name if true */
-#endif
 );

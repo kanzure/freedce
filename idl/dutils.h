@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -45,11 +45,9 @@ NAMETABLE_id_t BE_new_local_var_name
 #endif
 );
 
-char *BE_get_name
+char const *BE_get_name
 (
-#ifdef PROTO
     NAMETABLE_id_t id
-#endif
 );
 
 int BE_required_alignment

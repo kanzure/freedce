@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -44,15 +44,19 @@
 ** IDL.H needs the definition of STRTAB_str_t, so put it first.
 */
 
-typedef char * NAMETABLE_id_t;
-#define NAMETABLE_NIL_ID ((NAMETABLE_id_t) NULL)
+/*
+ * it is opaque enough but gives the compiler
+ * the oportunity to check the type when neeed
+ */
+typedef struct NAMETABLE_n_t * NAMETABLE_id_t;
+#define NAMETABLE_NIL_ID NULL
 
 #ifdef MSDOS
 typedef int  STRTAB_str_t ;
 #define STRTAB_NULL_STR  ((STRTAB_str_t) 0)
 #else
 typedef NAMETABLE_id_t  STRTAB_str_t ;
-#define STRTAB_NULL_STR  ((STRTAB_str_t) NULL)
+#define STRTAB_NULL_STR  NULL
 #endif
 
 
@@ -72,132 +76,92 @@ typedef NAMETABLE_id_t  STRTAB_str_t ;
 #define max_string_len                2048
 
 NAMETABLE_id_t NAMETABLE_add_id(
-#ifdef PROTO
-    char *id
-#endif
+    const char *id
 );
 
 NAMETABLE_id_t NAMETABLE_lookup_id(
-#ifdef PROTO
-    char *id
-#endif
+    const char *id
 );
 
 void NAMETABLE_id_to_string(
-#ifdef PROTO
     NAMETABLE_id_t NAMETABLE_id,
-    char **str_ptr
-#endif
+    const char **str_ptr
 );
 
 boolean NAMETABLE_add_binding(
-#ifdef PROTO
     NAMETABLE_id_t id,
-    char * binding
-#endif
+    const void * binding
 );
 
-char* NAMETABLE_lookup_binding(
-#ifdef PROTO
+const void* NAMETABLE_lookup_binding(
     NAMETABLE_id_t identifier
-#endif
 );
 
 boolean NAMETABLE_add_tag_binding(
-#ifdef PROTO
     NAMETABLE_id_t id,
-    char * binding
-#endif
+    const void * binding
 );
 
-char* NAMETABLE_lookup_tag_binding(
-#ifdef PROTO
+const void* NAMETABLE_lookup_tag_binding(
     NAMETABLE_id_t identifier
-#endif
 );
 
-char* NAMETABLE_lookup_local(
-#ifdef PROTO
+const void* NAMETABLE_lookup_local(
     NAMETABLE_id_t identifier
-#endif
 );
 
 void  NAMETABLE_push_level(
-#ifdef PROTO
     void
-#endif
 );
 
 void  NAMETABLE_pop_level(
-#ifdef PROTO
     void
-#endif
 );
 
 void  NAMETABLE_set_temp_name_mode (
-#ifdef PROTO
     void
-#endif
 );
 
 void  NAMETABLE_set_perm_name_mode (
-#ifdef PROTO
     void
-#endif
 );
 
 void  NAMETABLE_clear_temp_name_mode (
-#ifdef PROTO
     void
-#endif
 );
 
 STRTAB_str_t   STRTAB_add_string(
-#ifdef PROTO
-    char *string
-#endif
+    const char *string
 );
 
 void  STRTAB_str_to_string(
-#ifdef PROTO
     STRTAB_str_t str,
-    char **strp
-#endif
+    const char **strp
 );
 
 void  NAMETABLE_init(
-#ifdef PROTO
     void
-#endif
 );
 
 #ifdef DUMPERS
 void  NAMETABLE_dump_tab(
-#ifdef PROTO
     void
-#endif
 );
 
 #endif
 void  STRTAB_init(
-#ifdef PROTO
     void
-#endif
 );
 
 NAMETABLE_id_t NAMETABLE_add_derived_name(
-#ifdef PROTO
     NAMETABLE_id_t id,
-    char *matrix
-#endif
+    const char *matrix
 );
 
 NAMETABLE_id_t NAMETABLE_add_derived_name2(
-#ifdef PROTO
     NAMETABLE_id_t id1,
     NAMETABLE_id_t id2,
     char *matrix
-#endif
 );
 
 

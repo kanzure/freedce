@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -91,7 +91,7 @@ static  int              warnings = 0;      /* Warning count */
 static  STRTAB_str_t    error_files[MAX_ERROR_FILES]; /* List of all files with errors */
 static  int     error_file_count = 0;       /* Number of files with errors */
 static  int     last_error_line = 0;        /* Line of last error */
-static  char    *current_file   = NULL;     /* Current source file name */
+static  char const *current_file   = NULL;     /* Current source file name */
         error_log_rec_t  *errors = NULL;    /* Tree root for error nodes */
         int     error_count     = 0;        /* Error count */
         STRTAB_str_t    error_file_name_id; /* Id of current source file */
@@ -117,20 +117,15 @@ extern void sysdep_cleanup_temp (
  */
 
 void yywhere
-#ifdef PROTO
 (
     void
 )
-#else
-()
-#endif
-
 {
-    boolean have_text = false;  /* True if have source text to output */
-    int     text_len = 0;       /* Length of source text to output */
-    int     lineno;             /* Source line number of relevant text */
-    long    msg_id;             /* ID of message to output */
-    char    *near_text;         /* Text of object near error */
+    boolean    have_text = false;  /* True if have source text to output */
+    int        text_len = 0;       /* Length of source text to output */
+    int        lineno;             /* Source line number of relevant text */
+    long       msg_id;             /* ID of message to output */
+    char const *near_text;         /* Text of object near error */
     STRTAB_str_t string_id;     /* Entry in string table of near text */
 
     lineno = *yylineno_p;
@@ -734,21 +729,12 @@ void seek_for_line
  */
 
 void print_errors_for_line
-#ifdef PROTO
 (
     FILE *fd,
-    char *source,
+    char const *source,
     STRTAB_str_t    source_id,
     error_log_rec_t *log_rec_ptr
 )
-#else
-(fd, source, source_id, log_rec_ptr)
-    FILE            *fd;
-    char            *source;
-    STRTAB_str_t    source_id;
-    error_log_rec_t *log_rec_ptr;
-#endif
-
 {
     char            source_line[MAX_LINE_LEN];
     boolean         source_printed = false;
@@ -804,21 +790,12 @@ void print_errors_for_line
  */
 
 void print_error_messages
-#ifdef PROTO
 (
     FILE *fd,
-    char *source,
+    char const *source,
     STRTAB_str_t    source_id,
     error_log_rec_t *log_rec_ptr
 )
-#else
-(fd, source, source_id, log_rec_ptr)
-    FILE            *fd;
-    char            *source;
-    STRTAB_str_t    source_id;
-    error_log_rec_t *log_rec_ptr;
-#endif
-
 {
     if (log_rec_ptr->links.asBinTree.left != NULL)
         print_error_messages(fd, source, source_id, log_rec_ptr->links.asBinTree.left);
@@ -849,9 +826,9 @@ boolean print_errors
 )
 
 {
-    FILE    *fd;
-    char    *fn;
-    int     i;
+    FILE       *fd;
+    char const *fn;
+    int        i;
     STRTAB_str_t   source_id;
     error_log_rec_t *error_root;
 
@@ -1051,7 +1028,7 @@ void set_name_for_errors
     if (filename != NULL)
     {
         error_file_name_id = STRTAB_add_string(filename);
-        STRTAB_str_to_string(error_file_name_id,&current_file);
+        STRTAB_str_to_string(error_file_name_id, &current_file);
     }
     else current_file = NULL;
 }

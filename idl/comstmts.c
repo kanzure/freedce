@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1993 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1993 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1993 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -160,11 +160,11 @@ void CSPELL_return_status
 #endif
 {
 #define MAX_STATUS_STRING 72+MAX_ID+MAX_ID
-    char *str_p_comm_status;    /* String used as parameter describing how
+    char const *str_p_comm_status; /* String used as parameter describing how
                                     comm status is to be returned */
-    char *str_p_fault_status;    /* String used as parameter describing how
+    char const *str_p_fault_status;/* String used as parameter describing how
                                     fault status is to be returned */
-    char *name_work;
+    char const *name_work;
     char comm_status_work[MAX_STATUS_STRING];
     char fault_status_work[MAX_STATUS_STRING];
 
@@ -172,7 +172,7 @@ void CSPELL_return_status
     switch( p_comm_stat_info->type )
     {
         case BE_stat_addl_k:
-            /* 
+            /*
              *  If an added comm_status parameter, always pass it to
              *  rpc_ss_report_error so that it will be set to either
              *  error_status_ok, or the correct status value.

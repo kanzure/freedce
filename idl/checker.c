@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1993 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1993 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1993 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -460,7 +460,7 @@ static void default_to_auto_handle
 #endif
 
 {
-    char    *id_name;   /* Operation name */
+    char const *id_name;   /* Operation name */
 
     NAMETABLE_id_to_string(op_p->name, &id_name);
     message_print(message_id, id_name);
@@ -603,7 +603,7 @@ static void fattr_switch_is
     if (deref_type_p->fe_info->pointer_count > 0
         &&  !is_ref_ptr)
     {
-        char    *id_name;       /* [switch_is] variable name */
+        char const *id_name;       /* [switch_is] variable name */
         NAMETABLE_id_to_string(ref_name, &id_name);
         CHECKER_error(fattr_p, NIDL_NEUSWPTR, id_name);
     }
@@ -612,8 +612,8 @@ static void fattr_switch_is
 
     if (deref_type_p->kind != sw_type_p->kind)
     {
-        char    *id_name;       /* [switch_is] variable name */
-        char    *sw_type_name;  /* [switch_type] name, if any */
+        char const *id_name;       /* [switch_is] variable name */
+        char const *sw_type_name;  /* [switch_type] name, if any */
 
         NAMETABLE_id_to_string(ref_name, &id_name);
         NAMETABLE_id_to_string(sw_type_p->name, &sw_type_name);
@@ -831,7 +831,7 @@ static void fattr_first_is
         &&  deref_type_p->fe_info->pointer_count > 0
         &&  !is_ref_ptr)
     {
-        char    *id_name;       /* [first_is] variable name */
+        char const *id_name;       /* [first_is] variable name */
 
         NAMETABLE_id_to_string(ref_name, &id_name);
 
@@ -922,7 +922,7 @@ static void fattr_last_is
         &&  deref_type_p->fe_info->pointer_count > 0
         &&  !is_ref_ptr)
     {
-        char    *id_name;       /* [last_is] variable name */
+        char const *id_name;       /* [last_is] variable name */
 
         NAMETABLE_id_to_string(ref_name, &id_name);
 
@@ -1013,7 +1013,7 @@ static void fattr_length_is
         &&  deref_type_p->fe_info->pointer_count > 0
         &&  !is_ref_ptr)
     {
-        char    *id_name;       /* [length_is] variable name */
+        char const *id_name;       /* [length_is] variable name */
 
         NAMETABLE_id_to_string(ref_name, &id_name);
 
@@ -1143,7 +1143,7 @@ static void fattr_min_is
         &&  deref_type_p->fe_info->pointer_count > 0
         &&  !is_ref_ptr)
     {
-        char    *id_name;       /* [min_is] variable name */
+        char const *id_name;       /* [min_is] variable name */
 
         NAMETABLE_id_to_string(ref_name, &id_name);
 
@@ -1261,7 +1261,7 @@ static void fattr_max_is
         &&  deref_type_p->fe_info->pointer_count > 0
         &&  !is_ref_ptr)
     {
-        char    *id_name;       /* [max_is] variable name */
+        char const *id_name;       /* [max_is] variable name */
 
         NAMETABLE_id_to_string(ref_name, &id_name);
 
@@ -1379,7 +1379,7 @@ static void fattr_size_is
         &&  deref_type_p->fe_info->pointer_count > 0
         &&  !is_ref_ptr)
     {
-        char    *id_name;       /* [size_is] variable name */
+        char const *id_name;       /* [size_is] variable name */
 
         NAMETABLE_id_to_string(ref_name, &id_name);
 
@@ -1983,7 +1983,7 @@ static void param_size
         &&  !AST_STRING_SET(type_p)     /* [string] cases handled below */
         &&  !AST_STRING_SET(param_p))
     {
-        char    *id_name;
+        char const *id_name;
 
         NAMETABLE_id_to_string(param_p->name, &id_name);
         CHECKER_error(param_p, NIDL_ARRSIZEINFO, id_name);
@@ -2007,7 +2007,7 @@ static void param_size
         &&  (AST_STRING_SET(type_p) || AST_STRING_SET(param_p))
         &&  !AST_IN_SET(param_p))
     {
-        char    *id_name;
+        char const *id_name;
 
         NAMETABLE_id_to_string(param_p->name, &id_name);
         CHECKER_error(param_p, NIDL_ARRSIZEINFO, id_name);
@@ -2221,8 +2221,8 @@ static void param_in_line
     if ((AST_IN_LINE_SET(param_p) || AST_OUT_OF_LINE_SET(param_p))
         &&  type_is_scalar(type_p))
     {
-        char    *file_name;     /* Related file name */
-        char    *type_name;     /* Data type name */
+        char const *file_name;     /* Related file name */
+        char const *type_name;     /* Data type name */
 
         STRTAB_str_to_string(type_p->fe_info->file, &file_name);
         NAMETABLE_id_to_string(type_p->name, &type_name);
@@ -2720,7 +2720,7 @@ static void param_comm_status
 #endif
 
 {
-    char                *type_name;     /* Data type name */
+    char const *type_name;     /* Data type name */
 
     /* [comm_status] parameter must be an [out] parameter */
 
@@ -3312,7 +3312,7 @@ static void op_encode
             &&  !AST_ADD_COMM_STATUS_SET(param_p)
             &&  !AST_ADD_FAULT_STATUS_SET(param_p))
         {
-            char    *id_name;
+            char const *id_name;
             NAMETABLE_id_to_string(param_p->name, &id_name);
             CHECKER_warning(param_p, NIDL_ENCOUTONLY, id_name);
         }
@@ -3323,7 +3323,7 @@ static void op_encode
             &&  AST_IN_SET(param_p) && !AST_OUT_SET(param_p)
             &&  !(param_p == p1 && p1_is_handle_t) )
         {
-            char    *id_name;
+            char const *id_name;
             NAMETABLE_id_to_string(param_p->name, &id_name);
             CHECKER_warning(param_p, NIDL_DECINONLY, id_name);
         }
@@ -3419,7 +3419,7 @@ static void operation_check
     if (FE_TEST(op_p->fe_info->flags, FE_HAS_VAL_FLOAT)
        )
     {
-        char    *id_name;   /* Operation name */
+        char const *id_name;   /* Operation name */
 
         NAMETABLE_id_to_string(op_p->name, &id_name);
         CHECKER_warning(op_p, NIDL_FLOATPROM, id_name);
@@ -3617,7 +3617,7 @@ static void field_size
         &&  !AST_STRING_SET(type_p)         /* [string] a possible exception */
         &&  !AST_STRING_SET(field_p))       /* if used in an [in] param      */
     {
-        char    *id_name;
+        char const *id_name;
 
         NAMETABLE_id_to_string(field_p->name, &id_name);
         CHECKER_error(field_p, NIDL_ARRSIZEINFO, id_name);
@@ -3751,8 +3751,8 @@ static void field_in_line
     if ((AST_IN_LINE_SET(field_p) || AST_OUT_OF_LINE_SET(field_p))
         &&  type_is_scalar(type_p))
     {
-        char    *file_name;     /* Related file name */
-        char    *type_name;     /* Data type name */
+        char const *file_name;     /* Related file name */
+        char const *type_name;     /* Data type name */
 
         STRTAB_str_to_string(type_p->fe_info->file, &file_name);
         NAMETABLE_id_to_string(type_p->name, &type_name);
@@ -4666,8 +4666,8 @@ static void clabel_value
 
     if (type_is_enum(type_p))
     {
-        char            *clabel_name;   /* Name of case label constant */
-        char            *econst_name;   /* Name of a constant in enumeration */
+        char const      *clabel_name;   /* Name of case label constant */
+        char const      *econst_name;   /* Name of a constant in enumeration */
         AST_enumeration_n_t *enum_p;    /* Ptr to enumeration node */
         AST_constant_n_t    *econst_p;  /* Ptr to a constant node in the enum */
 
@@ -5293,21 +5293,13 @@ static void union_check
 */
 
 static void type_name_len
-#ifdef PROTO
 (
     AST_type_n_t        *top_type_p,    /* [in] Top-level presented type */
     AST_type_n_t        *type_p,        /* [in] Ptr to AST type node */
     AST_interface_n_t   *int_p          /* [in] Ptr to interface node */
 )
-#else
-(top_type_p, type_p, int_p)
-    AST_type_n_t        *top_type_p;    /* [in] Top-level presented type */
-    AST_type_n_t        *type_p;        /* [in] Ptr to AST type node */
-    AST_interface_n_t   *int_p;         /* [in] Ptr to interface node */
-#endif
-
 {
-    char                *type_name;     /* Type name */
+    char const          *type_name;     /* Type name */
     int                 type_len;       /* Length of type name */
     int                 max_len;        /* Maximum identifier length */
 
@@ -5361,7 +5353,7 @@ static void type_name_len
         &&  type_len > max_len
         &&  FE_TEST(type_p->fe_info->flags,FE_POINTED_AT))
     {
-        char *file_name;
+        char const *file_name;
         AST_type_n_t *ptr_type_p = type_p->fe_info->type_specific.pointer_type;
 
         CHECKER_error(type_p, NIDL_MAXIDTYPPT, max_len);
@@ -5377,7 +5369,7 @@ static void type_name_len
         &&  type_len > max_len
         &&  FE_TEST(type_p->fe_info->flags,FE_POINTED_AT))
     {
-        char *file_name;
+        char const *file_name;
         AST_type_n_t *ptr_type_p = type_p->fe_info->type_specific.pointer_type;
 
         CHECKER_error(type_p, NIDL_MAXIDTYPPT, max_len);
@@ -5449,8 +5441,8 @@ static void type_in_line
     if ((AST_IN_LINE_SET(type_p) || AST_OUT_OF_LINE_SET(type_p))
         &&  type_is_scalar(type_p))
     {
-        char    *file_name;     /* Related file name */
-        char    *type_name;     /* Data type name */
+        char const *file_name;     /* Related file name */
+        char const *type_name;     /* Data type name */
 
         STRTAB_str_to_string(type_p->fe_info->file, &file_name);
         NAMETABLE_id_to_string(type_p->name, &type_name);
@@ -5965,7 +5957,7 @@ static void type_represent_as
         &&  ASTP_lookup_binding(type_p->rep_as_type->type_name,
                                 fe_type_n_k, FALSE) == NULL)
     {
-        char    *id_name;
+        char const*id_name;
 
         NAMETABLE_id_to_string(type_p->rep_as_type->type_name, &id_name);
         CHECKER_acf_warning(type_p, NIDL_INCLTYPE, id_name);
@@ -6170,18 +6162,12 @@ static void export_check
 */
 
 static void int_name_len
-#ifdef PROTO
 (
     AST_interface_n_t   *int_p          /* [in] Ptr to interface node */
 )
-#else
-(int_p)
-    AST_interface_n_t   *int_p;         /* [in] Ptr to interface node */
-#endif
-
 {
-    char                *int_name;      /* Interface name */
-    unsigned int                 max_len;        /* Maximum identifier length */
+    char const   *int_name;      /* Interface name */
+    unsigned int max_len;        /* Maximum identifier length */
 
     NAMETABLE_id_to_string(int_p->name, &int_name);
     if (int_name == NULL)

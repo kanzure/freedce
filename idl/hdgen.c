@@ -103,7 +103,7 @@ static void CSPELL_constant_def
     char *cast;
 #endif
 {
-    char *s;
+    char const *s;
 
     fprintf (fid, "#define ");
     spell_name (fid, cp->name);
@@ -450,7 +450,7 @@ static void CSPELL_user_prototypes
      */
     if (ifp->binding_callout_name != NAMETABLE_NIL_ID)
     {
-        char *callout_name;
+        char const *callout_name;
         NAMETABLE_id_to_string(ifp->binding_callout_name, &callout_name);
         /* Don't emit proto for canned routines declared in stubbase.h */
         if (strncmp(callout_name, "rpc_ss_bind_", 12/*prefix len*/) != 0)
@@ -613,7 +613,7 @@ boolean             cepv_opt;
     AST_import_n_t    *impp;
     AST_include_n_t   *incp;
     char        include_var_name[max_string_len];
-    char        *fn_str, *if_name;
+    char const  *fn_str, *if_name;
 
     NAMETABLE_id_to_string(ifp->name, &if_name);
     sprintf (include_var_name, "%s_v%ld_%ld_included", if_name,

@@ -46,17 +46,12 @@
 
 
 
-/*
- *  We have a different (non-opaque) view of a NAMETABLE_id_t.
- */
-typedef struct NAMETABLE_n_t * NAMETABLE_n_t_p;
-
 typedef struct NAMETABLE_binding_n_t {
         int                              bindingLevel;
-        char                            *theBinding;
+        const void                      *theBinding;
         struct NAMETABLE_binding_n_t    *nextBindingThisLevel;
         struct NAMETABLE_binding_n_t    *oldBinding;
-        NAMETABLE_n_t_p                  boundBy;
+        NAMETABLE_id_t                   boundBy;
 }
 NAMETABLE_binding_n_t;
 
@@ -66,7 +61,7 @@ typedef struct NAMETABLE_n_t {
         struct NAMETABLE_n_t    *right; /* Subtree with names greater       */
         struct NAMETABLE_n_t    *parent;/* Parent in the tree               */
                                         /* NULL if this is the root         */
-        char                    *id;    /* The identifier string            */
+        const char              *id;    /* The identifier string            */
         NAMETABLE_binding_n_t   *bindings;      /* The list of bindings known       */
                                                 /* by this name at this time.       */
         NAMETABLE_binding_n_t   *tagBinding;    /* The structure known by this tag. */
@@ -75,7 +70,7 @@ NAMETABLE_n_t;
 
 typedef struct NAMETABLE_temp_name_t {
         struct NAMETABLE_temp_name_t * next;  /* Next temp name chain block */
-        NAMETABLE_n_t_p node;                 /* The temp name tree node    */
+        NAMETABLE_id_t   node;                /* The temp name tree node    */
 }
 NAMETABLE_temp_name_t;
 

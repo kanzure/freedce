@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1991 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1991 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1991 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -315,7 +315,7 @@ static void DDBE_last_field
 {
     AST_structure_n_t   *struct_p;
     AST_field_n_t       *field_p;
-    char                *field_name;
+    char const          *field_name;
     char                expr[DDBE_MAX_EXPR];
     boolean             nested;
 
@@ -368,14 +368,14 @@ static void DDBE_sizeof_expr
 #endif
 {
 #ifdef DUMPERS
-    char                *comment;   /* Comment string */
+    char const          *comment;   /* Comment string */
 #endif
 
     if (AST_CONFORMANT_SET(type_p))
     {
         AST_field_n_t   *field_p;   /* Ptr to conformant array field node */
         STRTAB_str_t    field_expr;
-        char            *field_text;
+        char const      *field_text;
 
         if (type_p->kind != AST_structure_k)
         {
@@ -425,7 +425,7 @@ static void DDBE_sizeof_expr_use_inst
     STRTAB_str_t        comment_id; /* [in] ID of comment string */
 #endif
 {
-    char                *inst_name; /* Name of generated instance of type */
+    char const          *inst_name; /* Name of generated instance of type */
 #ifdef DUMPERS
     char                *comment;   /* Comment string */
 #endif
@@ -436,7 +436,7 @@ static void DDBE_sizeof_expr_use_inst
     {
         AST_field_n_t   *field_p;   /* Ptr to conformant array field node */
         STRTAB_str_t    field_expr;
-        char            *field_text;
+        char const      *field_text;
 
         if (type_p->kind != AST_structure_k)
         {
@@ -614,7 +614,7 @@ void DDBE_spell_offset_vec
         case DDBE_vec_expr_long_k:
         {
             /* Simple expression for long value */
-            char *long_expr;
+            char const *long_expr;
 
             STRTAB_str_to_string(vec_p->val.expr, &long_expr);
             DDBE_SPELL_INDEX(fid, vec_p->index);
@@ -676,7 +676,7 @@ void DDBE_spell_offset_vec
             /*
              * field offset: &((type *)NULL)->field-expr - NULL
              */
-            char *field_expr;
+            char const *field_expr;
 
             STRTAB_str_to_string(vec_p->val.expr, &field_expr);
             DDBE_SPELL_INDEX(fid, vec_p->index);
@@ -740,7 +740,7 @@ void DDBE_spell_offset_vec_use_inst
 {
     DDBE_vec_rep_t      *vec_p;     /* Ptr to offset vector entry list */
     AST_type_n_t        *type_p;    /* Ptr to AST type node */
-    char                *inst_name; /* Name of generated instance of type */
+    char const          *inst_name; /* Name of generated instance of type */
 #ifdef DUMPERS
     char                *comment;   /* Comment text */
 #endif
@@ -766,7 +766,7 @@ void DDBE_spell_offset_vec_use_inst
         case DDBE_vec_expr_long_k:
         {
             /* Simple expression for long value */
-            char *long_expr;
+            char const *long_expr;
 
             STRTAB_str_to_string(vec_p->val.expr, &long_expr);
             DDBE_SPELL_INDEX(fid, vec_p->index);
@@ -802,7 +802,7 @@ void DDBE_spell_offset_vec_use_inst
             /*
              * field offset: &inst.field-expr - &inst
              */
-            char *field_expr;
+            char const *field_expr;
 
             STRTAB_str_to_string(vec_p->val.expr, &field_expr);
             DDBE_SPELL_INDEX(fid, vec_p->index);
@@ -854,7 +854,7 @@ void DDBE_init_offset_vec
     DDBE_vec_rep_t      *vec_p;     /* Ptr to offset vector entry list */
     AST_type_n_t        *type_p;    /* Ptr to AST type node */
     unsigned long       last_index; /* Last index spelled */
-    char                *inst_name; /* Name of generated instance of type */
+    char const          *inst_name; /* Name of generated instance of type */
 #ifdef DUMPERS
     char                *comment;   /* Comment text */
 #endif
@@ -890,7 +890,7 @@ void DDBE_init_offset_vec
         case DDBE_vec_expr_long_k:
         {
             /* Simple expression for long value */
-            char *long_expr;
+            char const *long_expr;
 
             STRTAB_str_to_string(vec_p->val.expr, &long_expr);
             fprintf(fid, "%soffset_vec[%s] = ", DDBE_PREFIX_IDL,
@@ -930,7 +930,7 @@ void DDBE_init_offset_vec
             /*
              * field offset: &inst.field-expr - &inst
              */
-            char *field_expr;
+            char const *field_expr;
 
             STRTAB_str_to_string(vec_p->val.expr, &field_expr);
             fprintf(fid, "%soffset_vec[%s] = ", DDBE_PREFIX_IDL,
@@ -981,7 +981,7 @@ void DDBE_spell_rtn_vec
 #endif
 {
     DDBE_vec_rep_t      *vec_p;     /* Ptr to routine vector entry list */
-    char    *rtn_name;
+    char const *rtn_name;
 #ifdef DUMPERS
     char    *comment;
 #endif
@@ -1035,8 +1035,8 @@ void DDBE_spell_type_vec_preamble
     AST_interface_n_t   *int_p;     /* Ptr to AST interface node */
     AST_export_n_t      *export_p;  /* Ptr to AST export node */
     AST_operation_n_t   *oper_p;    /* Ptr to AST operation node */
-    char                *int_name;  /* Interface name */
-    char                *oper_name; /* Operation name */
+    char const          *int_name;  /* Interface name */
+    char const          *oper_name; /* Operation name */
     byte                *bp;        /* Pointer to byte stream */
     char                *getenvres; /* Environment variable translation */
     unsigned long       index;      /* Type vector index */
@@ -1432,8 +1432,8 @@ void DDBE_spell_type_vec
 #endif
 {
     DDBE_vec_rep_t      *vec_p;     /* Ptr to type vector entry list */
-    char    *name;
-    char    *expr;
+    char const *name;
+    char const *expr;
 #ifdef DUMPERS
     char    *comment;
 #endif
@@ -1557,7 +1557,7 @@ void DDBE_spell_param_vec_def
     DDBE_oper_i_t   *oper_i_p;      /* Ptr to operation info node */
     AST_parameter_n_t *param_p;     /* Ptr to AST parameter node */
     unsigned long   param_num;      /* Parameter number */
-    char            *param_name;    /* Parameter name */
+    char const      *param_name;    /* Parameter name */
 
     oper_i_p = oper_p->be_info.dd_oper;
 
@@ -1611,7 +1611,7 @@ void DDBE_spell_param_vec_init
     AST_parameter_n_t *param_p;     /* Ptr to AST parameter node */
     DDBE_oper_i_t   *oper_i_p;      /* Ptr to operation info node */
     unsigned long   param_num;      /* Parameter number */
-    char            *param_name;    /* Parameter name */
+    char const      *param_name;    /* Parameter name */
     boolean         spell_value;    /* TRUE => spell param value not address */
 
     oper_i_p = oper_p->be_info.dd_oper;

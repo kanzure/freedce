@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -45,7 +45,7 @@
 #include <namtbpvt.h>
 #include <nidlmsg.h>
 
-extern NAMETABLE_n_t_p NAMETABLE_root;
+extern NAMETABLE_id_t NAMETABLE_root;
 extern NAMETABLE_temp_name_t * NAMETABLE_temp_chain;
 
 /******************************************************************************/
@@ -112,15 +112,9 @@ static void NAMETABLE_dump_bindings_4_node
  */
 
 static void NAMETABLE_dump_node
-#ifdef PROTO
 (
-    NAMETABLE_n_t_p node
+    NAMETABLE_id_t node
 )
-#else
-(node)
-    NAMETABLE_n_t_p node;
-#endif
-
 {
     printf ("\n\"%s\" ( %p ) :\n",        /* "FOO" (0023ad8C) : */
             node->id,                   /* The id string */
@@ -191,14 +185,9 @@ static void NAMETABLE_dump_node
  */
 
 static void NAMETABLE_dump_nodes
-#ifdef PROTO
 (
-    NAMETABLE_n_t_p node
+    NAMETABLE_id_t node
 )
-#else
-(node)
-    NAMETABLE_n_t_p node;
-#endif
 {
     if (node->left != NULL) {
         NAMETABLE_dump_nodes (node->left);
