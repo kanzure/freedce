@@ -107,10 +107,8 @@ commonheaders = codesets_stub.h stubbase.h idl_es.h idlbase.h idlddefs.h 	rpcexc
 
 
 osdepheaders = dce_utils.h sec_authn.h dce.h dce_error.h
-osdepsymlinks = $(osdepheaders:%=$(srcdir)/$(target_os))
 
 cpudepheaders = marshall.h ndr_rep.h ndrtypes.h
-cpudepsymlinks = $(cpudepheaders:%=$(srcdir)/$(target_cpu))
 
 IDLHEADERS = $(commonidl:.idl=.h)
 OSDEPHEADERS = $(osdepheaders:%=$(target_os)/%)
@@ -119,9 +117,7 @@ CPUDEPHEADERS = $(cpudepheaders:%=$(target_cpu)/%)
 dceinclude_HEADERS = $(IDLHEADERS) $(OSDEPHEADERS) $(CPUDEPHEADERS) $(commonheaders) $(commonidl)
 dceincludeuninstallfiles = $(commonidl) $(commonheaders) $(osdepheaders) $(cpudepheaders)
 
-inteldirs = i486 i586 i686 i786
-
-CLEANFILES = $(IDLHEADERS) $(osdepheaders) $(cpudepheaders) $(inteldirs)
+CLEANFILES = $(IDLHEADERS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 HEADERS =  $(dceinclude_HEADERS)
@@ -137,7 +133,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .idl
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/include.mk
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu include/dce/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign include/dce/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -182,7 +178,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu include/dce/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign include/dce/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -260,11 +256,8 @@ all installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-# The return code of the IDL compiler is ignored so that we can "build" in the
-# include directory on pass 1 (this creates osdep symlinks) and on pass 2
-# (after the IDL compiler has been built) we can generate headers.
 %.h: %.idl
-	-$(IDL) $(IDLFLAGS) -no_mepv $<
+	$(IDL) $(IDLFLAGS) -no_mepv $<
 
 install-dceincludeHEADERS: $(dceinclude_HEADERS)
 	@$(NORMAL_INSTALL)
@@ -284,25 +277,12 @@ uninstall-dceincludeHEADERS:
 dist-hook:
 	@echo ============ dist hook =============
 	@-cp -pr $(srcdir)/* $(distdir) 2>/dev/null
-	@echo removing symlinks from dist package
-	-rm -rf $(inteldirs:%=$(distdir)/%)
 
-.PHONY: do-header-symlinks
+# remove the symlinks we put in during configure
+distclean: distclean-am
+	-rm -f $(osdepheaders) $(cpudepheaders)
 
-all-local: do-header-symlinks $(IDLHEADERS)
-
-$(CPUDEPHEADERS) $(cpudepsymlinks) $(osdepsymlinks): do-header-symlinks
-
-do-header-symlinks:
-	list='$(osdepheaders)'; for include in $$list; do \
-		ln -sf $(srcdir)/$(target_os)/$$include $(srcdir)/$$include; \
-		done;
-	list='$(cpudepheaders)'; for include in $$list; do \
-		ln -sf $(srcdir)/$(target_cpu)/$$include $(srcdir)/$$include; \
-		done;
-	list='$(inteldirs)'; for item in $$list; do \
-		ln -sf $(srcdir)/i386 $$item; \
-		done;
+all-local: $(IDLHEADERS)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -3,6 +3,5 @@ include $(top_srcdir)/include.mk
 
 SUBDIRS=dce
 
-distclean:
-	echo "I'm really clean!"
+CLEANFILES:=
 

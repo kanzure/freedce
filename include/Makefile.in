@@ -99,6 +99,8 @@ IDLFLAGS = -cepv -client none -server none -I$(IDL_INCLUDE_DIR)/..
 NCK_IDLFLAGS = -keep object -no_cpp -v -no_mepv -I$(IDL_INCLUDE_DIR)/.. -I$(top_srcdir)/include $(DCETHREADINCLUDES) $(TARGET_OS)
 
 SUBDIRS = dce
+
+CLEANFILES := 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  Makefile.am Makefile.in
@@ -112,7 +114,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .idl
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/include.mk
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu include/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign include/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -217,7 +219,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu include/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign include/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -268,6 +270,7 @@ installdirs-am:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
@@ -308,14 +311,8 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-# The return code of the IDL compiler is ignored so that we can "build" in the
-# include directory on pass 1 (this creates osdep symlinks) and on pass 2
-# (after the IDL compiler has been built) we can generate headers.
 %.h: %.idl
-	-$(IDL) $(IDLFLAGS) -no_mepv $<
-
-distclean:
-	echo "I'm really clean!"
+	$(IDL) $(IDLFLAGS) -no_mepv $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

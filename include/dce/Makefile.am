@@ -11,10 +11,8 @@ commonheaders=codesets_stub.h stubbase.h idl_es.h idlbase.h idlddefs.h \
 	rpcexc.h
 
 osdepheaders=dce_utils.h sec_authn.h dce.h dce_error.h
-osdepsymlinks=$(osdepheaders:%=$(srcdir)/$(target_os))
 
 cpudepheaders=marshall.h ndr_rep.h ndrtypes.h
-cpudepsymlinks=$(cpudepheaders:%=$(srcdir)/$(target_cpu))
 
 IDLHEADERS=$(commonidl:.idl=.h)
 OSDEPHEADERS=$(osdepheaders:%=$(target_os)/%)
@@ -40,31 +38,18 @@ uninstall-dceincludeHEADERS:
 	  rm -f $(DESTDIR)$(dceincludedir)/$$p; \
 	done
 
-inteldirs=i486 i586 i686 i786
-
 dist-hook:
 	@echo ============ dist hook =============
 	@-cp -pr $(srcdir)/* $(distdir) 2>/dev/null
-	@echo removing symlinks from dist package
-	-rm -rf $(inteldirs:%=$(distdir)/%)
 
 
-CLEANFILES=$(IDLHEADERS) $(osdepheaders) $(cpudepheaders) $(inteldirs)
+CLEANFILES=$(IDLHEADERS)
 
-.PHONY: do-header-symlinks
+# remove the symlinks we put in during configure
+distclean: distclean-am
+	-rm -f $(osdepheaders) $(cpudepheaders)
 
-all-local: do-header-symlinks $(IDLHEADERS)
+all-local: $(IDLHEADERS)
 
-$(CPUDEPHEADERS) $(cpudepsymlinks) $(osdepsymlinks): do-header-symlinks
 
-do-header-symlinks:
-	list='$(osdepheaders)'; for include in $$list; do \
-		ln -sf $(srcdir)/$(target_os)/$$include $(srcdir)/$$include; \
-		done;
-	list='$(cpudepheaders)'; for include in $$list; do \
-		ln -sf $(srcdir)/$(target_cpu)/$$include $(srcdir)/$$include; \
-		done;
-	list='$(inteldirs)'; for item in $$list; do \
-		ln -sf $(srcdir)/i386 $$item; \
-		done;
 

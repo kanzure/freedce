@@ -172,7 +172,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .idl .l .lo .o .s .y
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/include.mk
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu idl/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign idl/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -285,7 +285,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu idl/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign idl/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -408,11 +408,8 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-# The return code of the IDL compiler is ignored so that we can "build" in the
-# include directory on pass 1 (this creates osdep symlinks) and on pass 2
-# (after the IDL compiler has been built) we can generate headers.
 %.h: %.idl
-	-$(IDL) $(IDLFLAGS) -no_mepv $<
+	$(IDL) $(IDLFLAGS) -no_mepv $<
 
 # Override the standard YACC/LEX rules so we can build two scanners into
 # the idl compiler.
