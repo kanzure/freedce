@@ -1209,11 +1209,16 @@ void rpc_ss_get_switch_from_data
 
     *p_switch_value = rpc_ss_get_typed_integer( switch_type, switch_addr,
                                                     IDL_msp );
-    (*p_switch_value) &= 0xffff;
+    (*p_switch_value) &= 0xffff; /* lkcl: XXX HACK! */
+    /*
+     * lkcl: no, unbelievably, don't do this!  some MSRPC
+     * applications * _rely_ on the faulty switch value being available!!!!
+     * ah ha, ah ha *gibber*.
     if (switch_type == IDL_DT_LONG)
     {
             (*(idl_long_int *)switch_addr) = *p_switch_value;
     }
+     */
 }
 
 /******************************************************************************/

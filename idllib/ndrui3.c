@@ -476,10 +476,14 @@ void rpc_ss_ndr_u_enc_union_or_ptees
     switch_value = (idl_ulong_int)rpc_ss_get_typed_integer(switch_type,
                                                            union_addr, IDL_msp);
     switch_value &= 0xffff; /* XXX HACK ALERT! */
+    /* lkcl: XXX nonono!  ironically, some MSRPC applications _rely_ on
+     * this faulty brain-dead switch value!
+     * 
     if (switch_type == IDL_DT_LONG)
     {
             (*(idl_long_int *)union_addr) = switch_value;
     }
+    */
     offset_vec_ptr = IDL_msp->IDL_offset_vec + offset_index + 1;
                                             /* + 1 to skip over union size */
     body_addr = (rpc_void_p_t)((idl_byte *)union_addr + *offset_vec_ptr);
