@@ -57,7 +57,7 @@
 #include <dce/dcethreads_conf.h>
 
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.1 2001/04/12 20:11:25 wez Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.2 2001/07/19 12:23:39 wez Exp $";
 #endif
 
 /****************************************************************************
@@ -87,7 +87,7 @@ static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.
 #include <sys/time.h>
 #include <signal.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 
 
 /*
