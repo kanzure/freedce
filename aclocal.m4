@@ -10,7 +10,7 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
-dnl $Revision: 1.1 $
+dnl $Revision: 1.2 $
 AC_DEFUN(RPC_ARG_DEFINE,
 [
 AC_ARG_ENABLE($1,
@@ -22,12 +22,14 @@ dnl $4=help string
 [
  case "${enableval}" in
 	yes)
-		AC_DEFINE($2, 1, [$4]);
+		AC_DEFINE($2, 1, [$4])
 		rpc_arg_$1=yes
 		;;
 	no)
 		;;
-	*) AC_MSG_ERROR(bad value ${enableval} for --enable-$1);;
+	*)
+		AC_MSG_ERROR(bad value ${enableval} for --enable-$1)
+		;;
 	esac
 ],
 test x$3 = xyes && { rpc_arg_$1=yes;
@@ -49,7 +51,7 @@ if test "$rpc_libdir_$2" = "no"; then
 	test "$rpc_libdir_$2" = "no" && for i in $3; do
 		LIBS="-L$i -l$2 $rpc_func_save_LIBS"
 		AC_TRY_LINK_FUNC([$1],
-		[rpc_libdir_$2="-L$i"
+		[rpc_libdir_$2="$i"
 		break])
 	done
 fi
@@ -57,7 +59,7 @@ LIBS="$rpc_func_save_LIBS"])
 if test "$rpc_libdir_$2" != "no"; then
 	LIBS="-l$2 $LIBS"
 	test "$rpc_libdir_$2" = "none required" || {
-		LDFLAGS="$rpc_libdir_$2 $LDFLAGS"
+		LDFLAGS="-L$rpc_libdir_$2 $LDFLAGS"
 		AC_MSG_RESULT([found in $rpc_libdir_$2])
 	}
 	$4
@@ -65,8 +67,28 @@ else	:
 	$5
 fi])
 
-	
-
+dnl Find out where the dcethreads includes has been installed
+AC_DEFUN(RPC_CHECK_INCDIR,
+dnl RPC_CHECK_LIBDIR(header, desc, dirs, action-present, action-notpresent)
+[AC_PREREQ([2.13])
+AC_CACHE_CHECK([for $2 header in one of $3], [rpc_incdir_$2],
+[rpc_incdir_$2="no"
+AC_CHECK_HEADER($1, [rpc_incdir_$2="none required"])
+test "$rpc_incdir_$2" = "no" && for i in $3; do
+	AC_CHECK_HEADER($i/$1,
+		[rpc_incdir_$2="$i"
+		break])
+done])
+if test "rpc_incdir_$2" = "no"; then
+	unset rpc_incdir_$2
+	$5
+else
+	test rpc_incdir_$2 = "none required" || {
+		AC_MSG_RESULT([found in $rpc_incdir_$2])
+	}
+	test rpc_incdir_$2 = "none required" && unset rpc_incdir_$2
+	$4
+fi])
 
 # Do all the work for Automake.  This macro actually does too much --
 # some checks are only needed if your package does certain things.
@@ -174,7 +196,7 @@ LD="$LD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
 LN_S="$LN_S" NM="$NM" RANLIB="$RANLIB" \
 DLLTOOL="$DLLTOOL" AS="$AS" OBJDUMP="$OBJDUMP" \
 ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/ltconfig --no-reexec \
-$libtool_flags --no-verify $ac_aux_dir/ltmain.sh $host \
+$libtool_flags --no-verify $ac_aux_dir/ltmain.sh $lt_target \
 || AC_MSG_ERROR([libtool configure failed])
 
 # Reload cache, that may have been modified by ltconfig
@@ -206,6 +228,11 @@ AC_REQUIRE([AC_PROG_NM])dnl
 AC_REQUIRE([AC_PROG_LN_S])dnl
 dnl
 
+case "$target" in
+NONE) lt_target="$host" ;;
+*) lt_target="$target" ;;
+esac
+
 # Check for any special flags to pass to ltconfig.
 libtool_flags="--cache-file=$cache_file"
 test "$enable_shared" = no && libtool_flags="$libtool_flags --disable-shared"
@@ -224,7 +251,7 @@ test x"$silent" = xyes && libtool_flags="$libtool_flags --silent"
 
 # Some flags need to be propagated to the compiler or linker for good
 # libtool support.
-case "$host" in
+case "$lt_target" in
 *-*-irix6*)
   # Find out which ABI we are using.
   echo '[#]line __oline__ "configure"' > conftest.$ac_ext
@@ -440,7 +467,6 @@ else
   AC_MSG_RESULT(no)
 fi
 test -z "$LD" && AC_MSG_ERROR([no acceptable ld found in \$PATH])
-AC_SUBST(LD)
 AC_PROG_LD_GNU
 ])
 
@@ -486,14 +512,13 @@ else
 fi])
 NM="$ac_cv_path_NM"
 AC_MSG_RESULT([$NM])
-AC_SUBST(NM)
 ])
 
 # AC_CHECK_LIBM - check for math library
 AC_DEFUN(AC_CHECK_LIBM,
 [AC_REQUIRE([AC_CANONICAL_HOST])dnl
 LIBM=
-case "$host" in
+case "$lt_target" in
 *-*-beos* | *-*-cygwin*)
   # These system don't have libm
   ;;

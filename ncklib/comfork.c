@@ -213,10 +213,11 @@ void *handler;
 
 
 
-    pthread_atfork(NULL, _pre_fork,
-		   _post_fork_parent, 
-		   _post_fork_child
-		   );
+    atfork( NULL,
+	    _pre_fork,
+	    _post_fork_parent, 
+	    _post_fork_child
+	  );
 }
 
 

@@ -2,7 +2,7 @@
 # Generated automatically by configure.
 # Run this file to recreate the current configuration.
 # This directory was configured as follows,
-# on host scrotum:
+# on host dudi:
 #
 # ./configure 
 #
@@ -40,8 +40,8 @@ s%@CFLAGS@%-g -O2%g
 s%@CPPFLAGS@%%g
 s%@CXXFLAGS@%-g -O2%g
 s%@FFLAGS@%%g
-s%@DEFS@% -DPACKAGE=\"freedce\" -DVERSION=\"1.1.0.5\" -DYYTEXT_POINTER=1 -DHAVE_LIBPTHREAD=1 -D_REENTRANT=1 -D_GNU_SOURCE=1 -DDEBUG=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_SOCKET=1 -DPROT_NCACN=1 -DPROT_NCADG=1 -DNAF_IP=1 -DUSE_LOOPBACK=1 -DDEMO_PROGS=1 %g
-s%@LDFLAGS@%-L/opt/dce/lib -s%g
+s%@DEFS@% -DPACKAGE=\"freedce\" -DVERSION=\"1.1.0.5\" -DYYTEXT_POINTER=1 -DHAVE_LIBPTHREAD=1 -DHAVE_FEATURES_H=1 -DHAVE_SYS_CDEFS_H=1 -D_REENTRANT=1 -D_GNU_SOURCE=1 -DDEBUG=1 -DHAVE_GETTIMEOFDAY=1 -DHAVE_SOCKET=1 -DPROT_NCACN=1 -DPROT_NCADG=1 -DNAF_IP=1 -DUSE_LOOPBACK=1 -DDEMO_PROGS=1 %g
+s%@LDFLAGS@%-L/home/mirek/SF/DCEDCOM/dcethreads/MIREK_DIST/opt/dce/lib %g
 s%@LIBS@%-ldcethreads -lpthread %g
 s%@exec_prefix@%${prefix}%g
 s%@prefix@%/opt/dce%g
@@ -86,8 +86,6 @@ s%@MAKEINFO@%makeinfo%g
 s%@SET_MAKE@%%g
 s%@RANLIB@%ranlib%g
 s%@CC@%gcc%g
-s%@LD@%/usr/bin/ld%g
-s%@NM@%/usr/bin/nm -B%g
 s%@LN_S@%ln -s%g
 s%@LIBTOOL@%$(SHELL) $(top_builddir)/libtool%g
 s%@AWK@%gawk%g
@@ -97,8 +95,8 @@ s%@LEX@%flex%g
 s%@LEXLIB@%-lfl%g
 s%@LEX_OUTPUT_ROOT@%lex.yy%g
 s%@YACC@%bison -y%g
-s%@DCETHREADINCLUDES@%-I/opt/dce/include%g
-s%@LIBOBJS@%%g
+s%@DCETHREADINCLUDES@%-I/home/mirek/SF/DCEDCOM/dcethreads/MIREK_DIST/opt/dce/include%g
+s%@LIBOBJS@% memcmp.o%g
 s%@TARGET_OS_AT386_TRUE@%#%g
 s%@TARGET_OS_AT386_FALSE@%%g
 s%@TARGET_OS_LINUX_TRUE@%%g

@@ -17,22 +17,16 @@ AM_PROG_LEX
 AC_PROG_YACC
 dnl Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
-RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, /opt/dce/lib,,
+RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, /opt/dce,,
 AC_MSG_ERROR([freedce requires libdcethreads!]))
 
-AC_CHECK_HEADER(dce/pthread_exc.h,,[
-rpc_save_cpp="$CPPFLAGS"
-CPPFLAGS="-I/opt/dce/include $CPPFLAGS"
-AC_CHECK_HEADER(/opt/dce/include/dce/pthread_exc.h,
-CPPFLAGS="$rpc_save_cpp"
-DCETHREADINCLUDES="-I/opt/dce/include"
-,
-AC_MSG_ERROR([cannot find dcethreads header files])
-)
-])
+dnl Checks for header files.
+AC_CHECK_HEADERS(features.h sys/cdefs.h)
+RPC_CHECK_INCDIR(dce/pthread_exc.h, dcethreads, /opt/dce,,
+AC_MSG_ERROR([freedce requires dcethreads include files!]))
+DCETHREADINCLUDES="${rpc_incdir_dcethreads+-I$rpc_incdir_dcethreads}"
 AC_SUBST(DCETHREADINCLUDES)
 
-dnl Checks for header files.
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 dnl Checks for library functions.

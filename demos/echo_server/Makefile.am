@@ -20,6 +20,7 @@ libs=$(top_builddir)/dcelib/libdcerpc.la \
 echo_server_LDADD=echo_sstub.o $(libs)
 echo_client_LDADD=echo_cstub.o $(libs)
 
+echo_server.c: echo.h
 echo.h echo_sstub.o echo_cstub.o: echo.idl
 	$(IDL) $(IDLFLAGS) $(top_srcdir)/demos/echo_server/echo.idl
 

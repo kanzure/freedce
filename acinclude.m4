@@ -1,4 +1,4 @@
-dnl $Revision: 1.1 $
+dnl $Revision: 1.2 $
 AC_DEFUN(RPC_ARG_DEFINE,
 [
 AC_ARG_ENABLE($1,
@@ -10,12 +10,14 @@ dnl $4=help string
 [
  case "${enableval}" in
 	yes)
-		AC_DEFINE($2, 1, [$4]);
+		AC_DEFINE($2, 1, [$4])
 		rpc_arg_$1=yes
 		;;
 	no)
 		;;
-	*) AC_MSG_ERROR(bad value ${enableval} for --enable-$1);;
+	*)
+		AC_MSG_ERROR(bad value ${enableval} for --enable-$1)
+		;;
 	esac
 ],
 test x$3 = xyes && { rpc_arg_$1=yes;
@@ -37,7 +39,7 @@ if test "$rpc_libdir_$2" = "no"; then
 	test "$rpc_libdir_$2" = "no" && for i in $3; do
 		LIBS="-L$i -l$2 $rpc_func_save_LIBS"
 		AC_TRY_LINK_FUNC([$1],
-		[rpc_libdir_$2="-L$i"
+		[rpc_libdir_$2="$i"
 		break])
 	done
 fi
@@ -45,7 +47,7 @@ LIBS="$rpc_func_save_LIBS"])
 if test "$rpc_libdir_$2" != "no"; then
 	LIBS="-l$2 $LIBS"
 	test "$rpc_libdir_$2" = "none required" || {
-		LDFLAGS="$rpc_libdir_$2 $LDFLAGS"
+		LDFLAGS="-L$rpc_libdir_$2 $LDFLAGS"
 		AC_MSG_RESULT([found in $rpc_libdir_$2])
 	}
 	$4
@@ -53,5 +55,25 @@ else	:
 	$5
 fi])
 
-	
-
+dnl Find out where the dcethreads includes has been installed
+AC_DEFUN(RPC_CHECK_INCDIR,
+dnl RPC_CHECK_LIBDIR(header, desc, dirs, action-present, action-notpresent)
+[AC_PREREQ([2.13])
+AC_CACHE_CHECK([for $2 header in one of $3], [rpc_incdir_$2],
+[rpc_incdir_$2="no"
+AC_CHECK_HEADER($1, [rpc_incdir_$2="none required"])
+test "$rpc_incdir_$2" = "no" && for i in $3; do
+	AC_CHECK_HEADER($i/$1,
+		[rpc_incdir_$2="$i"
+		break])
+done])
+if test "rpc_incdir_$2" = "no"; then
+	unset rpc_incdir_$2
+	$5
+else
+	test rpc_incdir_$2 = "none required" || {
+		AC_MSG_RESULT([found in $rpc_incdir_$2])
+	}
+	test rpc_incdir_$2 = "none required" && unset rpc_incdir_$2
+	$4
+fi])
