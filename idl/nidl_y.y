@@ -101,8 +101,15 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 
 %{
 #if YYDEBUG
+#ifdef GCC_VERSION
+#define FREEDCE_UNUSED __attribue__((unused))
+#else
+#define FREEDCE_UNUSED 
+#endif
 extern char const *current_file;
-static void yyprint(FILE * stream, int token, YYSTYPE lval)	{
+static void yyprint(FILE * stream, 
+                    int token FREEDCE_UNUSED, 
+		    YYSTYPE lval FREEDCE_UNUSED) {
 	fprintf(stream, " %s:%d", current_file, *yylineno_p);
 }
 #define YYPRINT yyprint
