@@ -107,7 +107,7 @@
 
 #include "dce/dcethreads_conf.h"
 
-static char rcsid [] __attribute__((__unused__)) = "$Id: exc_handling.c,v 1.1 2001/04/12 20:11:25 wez Exp $";
+static char rcsid [] __attribute__((__unused__)) = "$Id: exc_handling.c,v 1.2 2005/01/20 12:52:51 lkcl Exp $";
 
 #include "dce/exc_handling.h"
 
@@ -579,9 +579,12 @@ _exc_set_current(EXCEPTION *exc)
 
     if (eb->next == NULL && exc_matches(exc, &pthread_cancel_e))
 	{
+	  /*
 	  pthd4_setcancel(CANCEL_ON);
 	  pthread_cancel(pthread_self());
 	  pthread_testcancel();
+	  */
+	  pthread_exit (PTHREAD_CANCELED);
 	}
     /*
      * Set the current exception in the most recent context block

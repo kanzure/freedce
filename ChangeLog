@@ -1,7 +1,14 @@
-$Date: 2000/08/13 02:06:40 $:	$Author: wez $
+$Date: 2005/01/20 12:52:48 $:	$Author: lkcl $
 	
 	* $Log: ChangeLog,v $
-	* Revision 1.1  2000/08/13 02:06:40  wez
-	* Initial revision
+	* Revision 1.2  2005/01/20 12:52:48  lkcl
+	* updating to loic domagne's work which gets dcethreads emulation on
+	* top of Pthreads (NPTL).  it works!  on x86 as well as AMD64!
+	*
+	* Revision 1.1.1.1  2003/04/30 09:11:24  loic
+	* Initial imported version of free DCE/RPC
+	*
+	* Revision 1.1.1.1  2000/08/13 02:06:40  wez
+	* Initial check-in to sourceforge.
 	*
 	

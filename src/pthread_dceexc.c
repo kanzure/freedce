@@ -53,10 +53,30 @@
  *  MA 02139, USA.
  */
 
+
+/**************************************************************************
+ * Port to Linux IA32 / Alpha with gcc 3.x 
+ **************************************************************************
+ *
+ * Contact Information: Loic Domaigne <loicWorks@gmx.net> 
+ * -------------------
+ *
+ * Change Log
+ * ----------
+ *
+ * Loic- 05.05.03: 
+ *
+ *   fix warning " warning: concatenation of string literals with
+ *                          __FUNCTION__ is deprecated "
+ *   fix error   " pointers are not permitted as case values "
+ *
+ **************************************************************************/
+
+
 #include "dce/dcethreads_conf.h"
 
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.2 2002/11/13 22:35:57 finieous Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.3 2005/01/20 12:52:51 lkcl Exp $";
 #endif
 
 /*
@@ -116,7 +136,7 @@ do {								\
 				break;				\
 	case EINVAL:		RAISE(pthread_badparam_e);      \
 				break;                          \
-	default:		printf("%s: map_errno_to_exc: hucking a %d\n",__FUNCTION__ , x); RAISE(pthread_badparam_e);      \
+	default:		printf("%s: map_errno_to_exc: hucking a %d\n", __FUNCTION__, x); RAISE(pthread_badparam_e);      \
 				break;				\
 	}							\
 } while (0)
@@ -262,7 +282,7 @@ pthd4exc_join( pthread_t thread, pthread_addr_t *status )
 	   * jrd added 05-09 PTHREAD_CANCEL
 	   */
 
-	 case (int)PTHREAD_CANCELED:
+	 case ( (int) PTHREAD_CANCELED ):
 	                  RAISE(pthread_cancel_e);
 			  break;
 	 case ESRCH:      

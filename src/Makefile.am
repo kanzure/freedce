@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-AM_CFLAGS= -Wall -W -pipe
+AM_CFLAGS= -Wall -W -Werror -pipe
 DEFS = -DCOMPILING_DCETHREADS -D_GNU_SOURCE -D_REENTRANT
 INCLUDES=-I../include
 

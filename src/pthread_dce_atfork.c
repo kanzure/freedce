@@ -45,10 +45,33 @@
  *  MA 02139, USA.
  */
 
+/****************************************************************************
+ *
+ * Port to newer GNU libc.                                                
+ *
+ ****************************************************************************
+ * Maintainer:                    Loic Domaigne <LoicWorks@gmx.net> 
+ *---------------------------------------------------------------------------
+ *
+ * We can't call the internal functions __pthread_atfork() in the glibc 
+ * since this symbol is now hidden. 
+ *
+ * We use instead the trick with /dlsym()/ and RTLD_NEXT to access this 
+ * hidden symbol. 
+ *
+ **************************************************************************** 
+ * Change Log 
+ *---------------------------------------------------------------------------
+ *
+ * Loic- 2004.12.07 
+ *   use dlsym(RTLD_NEXT, "pthread_atfork") to access the glibc 
+ *   function pthread_atfork() now hidden to outside.  
+ * 
+ ****************************************************************************/
 
 #include "dce/dcethreads_conf.h"
 
-static char rcsid [] __attribute__((__unused__)) = "$Id: pthread_dce_atfork.c,v 1.1 2001/04/12 20:11:25 wez Exp $";
+static char rcsid [] __attribute__((__unused__)) = "$Id: pthread_dce_atfork.c,v 1.2 2005/01/20 12:52:51 lkcl Exp $";
 
 
 #include </usr/include/pthread.h>
@@ -56,6 +79,7 @@ static char rcsid [] __attribute__((__unused__)) = "$Id: pthread_dce_atfork.c,v 
 #include "pthread_dce_atfork.h"
 #include "dce/pthread_dce_common.h"
 
+#include <dlfcn.h>
 #include <stddef.h>
 #include <errno.h>
 
@@ -113,24 +137,24 @@ static void _pthd4_atfork_handler_child(void)
 		}
 }
 
-extern int __pthread_atfork (void (*__prepare) (void),
-			     void (*__parent) (void),
-			     void (*__child) (void));
-
 static void _pthd4_install_atfork_handler(void)
 {
-	int res;
-	res = __pthread_atfork(
-			_pthd4_atfork_handler_pre,
-			_pthd4_atfork_handler_parent,
-			_pthd4_atfork_handler_child
-			    );
-	if (!res) {
-		_atfork_stack_size = 0;
-		errno = res;
-	}
-}
+  int (*glibc_pthread_atfork)(void (*prepare)(void), 
+			      void(*parent)(void), 
+			      void(*child)(void)
+			      );
+  int res;
 
+  glibc_pthread_atfork = dlsym (RTLD_NEXT, "pthread_atfork");
+  res = glibc_pthread_atfork(_pthd4_atfork_handler_pre,
+			     _pthd4_atfork_handler_parent,
+			     _pthd4_atfork_handler_child
+			     );
+  if (!res) {
+    _atfork_stack_size = 0;
+    errno = res;
+  }
+}
 
 int pthd4_pthread_atfork __P((struct atfork_cb_t * cb))
 {

@@ -54,10 +54,33 @@
  */
 
 
+/**************************************************************************
+ * Port to Linux IA32 / Alpha with gcc 3.x 
+ **************************************************************************
+ *
+ * Contact Information: Loic Domaigne <loicWorks@gmx.net> 
+ * -------------------
+ *
+ * Change Log
+ * ----------
+ *
+ * Loic- 05.05.03: 
+ *
+ *   included <stdlib.h> to get prototype for abort(3)
+ *
+ **************************************************************************/
+ 
+
 #include <dce/dcethreads_conf.h>
 
+#if STDC_HEADERS
+#include <stdlib.h>
+#else 
+extern void abort(void);
+#endif 
+
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.2 2001/07/19 12:23:39 wez Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.3 2005/01/20 12:52:51 lkcl Exp $";
 #endif
 
 /****************************************************************************
@@ -87,7 +110,7 @@ static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.
 #include <sys/time.h>
 #include <signal.h>
 #include <stdio.h>
-#include <stdlib.h>
+
 
 
 /*

@@ -8,6 +8,7 @@
  */
 @TOP@
 #undef YIELD_AFTER_PTHREAD_CREATE
+#undef USE_CANCELATION_WRAPPER
 @BOTTOM@
 /*
  * end of private configuration

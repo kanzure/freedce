@@ -2,15 +2,15 @@
 
 INCLUDES=-I$(top_srcdir)/include
 
-EXTRA_PROGRAMS = test1 test2 test3 test3var test4 test5 test_atfork1
-TESTS=test1 test2 test3 test3var test4 invert-test5 test_atfork1
+EXTRA_PROGRAMS = test1 test2 test3 test3var test4 test5 
+TESTS=test1 test2 test3 test3var test4 invert-test5 
 EXTRA_DIST=inverttest
 
 DEFS = -DCOMPILING_DCETHREADS -I. -I$(srcdir)
 
 CLEANFILES=$(EXTRA_PROGRAMS) $(TESTS)
 
-THREADLIB=$(top_builddir)/src/libdcethreads.la
+THREADLIB=$(top_builddir)/src/libdcethreads.la -ldl
 
 # Create a symlink to our generic result inverting script.
 # If it is possible to adjust the command line that "make check" runs, then a
@@ -37,5 +37,5 @@ test4_LDADD = $(THREADLIB)
 test5_SOURCES=test5.c
 test5_LDADD = $(THREADLIB)
 
-test_atfork1_SOURCES=test_atfork1.c
-test_atfork1_LDADD = $(THREADLIB)
+#test_atfork1_SOURCES=test_atfork1.c
+#test_atfork1_LDADD = $(THREADLIB)
