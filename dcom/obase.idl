@@ -1,0 +1,193 @@
+/* $Id: obase.idl,v 1.1 2000/09/02 18:19:01 wez Exp $ 
+ * This file is derived from the COM specification.
+ * Copyright (C) Microsoft Corporation, 1992-1995.
+ * 
+ * Object RPC Base Definitions.
+ * */
+[
+	uuid(99fcfe60-5260-101b-bbcb-00aa0021347a),
+	pointer_default(unique)
+]
+interface ObjectRpcBaseTypes
+{
+	/* the object id specified does not exist */
+	const unsigned long RPC_E_INVALID_OBJECT = 0x80010150;
+	
+	/* the exporter specified by the object does not exist */
+	const unsigned long RPC_E_INVALID_OXID = 0x80010151;
+	
+	/* the set id specified does not exist */
+	const unsigned long RPC_E_INVALID_SET = 0x80010152;
+
+	/* Marshalling constants */
+	const unsigned int MSHLFLAGS_NOPING = 4;
+	const unsigned int MSHLFLAGS_SIMPLEIPID = 8;
+	const unsigned int MSHLFLAGS_KEEPALIVE = 16;
+
+	typedef GUID MID;		/* Machine Identifier */
+	typedef GUID OXID;	/* Object Exporter Identifier */
+	typedef GUID OID;		/* Object Identifier */
+	typedef GUID IPID;	/* Interface Pointer Identifier */
+	typedef GUID SETID;	/* Ping Set Identifier */
+	typedef GUID CID;		/* Causality Identifier */
+
+	typedef REFGUID REFIPID;
+	typedef REFGUID REFOXID;
+	typedef REFGUID REFOID;
+
+	const unsigned short COM_MAJOR_VERSION = 1;
+	const unsigned short COM_MINOR_VERSION = 1;
+
+	/* Component Object Model version number */
+	typedef struct tagCOMVERSION
+	{
+		unsigned short MajorVersion;
+		unsigned short MinorVersion;
+	} COMVERSION;
+
+	/* STRINGARRAYS are the return types for arrays of network addresses,
+	 * arrays of endpoints and arrays of both used in many ORPC interfaces */
+	const unsigned short NCADG_IP_UDP	=	0x08;
+	const unsigned short NCACN_IP_TCP	=	0x07;
+	const unsigned short NCADG_IPX		=	0x0E;
+	const unsigned short NCACN_SPX		=	0x0C;
+	const unsigned short NCACN_NB_NB		=	0x12;
+	const unsigned short NCACN_DNET_NSP	=	0x04;
+	const unsigned short NCALRPC			=	0x10;
+	/* const unsigned short MSWMSG = 0x01; // Note: not a real tower id */
+
+	/* This is the return type for arrays of string bindings or protseqs use by
+	 * many ORPC interfaces */
+	typedef struct tagSTRINGARRAY
+	{
+		unsigned long size;	/* total size of array */
+		/* array of NULL terminated wchar_t strings with two NULLs at the end.
+		 * The first word of each string is the protocol ID (above) and the rest
+		 * of the string is the network address[endpoint]. */
+		[size_is(size)] unsigned short awszStringArray[];
+	} STRINGARRAY;
+
+	/* flag values for OBJREF */
+	const unsigned long OBJREF_STANDARD		=	1;	/* standard marshalled objref */
+	const unsigned long OBJREF_HANDLER		=	2;	/* handler marshalled object */
+	const unsigned long OBJREF_LONGSTD		=	4;	/* long form objref */
+	const unsigned long OBJREF_LONGHDLR		=	8;	/* long form handler objref */
+	const unsigned long OBJREF_CUSTOM		=	16;/* custom marshalled object */
+
+	/* flag values for a STDOBJREF.
+	 * Should be an enum, but DCE IDL does not support sparse enumerators.
+	 * OXRES1..OXRES4 are reserved for the object exporters use only,
+	 * object importers should ignore them and not enforce MBZ. */
+	const unsigned long SORF_NOPING			=	1;		/* Pinging is not required */
+	const unsigned long SORF_OXRES1			=	8;		/* reserved for exporter */
+	const unsigned long SORF_OXRES2			=	16;	/* reserved for exporter */
+	const unsigned long SORF_OXRES3			=	32;	/* reserved for exporter */
+	const unsigned long SORF_OXRES4			=	64;	/* reserved for exporter */
+
+	/* reserved flag values for a STDOBJREF */
+	const unsigned long SORF_FREETHREADED	=	2;		/* Proxy may be used on any thread */
+
+	/* Standard Object Reference */
+	typedef struct tagSTDOBJREF
+	{
+		unsigned long	flags;		/* STDOBJREF flags SORF_XXX */
+		unsigned long	cRefs;		/* count of references passed */
+		IPID				ipid;			/* IPID of interface */
+		OID				oid;			/* OID of object with this IPID */
+		OXID				oxid;			/* oxid of server with this OID */
+	} STDOBJREF;
+
+	/* Format of marshalled interface pointer */
+	typedef struct tagOBJREF
+	{
+		unsigned long flags;			/* OBJREF flags OBJREF_XXX */
+		[switch_is(flags), switch_type(unsigned long)] union
+		{
+			[case (OBJREF_STANDARD)]
+				STDOBJREF	std;			/* standard objref */
+			
+			[case (OBJREF_LONGSTD)]
+			struct
+			{
+				STDOBJREF	std;			/* standard objref */
+				STRINGARRAY	saResAddr;	/* resolver address */
+			} longstd;
+
+			[case (OBJREF_HANDLER)]
+			struct
+			{
+				STDOBJREF	std;			/* standard objref */
+				CLSID			clsid;		/* CLSID of handler */
+			} handler;
+
+			[case (OBJREF_LONGHDLR)]
+			struct
+			{
+				STDOBJREF	std;			/* standard objref */
+				CLSID			clsid;		/* CLSID of handler (or GUID_NULL) */
+				STRINGARRAY	saResAddr;	/* resolver address */
+			} longhdlr;
+
+			[case (OBJREF_CUSTOM)]
+			struct
+			{
+				CLSID			clsid;		/* CLSID of unmarshalling code */
+				unsigned long size;		/* size of data that follows */
+				[size_is(size), ref] byte * pData;
+			} custom;
+		} u_objref;
+	} OBJREF;
+
+	/* enumeration of additional information present in the call packet. */
+	const unsigned long INFO_NULL			=	0;		/* no additional info in packet */
+	const unsigned long INFO_LOCAL		=	1;		/* call is local to this machine */
+	const unsigned long INFO_RESERVED1	=	2;		/* reserved for local use */
+	const unsigned long INFO_RESERVED2	=	4;		/* reserved for local use */
+	const unsigned long INFO_RESERVED3	=	8;		/* reserved for local use */
+	const unsigned long INFO_RESERVED4	=	16;	/* reserved for local use */
+
+	/* extension to implicit parameters. */
+	typedef struct tagORPC_EXTENT
+	{
+		GUID				id;		/* Extension Identifier */
+		unsigned long	size;		/* Extension size */
+		[size_is((size+7)&~7)] byte data[];	/* Extension data */
+	} ORPC_EXTENT;
+
+	/* Array of extensions */
+	typedef struct tagORPC_EXTENT_ARRAY
+	{
+		unsigned long size;		/* num of extents */
+		[size_is((size+1)&~1), unique] ORPC_EXTENT ** extent;	/* Extents */
+	} ORPC_EXTENT_ARRAY;
+
+	/* Implicit "this" pointer which is the first [in] parameter on every ORPC
+	 * call */
+	typedef struct tagORPCTHIS
+	{
+		COMVERSION		version;		/* COM version number */
+		unsigned long	flags;		/* INFO flags for the presence of other data */
+		unsigned long	reserved1;	/* set to zero */
+		CID				cid;			/* causality id of caller */
+		/* Extensions */
+		[unique] ORPC_EXTENT_ARRAY * extensions;
+	} ORPCTHIS;
+
+	/* Implicit "that" pointer which is the first [out] parameter on every ORPC
+	 * call */
+	typedef struct tagORPCTHAT
+	{
+		unsigned long flags;			/* INFO flags for the presence of other data */
+		/* Extensions */
+		[unique] ORPC_EXTENT_ARRAY * extensions;
+	} ORPCTHAT;
+
+	/* OR information associated with each OXID */
+	typedef struct tagOXID_INFO
+	{
+		DWORD				dwTid;				/* thread id of object exporter */
+		DWORD				dwPid;				/* process id of object exporter */
+		IPID				ipidRemUnknown;	/* IRemUnknown IPID for object exporter */
+		[unique] STRINGARRAY *psa;			/* protocol id's and partial string bindings */
+	} OXID_INFO;
+}

@@ -1,0 +1,37 @@
+/* $Id: scmscm.idl,v 1.1 2000/09/02 18:19:01 wez Exp $ 
+ * This file is derived from the COM specification.
+ * Copyright (C) Microsoft Corporation, 1992-1995.
+ * 
+ * Interface for SCM to SCM communication.
+ *
+ * This is the interface that needs to be supported by hosts that allow
+ * activation os objects. Only one instance of this interface can be exported
+ * by the host.
+ * 
+ * When pIIDs is NULL, this function behaves roughly as
+ * CoGetClassObject(rclsid, clsctx, NULL, IID_IClassFactory, ...)
+ * returning a class factory object to the caller.
+ *
+ * */
+[
+	uuid(00000137-0000-0000-C000-000000000046),
+	version(1.0),
+	pointer_default(unique)
+]
+interface ISCMtoSCM
+{
+	HRESULT	ActivationRequest(
+			[in]	handle_t						hRpc,
+			[in]	ORPCTHIS *					orpcthis,
+			[out]	ORPCTHAT *					orpcthat,
+			[in]	const GUID *				rclsid,
+			[in, string, unique] WCHAR *	pwszObjectName,
+			[in]	DWORD							clsctx,
+			[in]	DWORD							grfMode,
+			[in]	DWORD							dwCount,
+			[in, unique, size_is(dwCount)] IID *pIIDs,
+			[out, size_is(dwCount)] OBJREF **	ppInterfaces,
+			[out, size_is(dwCount)] HRESULT *	pResults
+			);
+}
+			
