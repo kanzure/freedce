@@ -28,6 +28,12 @@
  */
 
 /*
+ * Fixed memory leaks in macro implementation ENDTRY and RERAISE
+ * in case an exception is caught destroy_exc(_eb); was not called
+ * Thomas Schuetzkowski <Thomas.Schuetzkowski@web.de>
+ */
+
+/*
  * 
  * (c) Copyright 1991 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1991 HEWLETT-PACKARD COMPANY
@@ -735,15 +741,16 @@ do \
     if (_setjmp_res != 0) \
     { \
         /* we get here from being longjmp'ed into the exception dispatch */ \
+        destroy_exc(_eb); \
         if (! _exc_cur_handled ) \
             _exc_reraise(_exc_cur); \
         break; \
     } \
     else { \
-	   /* We get here at the end of a normal TRY block runthrough */ \
+        /* We get here at the end of a normal TRY block runthrough */ \
         _exc_pop_buf(_eb); \
+        destroy_exc(_eb); \
     } \
-    destroy_exc(_eb); \
 } while (0); \
  /* End of exception handler scope; continue execution */
 
@@ -765,7 +772,7 @@ do \
  * handler.  Note: RERAISE is legal only within a CATCH or a CATCH_ALL.
  * Note _exc_cur may be NULL due to an "outside" pthread_cancel().
  */
-#define RERAISE     _exc_reraise(_exc_cur)
+#define RERAISE    destroy_exc(_eb); _exc_reraise(_exc_cur)
 
 /* --------------------------------------------------------------------------- */
 
