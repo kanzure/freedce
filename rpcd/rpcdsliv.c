@@ -227,6 +227,7 @@ void    *arg;
     error_status_t  status;
 
 	DO_NOT_CLOBBER(waitsecs);
+	DO_NOT_CLOBBER(have_db_lock);
 	 
     h = (struct db *) arg;
 
