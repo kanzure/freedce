@@ -93,6 +93,10 @@ INTERNAL pthread_once_t init_once_block = PTHREAD_ONCE_INIT;
  */
 INTERNAL boolean        init_in_progress = false;
 
+/* to protect fork handler
+ */
+INTERNAL rpc_mutex_t rpc_in_fork_mutex;
+
 /*
  * The id of the thread that is executing (has executed) the RPC runtime 
  * initialization code.
@@ -279,6 +283,8 @@ INTERNAL void init_once(void)
 	 */
 	init_thread = pthread_self();
 	init_in_progress = true;
+	RPC_MUTEX_INIT(rpc_in_fork_mutex);
+
 
 	/*
 	 * Register our fork handler, if such a service is supported.
@@ -1178,7 +1184,9 @@ INTERNAL void init_getenv_protseqs (void)
         {
             *sp++ = *s;
         }
-    } while (*s++ != '\0' && protseq_count < RPC_C_PROTSEQ_ID_MAX);
+    } while (*s++ != '\0' &&
+             protseq_count < RPC_C_PROTSEQ_ID_MAX &&
+             (sp-protseq_string) < RPC_C_PROTSEQ_MAX);
 
     /*
      * If no valid protocol sequence was specified, we're done now.
@@ -1602,6 +1610,7 @@ rpc_fork_stage_id_t stage;
     switch ((int)stage)
     {
     case RPC_C_PREFORK:
+        RPC_MUTEX_LOCK(rpc_in_fork_mutex);
         rpc__network_fork_handler(stage);
         /* each auth protocol */
         /* auth_info_cache */
@@ -1671,6 +1680,7 @@ rpc_fork_stage_id_t stage;
         /* auth_info_cache */
         /* each auth protocol */
         rpc__network_fork_handler(stage);
+        RPC_MUTEX_UNLOCK(rpc_in_fork_mutex);
         break;
     }  
 }
