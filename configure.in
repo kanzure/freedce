@@ -57,6 +57,9 @@ pushdef([AC_OUTPUT],
 
 RPC_ARG_DEFINE(debug, DEBUG, yes,Compile with debugging support)
 
+RPC_ARG_DEFINE(dcom, ENABLE_DCOM, no,Enable experimental DCOM support)
+AM_CONDITIONAL(ENABLE_DCOM, test x$rpc_arg_dcom = yes)
+
 # FIXME: what exactly is AT386 anyway?
 AM_CONDITIONAL(TARGET_OS_AT386, false)
 AM_CONDITIONAL(TARGET_OS_LINUX, test x$target_os = xlinux-gnu)
@@ -70,6 +73,7 @@ sinclude(ncklib/config.m4)
 sinclude(dcelib/config.m4)
 sinclude(rpcd/config.m4)
 sinclude(demos/config.m4)
+sinclude(dcom/config.m4)
 
 AC_OUTPUT(Makefile)
 
