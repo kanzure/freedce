@@ -56,7 +56,7 @@
 #include "dce/dcethreads_conf.h"
 
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.1 2001/04/12 20:11:25 wez Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.2 2002/11/13 22:35:57 finieous Exp $";
 #endif
 
 /*
@@ -116,7 +116,7 @@ do {								\
 				break;				\
 	case EINVAL:		RAISE(pthread_badparam_e);      \
 				break;                          \
-	default:		printf(__FUNCTION__ ": map_errno_to_exc: hucking a %d\n", x); RAISE(pthread_badparam_e);      \
+	default:		printf("%s: map_errno_to_exc: hucking a %d\n",__FUNCTION__ , x); RAISE(pthread_badparam_e);      \
 				break;				\
 	}							\
 } while (0)
@@ -262,7 +262,7 @@ pthd4exc_join( pthread_t thread, pthread_addr_t *status )
 	   * jrd added 05-09 PTHREAD_CANCEL
 	   */
 
-	 case PTHREAD_CANCELED:
+	 case (int)PTHREAD_CANCELED:
 	                  RAISE(pthread_cancel_e);
 			  break;
 	 case ESRCH:      
