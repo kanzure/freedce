@@ -575,7 +575,7 @@ _exc_push_buf(_exc_buf * buf)
       // XXX Something went seriously wrong
 	pthread_cancel(pthread_self()); pthread_testcancel();
     }
-    (buf)->next = __head;
+    (buf)->next = (_exc_buf *)__head;
     __head = (buf);
     pthd4_setspecific(_exc_key, __head);
     _pthread_cleanup_push_defer (buf->cancel_buf, 
@@ -591,7 +591,7 @@ _exc_pop_buf(_exc_buf * buf)
       // XXX Something went seriously wrong
 	pthread_cancel(pthread_self()); pthread_testcancel();
     }
-    (buf) = __head;
+    (buf) = (_exc_buf *)__head;
     __head = buf->next;
     pthd4_setspecific(_exc_key, (void *)__head);
     _pthread_cleanup_pop_restore (buf->cancel_buf, 0); 
