@@ -835,19 +835,27 @@ unsigned32              *st;
      * cause these credentials to accumulate until the heap is
      * exhausted.
      */
-    if (authn_protocol == rpc_c_authn_dce_secret &&
-        server_princ_name == NULL)
-    {
-        rpc_mgmt_inq_server_princ_name
-            (binding_h,
-             authn_protocol,
-             &server_princ_name,
-             st);
+     if (server_princ_name == NULL) {
+          switch (authn_protocol) {
+          case rpc_c_authn_dce_secret:
+          case rpc_c_authn_winnt:
+          case rpc_c_authn_gss_negotiate:
+          case rpc_c_authn_gss_mskrb: 
+          rpc_mgmt_inq_server_princ_name
+              (binding_h,
+               authn_protocol,
+               &server_princ_name,
+               st);
 
-        if (*st != rpc_s_ok)
-            return;
+           if (*st != rpc_s_ok)
+              return;
 
-        need_to_free_server_name = true;
+           need_to_free_server_name = true;
+              break;
+
+           default:
+              break;
+         }
     }
 
     /*

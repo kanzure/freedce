@@ -15,12 +15,16 @@ rpcd_SOURCES=dsm.c dsm_unix.c rpcd.c rpcddb.c rpcdep.c \
 
 noinst_HEADERS=dsm_p.h rpcddb.h rpcdepdb.h rpcdepdbp.h rpcdp.h rpcdutil.h dsm.idl 
 
+# removing objex due to problems with include/objex.idl - this
+# should be a configure option [--enable-dcom]
 rpcd_LDADD=ep_sstub.o objex_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la
+#rpcd_LDADD=ep_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la
 rpcd_LDFLAGS=-lstdc++
 
 BUILT_SOURCES=dsm.h
 
 CLEAN_FILES=dsm.h ep_sstub.o objex_sstub.o
+#CLEAN_FILES=dsm.h ep_sstub.o 
 
 objex_sstub.o: $(IDL_INCLUDE_DIR)/objex.idl
 	$(IDL) -keep object -no_cpp -v -no_mepv -cepv -client none \

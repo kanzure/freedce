@@ -185,6 +185,12 @@ EXTERNAL unsigned8 rpc_g_dbg_switches[];
  */
 #ifdef DEBUG
 
+#define RPC_DBG_ADD_PRINTF(switch, level, pargs) \
+( \
+    ! RPC_DBG((switch), (level)) ? \
+        0 : (rpc__printf pargs, 0) \
+)
+
 #define RPC_DBG_PRINTF(switch, level, pargs) \
 ( \
     ! RPC_DBG((switch), (level)) ? \
@@ -197,6 +203,7 @@ EXTERNAL unsigned8 rpc_g_dbg_switches[];
 #else /* DEBUG */
 
 #define RPC_DBG_PRINTF(switch, level, pargs) do {;} while(0)
+#define RPC_DBG_ADD_PRINTF(switch, level, pargs) do {;} while(0)
 #define RPC_DBG_GPRINTF(pargs) do {;} while(0)
 
 #endif /* DEBUG */

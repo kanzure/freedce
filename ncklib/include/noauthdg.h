@@ -66,6 +66,17 @@
     bei = ntohl(bei);                   \
 }
 
+#define rpc_marshall_be_short_int(mp, bei) \
+{       short temp = htons(bei);            \
+        rpc_marshall_short_int (mp, temp);  \
+}
+      
+#define rpc_convert_be_short_int(mp, bei) \
+{                                       \
+    rpc_unmarshall_short_int(mp, bei);   \
+    bei = ntohs(bei);                   \
+}
+
 
 /*
  * DG EPV routines.

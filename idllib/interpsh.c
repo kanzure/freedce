@@ -32,6 +32,10 @@
 **      Procedures shared between interpreters
 **
 */
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 
 #include <dce/idlddefs.h>
 #include <lsysdep.h>
@@ -228,6 +232,41 @@ idl_ulong_int rpc_ss_type_size
             return 0;
     }
 }
+
+static idl_long_int	interpsh_apply_func_code(byte func_code, idl_long_int size)
+{
+	idl_long_int calc_size;
+
+	switch(func_code)	{
+		case IDL_FC_DIV_2:
+			calc_size = size / 2;
+			break;
+		case IDL_FC_MUL_2:
+			calc_size = size * 2;
+			break;
+		case IDL_FC_SUB_1:
+			calc_size = size - 1;
+			break;
+		case IDL_FC_ADD_1:
+			calc_size = size + 1;
+			break;
+		case IDL_FC_ALIGN_2:
+			calc_size = (size+1) & ~1;
+			break;
+		case IDL_FC_ALIGN_4:
+			calc_size = (size+3) & ~3;
+			break;
+		case IDL_FC_ALIGN_8:
+			calc_size = (size+7) & ~7;
+			break;
+		case IDL_FC_NONE:
+		default:
+			calc_size = size;
+			break;
+	}
+	return calc_size;
+}	
+
 
 /******************************************************************************/
 /*                                                                            */
@@ -735,6 +774,7 @@ void rpc_ss_build_bounds_list
     idl_ulong_int attribute_index;
     rpc_void_p_t bound_addr;
     idl_ulong_int string_field_offset;  /* Offset index for string field */
+	byte func_code = 0;
 
     if (*p_bounds_list == NULL)
     {
@@ -805,6 +845,11 @@ void rpc_ss_build_bounds_list
         }
         else
         {
+			if (bound_kind == IDL_BOUND_SIZE_IS)
+			{
+				func_code = *defn_vec_ptr;
+				defn_vec_ptr++;
+			}
             /* Upper bound is [max_is] or [size_is] */
             bound_type = *defn_vec_ptr;
             defn_vec_ptr++;
@@ -821,11 +866,12 @@ void rpc_ss_build_bounds_list
                 bounds_list[i].upper =
                          rpc_ss_get_typed_integer( bound_type, bound_addr,
                                                     IDL_msp );
-            else
+            else /* IDL_BOUND_SIZE_IS */
             {
                 size = rpc_ss_get_typed_integer( bound_type, bound_addr,
                                                     IDL_msp );
-                bounds_list[i].upper = bounds_list[i].lower + size - 1;
+
+                bounds_list[i].upper = bounds_list[i].lower + interpsh_apply_func_code(func_code, size) - 1;
             }
         }
         /* Inside out bounds mean "no elements". Store value which will
@@ -884,6 +930,7 @@ void rpc_ss_build_range_list
     idl_ulong_int element_size;     /* Size of base type of string */
     idl_ulong_int attribute_index;
     rpc_void_p_t limit_addr;
+	byte func_code = 0;
 
     *p_add_null = idl_false;
     if (*p_range_list == NULL)
@@ -965,6 +1012,12 @@ void rpc_ss_build_range_list
         else
         {
             /* Upper data limit is [last_is] or [length_is] */
+			if (limit_kind == IDL_LIMIT_LENGTH_IS)
+			{
+				func_code = *defn_vec_ptr;
+				defn_vec_ptr++;
+			}
+
             limit_type = *defn_vec_ptr;
             defn_vec_ptr++;
             IDL_GET_LONG_FROM_VECTOR(attribute_index, defn_vec_ptr);
@@ -979,13 +1032,19 @@ void rpc_ss_build_range_list
             data_limit = rpc_ss_get_typed_integer( limit_type, limit_addr,
                                                     IDL_msp );
             if (limit_kind == IDL_LIMIT_LENGTH_IS)
-                range_list[i].upper = range_list[i].lower + data_limit;
+			{
+                range_list[i].upper = range_list[i].lower + interpsh_apply_func_code(func_code, data_limit);
+			}
             else
                 range_list[i].upper = data_limit - bounds_list[i].lower + 1;
             if ( range_list[i].upper > (bounds_list[i].upper
                                         - bounds_list[i].lower + 1) )
                 RAISE( rpc_x_invalid_bound );
         }
+#ifdef DEBUG_INTERP
+		printf("range upr: %ld lwr: %ld func: %d\n", range_list[i].upper,
+			range_list[i].lower, func_code);
+#endif
         /* Inside out limits mean "transmit no elements" */
         if (range_list[i].upper < range_list[i].lower)
             range_list[i].upper = range_list[i].lower;

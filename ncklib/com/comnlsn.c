@@ -98,7 +98,9 @@
 
 INTERNAL pthread_t                  listener_thread;
 INTERNAL boolean                    listener_thread_running = false;
+#ifdef ATFORK_SUPPORTED
 INTERNAL boolean                    listener_thread_was_running = false;
+#endif
 INTERNAL boolean                    listener_should_handle_cancels = false;
 
 INTERNAL rpc_listener_state_t       listener_state_copy;

@@ -420,7 +420,10 @@ typedef struct {
 INTERNAL convq_t convq;
 
 INTERNAL pthread_t conv_thread;
-INTERNAL boolean convq_running = false, convq_was_running = false;
+INTERNAL boolean convq_running = false;
+#ifdef ATFORK_SUPPORTED
+INTERNAL convq_was_running = false;
+#endif
 INTERNAL boolean convq_stop = false;
 
 INTERNAL boolean32 convq_add _DCE_PROTOTYPE_ ((
@@ -2729,7 +2732,8 @@ boolean *sent_data;
     ready_to_go = rexmit_cnt + (xq->first_unsent == NULL ? 0 :
                   xq->next_fragnum - (signed16) xq->first_unsent->fragnum);
 
-    xq->blast_size = (ready_to_go < (unsigned32)blast_size) ? ready_to_go : blast_size;
+    xq->blast_size = (ready_to_go < (unsigned32)blast_size) ?
+		                  ready_to_go : (unsigned32)blast_size;
 
 
     RPC_DBG_PRINTF(rpc_e_dbg_recv, 5, (

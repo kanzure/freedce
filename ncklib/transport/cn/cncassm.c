@@ -2326,14 +2326,56 @@ pointer_t       sm;
 #endif
 {
     rpc_cn_assoc_t *assoc;
+    rpc_cn_assoc_sm_work_t      *assoc_sm_work;
+    boolean                     old_server;
+    rpc_protocol_version_t      *protocol_version;
+    rpc_cn_sm_ctlblk_t		*sm_p;
+
 
     RPC_CN_DBG_RTN_PRINTF(CLIENT authent3_action_rtn);
     
     /*
      * The special structure is a pointer to the association.
      */
-    assoc = (rpc_cn_assoc_t *) spc_struct;
     
+    assoc = (rpc_cn_assoc_t *) spc_struct;
+    assoc_sm_work = (rpc_cn_assoc_sm_work_t *) event_param;
+    sm_p = (rpc_cn_sm_ctlblk_t *)sm;
+
+    /*
+     * Check the binding handle for protocol version information
+     * If we know we are talking to an old server, this can save us work.
+     */
+    protocol_version = RPC_CN_ASSOC_CALL(assoc)->binding_rep->protocol_version;
+    if ((protocol_version != NULL) &&
+        (protocol_version->minor_version == RPC_C_CN_PROTO_VERS_COMPAT))
+    {
+        old_server = true;
+    }
+    else if (assoc->assoc_vers_minor == RPC_C_CN_PROTO_VERS_COMPAT)
+    {
+        old_server = true;
+    }
+    else
+    {
+        old_server = false;
+    }
+
+    /*
+     * Format an rpc_bind PDU and send it to the server.
+     */
+    send_pdu (assoc,
+              RPC_C_CN_PKT_AUTH3,
+              NULL,
+              assoc_sm_work->grp_id,
+              assoc_sm_work->sec_context,
+              old_server,
+              &(assoc->assoc_status));
+
+    assoc->assoc_flags &= ~RPC_C_CN_ASSOC_AUTH_EXPECTED;
+    /*RPC_CN_ASSOC_CHECK_ST (assoc, &(assoc->assoc_status));*/
+    RPC_CN_ASSOC_WAKEUP (assoc);
+    sm_p->cur_state = RPC_C_CLIENT_ASSOC_ACTIVE; 
     return (assoc->assoc_status);
 }
 
@@ -2985,6 +3027,91 @@ pointer_t       sm;
 /*
 **++
 **
+**  MACRO NAME:		AUTHENT3_PRED       
+**
+**  SCOPE:              INTERNAL
+**
+**  DESCRIPTION:
+**  This a macro version of the authent3_pred_rtn predicate routine.
+**  We added the macro version to avoid overhead associated with calling
+**  the predicate function from within the action routines.
+**  Macro set status to 1 if the association request requires an optional 3-leg
+**  authentication handshake, otherwise, sets status to 0.
+**      
+**
+**  INPUTS:
+**
+**      spc_struct      The association group. Note that this is passed in as
+**                      the special structure which is passed to the
+**                      state machine event evaluation routine.
+**
+**      event_param     The fragment buffer containing the rpc_bind
+**                      PDU. The special event related 
+**                      parameter which is passed to the state
+**                      machine event evaluation routine.
+**
+**	status		Instead of returning a value from the macro,
+**			write the value calculated in the macro to
+**			status.  Status' scope includes the routine
+**			calling the macro.  Check status in the calling
+**			routine to determine next state and in cases,
+**			flow through the action routine. 
+** 
+**	tlr		Struct rpc_cn_auth_tlr_t.  Declared in the
+**			calling routine.  Used in RPC_CN_AUTH_THREE_WAY.
+**
+**	st		Unsigned32.  Used internally to RPC_CN_AUTH_
+**			THREE_WAY.
+**
+**	three_way	Boolean32.  Used internally to  RPC_CN_AUTH_
+**			THREE_WAY.
+** 
+**  INPUTS/OUTPUTS:     none
+**
+**  OUTPUTS:            
+**
+**	status		See explanation above.  
+**
+**  IMPLICIT INPUTS:    none
+**
+**  IMPLICIT OUTPUTS:   none
+**
+**  FUNCTION VALUE:     0 if no 3-leg authentication handshake is
+**                        being done.
+**                      1 if a 3-leg authentication handshake is
+**                        being done.
+**
+**  SIDE EFFECTS:       none
+**
+**--
+**/
+#define  AUTHENT3_PRED(spc_struct, event_param, status, tlr, st, three_way)\
+{\
+    RPC_CN_DBG_RTN_PRINTF(CLIENT authent3_pred_macro);\
+    header = (rpc_cn_packet_t *) ((rpc_cn_fragbuf_t *)event_param)->data_p;\
+    if (RPC_CN_PKT_AUTH_LEN (header) == 0)\
+    {\
+        status = 0;\
+    }\
+    else\
+    {\
+        tlr = RPC_CN_PKT_AUTH_TLR (header, RPC_CN_PKT_FRAG_LEN (header));\
+        RPC_CN_AUTH_THREE_WAY (RPC_CN_AUTH_CVT_ID_WIRE_TO_API (tlr->auth_type, &st), three_way);\
+        if (three_way)\
+        {\
+            status = 1;\
+        }\
+        else\
+        {\
+            status = 0;\
+        }\
+    }\
+}
+
+
+/*
+**++
+**
 **  ROUTINE NAME:       mark_syntax_and_sec_action_rtn
 **
 **  SCOPE:              INTERNAL - declared locally
@@ -3056,6 +3183,8 @@ pointer_t       sm;
     rpc_cn_sm_ctlblk_t		    *sm_p;
     unsigned32			    status;
     unsigned8                       ptype;
+    boolean32                       three_way = 0;
+    unsigned32                      local_st;
 
     RPC_CN_DBG_RTN_PRINTF(CLIENT mark_syntax_and_sec_action_rtn);
     
@@ -3329,13 +3458,18 @@ pointer_t       sm;
         assoc->raw_packet_p = NULL;
     }
 
-    /*
-     * Queue a dummy fragbuf on the association receive queue to
-     * wake up the client caller thread.
-     */
-    assoc->assoc_flags &= ~RPC_C_CN_ASSOC_AUTH_EXPECTED;
-    RPC_CN_ASSOC_WAKEUP (assoc);
-    sm_p->cur_state = RPC_C_CLIENT_ASSOC_ACTIVE; 
+    AUTHENT3_PRED(spc_struct, event_param, status, auth_tlr, local_st, three_way);
+
+    if (!three_way)
+    {
+		/*
+		 * Queue a dummy fragbuf on the association receive queue to
+		 * wake up the client caller thread.
+		 */
+		assoc->assoc_flags &= ~RPC_C_CN_ASSOC_AUTH_EXPECTED;
+		RPC_CN_ASSOC_WAKEUP (assoc);
+		sm_p->cur_state = RPC_C_CLIENT_ASSOC_ACTIVE; 
+    }
     return (assoc->assoc_status);
 }
 
@@ -3429,6 +3563,104 @@ pointer_t       sm;
     return (assoc->assoc_status);  
 }
 
+#ifdef NOT_USED
+
+/***********************************************************************/
+/*
+ *
+ * C L I E N T   A S S O C   P R E D I C A T E   R O U T I N E S
+ *
+ */
+/*
+**++
+**
+**  ROUTINE NAME:       authent3_pred_rtn
+**
+**  SCOPE:              INTERNAL - declared locally
+**
+**  DESCRIPTION:
+**      
+**  Returns 1 if the association request requires an optional 3-leg
+**  authentication handshake. Returns 0 if if didn't.
+**
+**  INPUTS:
+**
+**      spc_struct      The association. Note that this is passed in as
+**                      the special structure which is passed to the
+**                      state machine event evaluation routine.
+**
+**      event_param     The fragment buffer containing the rpc_bind
+**                      PDU. The special event related 
+**                      parameter which is passed to the state
+**                      machine event evaluation routine.
+**
+**  INPUTS/OUTPUTS:     none
+**
+**  OUTPUTS:            none
+**
+**  IMPLICIT INPUTS:    none
+**
+**  IMPLICIT OUTPUTS:   none
+**
+**  FUNCTION VALUE:     0 if no 3-leg authentication handshake is
+**                        being done.
+**                      1 if a 3-leg authentication handshake is
+**                        being done.
+**
+**  SIDE EFFECTS:       none
+**
+**--
+**/
+
+INTERNAL unsigned8 authent3_pred_rtn 
+#ifdef _DCE_PROTO_
+(
+  pointer_t       spc_struct __attribute__((__unused__)),
+  pointer_t       event_param
+)
+#else
+(spc_struct, event_param)
+pointer_t       spc_struct;
+pointer_t       event_param;
+#endif
+{
+    rpc_cn_packet_t     *header;
+    rpc_cn_auth_tlr_t   *tlr;
+    boolean32           three_way;
+    unsigned32          st;
+
+    RPC_CN_DBG_RTN_PRINTF(CLIENT authent3_pred_rtn);
+
+    /*
+     * The event parameter is a pointer to the fragbuf containing
+     * the rpc_bind PDU.
+     */
+    header = (rpc_cn_packet_t *) ((rpc_cn_fragbuf_t *)event_param)->data_p;
+
+    /*
+     * The authentication length in the header indicates whether the
+     * PDU contains an authentication trailer.
+     */
+    if (RPC_CN_PKT_AUTH_LEN (header) == 0)
+    {
+        return (0);
+    }
+    else
+    {
+        tlr = RPC_CN_PKT_AUTH_TLR (header, RPC_CN_PKT_FRAG_LEN (header));
+        RPC_CN_AUTH_THREE_WAY (RPC_CN_AUTH_CVT_ID_WIRE_TO_API (tlr->auth_type, &st), three_way);
+        if (three_way)
+        {
+            return (1);
+        }
+        else
+        {
+            return (0);
+        }
+    }
+}
+#endif
+
 
 /*
 **++
@@ -3497,6 +3729,8 @@ pointer_t       sm;
     rpc_cn_assoc_grp_t  *assoc_grp;
     rpc_cn_packet_t     *header;
     rpc_cn_fragbuf_t    *fragbuf;
+    rpc_cn_auth_tlr_t   *tlr = NULL;
+    boolean32           three_way = 0;
     unsigned32          local_st;
     rpc_cn_sm_ctlblk_t	*sm_p;
     unsigned32		status;
@@ -3575,6 +3809,35 @@ pointer_t       sm;
        sm_p->cur_state =  RPC_C_CLIENT_ASSOC_OPEN;
        return (assoc->assoc_status);
     }
+
+    /*
+     * Optionally perform three-way auth.  auth tlr set up in
+     * AUTHENT3_PRED, used *again* in 
+     */
+
+    AUTHENT3_PRED(spc_struct, event_param, status, tlr, local_st, three_way);
+
+    if (three_way)
+    {
+	rpc_cn_sec_context_t            *sec_context;
+        RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
+  		("3-way auth required\n"));
+	rpc__cn_assoc_sec_lkup_by_id (assoc,
+				      tlr->key_id,
+				      &sec_context,
+				      &assoc->assoc_status);
+
+	if (assoc->assoc_status == rpc_s_ok)
+	{
+	    rpc_cn_assoc_sm_work_t assoc_sm_work;
+	    assoc_sm_work.grp_id = assoc->assoc_grp_id.all;
+	    assoc_sm_work.pres_context = NULL;
+	    assoc_sm_work.sec_context = sec_context;
+
+	    authent3_action_rtn(spc_struct, &assoc_sm_work, sm);
+	}
+    }
+
 
     /*
      * Set the secondary address on the group using the secondary
@@ -4484,7 +4747,7 @@ unsigned32              *st;
 {
     rpc_cn_fragbuf_t            *fragbuf;
     rpc_cn_packet_t             *header;
-    rpc_cn_pres_cont_list_t     *pres_cont_list;
+    rpc_cn_pres_cont_list_t     *pres_cont_list = NULL;
     unsigned32                  header_size;
     rpc_cn_auth_tlr_t           *auth_tlr;
     unsigned32                  auth_len;
@@ -4508,14 +4771,22 @@ unsigned32              *st;
      */
     RPC_CN_FRAGBUF_ALLOC (fragbuf, rpc_g_cn_large_frag_size, st);
     header = (rpc_cn_packet_t *)fragbuf->data_p;
-    header_size = RPC_CN_PKT_SIZEOF_BIND_HDR;
 
-    /*
-     * Clear the control fields of the presentation context list.
-     */
-    pres_cont_list = (rpc_cn_pres_cont_list_t *)
-        ((unsigned8 *)(header) + header_size);
-    memset (pres_cont_list, 0, sizeof (rpc_cn_pres_cont_list_t));
+    if (pdu_type != RPC_C_CN_PKT_AUTH3)
+    {
+	header_size = RPC_CN_PKT_SIZEOF_BIND_HDR;
+
+	/*
+	 * Clear the control fields of the presentation context list.
+	 */
+	pres_cont_list = (rpc_cn_pres_cont_list_t *)
+	    ((unsigned8 *)(header) + header_size);
+	memset (pres_cont_list, 0, sizeof (rpc_cn_pres_cont_list_t));
+    }
+    else
+    {
+	header_size = RPC_CN_PKT_SIZEOF_AUTH3_HDR + 4;
+    }
 
     /*
      * Format the presentation context list. An assumption here is
@@ -4524,7 +4795,7 @@ unsigned32              *st;
      * negotiation being performed there will be zero abstract
      * syntaxes in the list.
      */
-    if (pres_context != NULL)
+    if (pres_context != NULL && pres_cont_list != NULL)
     {
         /*
          * A presentation negotiation will be done. Add the
@@ -4595,7 +4866,7 @@ unsigned32              *st;
         pres_context->syntax_call_id = rpc_g_cn_call_id;
 
     }
-    else
+    else if (pdu_type != RPC_C_CN_PKT_AUTH3)
     {
         /*
          * No negotiation is required. Send a presentation context
@@ -4606,16 +4877,23 @@ unsigned32              *st;
         header_size += sizeof (rpc_cn_pres_cont_list_t) -
                        sizeof (rpc_cn_pres_cont_elem_t);
     }
-    /*
-     * Set up common entried in the PDU.
-     */
-    RPC_CN_PKT_MAX_XMIT_FRAG (header) = rpc_g_cn_large_frag_size;
-    RPC_CN_PKT_MAX_RECV_FRAG (header) = rpc_g_cn_large_frag_size;
-    RPC_CN_PKT_ASSOC_GROUP_ID (header) = grp_id;
+
+    if (pdu_type != RPC_C_CN_PKT_AUTH3)
+    {
+	/*
+	 * Set up common entried in the PDU.
+	 */
+	RPC_CN_PKT_MAX_XMIT_FRAG (header) = rpc_g_cn_large_frag_size;
+	RPC_CN_PKT_MAX_RECV_FRAG (header) = rpc_g_cn_large_frag_size;
+
+	RPC_CN_PKT_ASSOC_GROUP_ID (header) = grp_id;
+
+	/* use negotiated minor version number */
+	assoc->bind_packets_sent = 0;
+    }
 
     /* use negotiated minor version number */
     version = assoc->assoc_vers_minor;
-    assoc->bind_packets_sent = 0;
 
     if (sec_context == NULL)
     {
@@ -4657,6 +4935,7 @@ unsigned32              *st;
      */
     /* header_size = (header_size + 3) & ~0x03; */
     auth_tlr = (rpc_cn_auth_tlr_t *) ((unsigned8 *)(header) + header_size);
+    memset(auth_tlr, 0, RPC_CN_PKT_SIZEOF_COM_AUTH_TLR);
     header_size +=  RPC_CN_PKT_SIZEOF_COM_AUTH_TLR;
     auth_len = rpc_g_cn_large_frag_size - header_size;
 
@@ -4672,7 +4951,11 @@ unsigned32              *st;
      * yet.  So we use a global variable instead.
      * We already have the CN mutex locked.
      */
-    sec_context->sec_key_id = rpc_g_next_bind_key_id++;
+    if (pdu_type != RPC_C_CN_PKT_AUTH3)
+    {
+	rpc_g_next_bind_key_id++;
+    }
+    sec_context->sec_key_id = rpc_g_next_bind_key_id;
     auth_tlr->key_id = sec_context->sec_key_id;
 
     /*
@@ -4683,7 +4966,7 @@ unsigned32              *st;
     done = false;
     last_auth_pos = NULL;
     auth_len_remain = 0;
-    if (pdu_type == RPC_C_CN_PKT_BIND)
+    if (pdu_type == RPC_C_CN_PKT_BIND || pdu_type == RPC_C_CN_PKT_AUTH3)
     {
         /* enforce the reason for all this code  */
         auth_space = RPC_C_ASSOC_MUST_RECV_FRAG_SIZE - header_size;

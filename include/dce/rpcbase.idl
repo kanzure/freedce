@@ -228,6 +228,8 @@ typedef rpc_opaque_ptr_t    rpc_ns_handle_t, *rpc_ns_handle_p_t;
  */
 const long  rpc_c_ns_none                   = 0; /* No name service     */
 const long  rpc_c_ns_dec_dns                = 1; /* DECdns              */
+const long  rpc_c_ns_ms_wins                = 2; /* MS WINS (rfc1001/2 NBNS) */
+const long  rpc_c_ns_ldap                   = 3; /* LDAP                */
 
 /*
  * Name service syntax constants (architected values).
@@ -239,6 +241,8 @@ const long  rpc_c_ns_syntax_dce             = 3; /* DCE                 */
 const long  rpc_c_ns_syntax_x500            = 4; /* ISO OSI X.500       */
 const long  rpc_c_ns_syntax_internet_dns    = 5; /* DOD internet Domain NS */
 const long  rpc_c_ns_syntax_uuid            = 6; /* UUID string          */
+const long  rpc_c_ns_syntax_ms_wins         = 7; /* Microsoft WINS (NBNS) */
+const long  rpc_c_ns_syntax_ldap            = 8; /* RFC 1779 DN         */
 
 /*
  * Name service inquiry options for profiles.
@@ -305,7 +309,13 @@ const long rpc_c_authn_dce_secret   = 1; /* OSF DCE shared secret key auth */
 const long rpc_c_authn_dce_public   = 2; /* OSF DCE public key auth (reserved) */
 const long rpc_c_authn_dce_dummy    = 3; /* OSF DCE non-crypto auth */
 const long rpc_c_authn_dssa_public  = 4; /* DSSA public key auth (reserved) */
-
+const long rpc_c_authn_gss_negotiate = 9;  /* GSS-API, SPNEGO mech */
+const long rpc_c_authn_winnt         = 10; /* NTLMSSP authentication */
+const long rpc_c_authn_gss_tls       = 14; /* SSL/TLS or Secure channel? */
+const long rpc_c_authn_dpa           = 16; /* DPA proprietary */
+const long rpc_c_authn_msn           = 17; /* MSN proprietary */
+const long rpc_c_authn_gss_mskrb     = 18; /* GSS-API, Kerberos mech */
+const long rpc_c_authn_netlogon      = 68; /* Netlogon secure channel */
 const long rpc_c_authn_default      = 0xffffffff; /* default for environment */
 
 /*
@@ -316,8 +326,9 @@ const long rpc_c_authn_default      = 0xffffffff; /* default for environment */
  * set of authorization services the application is allowed to use.
  */
 const long rpc_c_authz_none = 0;
-const long rpc_c_authz_name = 1;
-const long rpc_c_authz_dce  = 2;
+const long rpc_c_authz_name = 1;  /* Kerberos name */
+const long rpc_c_authz_dce  = 2;  /* DCE PAC */
+const long rpc_c_authz_mspac = 3; /* Microsoft PAC */
 
 /*
  * Truly opaque handle on authorization data 

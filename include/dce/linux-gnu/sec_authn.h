@@ -1,3 +1,59 @@
+/* (c) Copyright 2001 Luke Kenneth Casson Leighton
+ * NTLMSSP Authentication Implementation (see ISBN 1578701503)
+ */
+
+#ifndef NTLMSSP_AUTH_CREDS
+#define NTLMSSP_AUTH_CREDS
+struct pwd_info
+{
+	int null_pwd;
+	int cleartext;
+	int crypted;
+
+	char password[129];
+
+	unsigned char smb_lm_pwd[16];
+	unsigned char smb_nt_pwd[16];
+
+	unsigned char smb_lm_owf[24];
+	unsigned char smb_nt_owf[128];
+	size_t nt_owf_len;
+
+	unsigned char lm_cli_chal[8];
+	unsigned char nt_cli_chal[128];
+	size_t nt_cli_chal_len;
+};
+
+typedef struct ntuser_creds
+{
+	char user_name[129];
+	char domain[129];
+	struct pwd_info pwd;
+
+	unsigned32 ntlmssp_flags;
+
+} ntuser_creds_t, *ntuser_creds_p_t;
+
+/*
+ *  ncalrpc funnel: shunt data between SAMBA and FreeDCE
+ *  Copyright (C) 2001-2004 PADL Software Pty Ltd. All rights reserved.
+ *
+ */
+typedef struct rpc_np_sec_context_t {
+    unsigned32 Length;
+    unsigned32 Version;
+    unsigned32 UserNameLength;
+    char *UserName;
+    unsigned32 DomainNameLength;
+    char *DomainName;
+    unsigned32 WorkstationLength;
+    char *Workstation;
+    unsigned32 SessionKeyLength;
+    char *SessionKey;
+} rpc_np_sec_context_t, *rpc_np_sec_context_p_t;
+
+#endif
+
 /*
  * 
  * (c) Copyright 1991 OPEN SOFTWARE FOUNDATION, INC.
@@ -23,4 +79,6 @@ typedef struct {
     int length;
     char *data;
 } sec_krb_message;
+
+
 #endif

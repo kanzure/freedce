@@ -71,6 +71,9 @@
 #  define RPC__UXD_NETWORK_SPRINTF   rpc__uxd_network_sprintf
 #endif
 
+/*#define PIPE_PREFIX "/tmp/.ncalrpc/"*/
+#define PIPE_PREFIX "/usr/local/samba/var/locks/.msrpc/"
+
 
 /***********************************************************************
  *
@@ -744,12 +747,15 @@ unsigned32              *status;
      */
     if (endpoint == NULL || strlen ((char *) endpoint) == 0)
     {
-        uxd_addr->sa.sun_path[0] = 0;
+		char *f;
+		f = tempnam(PIPE_PREFIX, ".epm");
+        RPC__UXD_ENDPOINT_SPRINTF(uxd_addr->sa.sun_path, "%s", f);
+        /*uxd_addr->sa.sun_path[0] = 0;*/
         *status = rpc_s_ok;
         return;
     }
 
-    if (strlen(endpoint) > sizeof(uxd_addr->sa.sun_path) - 15)
+    if (strlen(endpoint) > sizeof(uxd_addr->sa.sun_path) - strlen(PIPE_PREFIX))
     {
         *status = rpc_s_invalid_endpoint_format;
         return;
@@ -766,7 +772,8 @@ unsigned32              *status;
         return;
     }
 
-    RPC__UXD_NETWORK_SPRINTF(uxd_addr->sa.sun_path, "/tmp/.ncalrpc/.%s", endpoint);
+    RPC__UXD_NETWORK_SPRINTF(uxd_addr->sa.sun_path, "%s%s",
+			 PIPE_PREFIX, endpoint);
 
     *status = rpc_s_ok;
 }
@@ -855,7 +862,7 @@ unsigned32              *status;
 
     /*
      * if no endpoint present, return null string. Otherwise,
-     * return the endpoint in Internet "dot" notation.
+     * return the endpoint string.
      */    
     if (ep[0]  ==  0)
     {
@@ -875,7 +882,7 @@ unsigned32              *status;
             RPC_C_ENDPOINT_UXD_MAX,
             RPC_C_MEM_STRING,
             RPC_C_MEM_WAITOK);
-        RPC__UXD_ENDPOINT_SPRINTF((char *) *endpoint, "%s", ep+15);
+        RPC__UXD_ENDPOINT_SPRINTF((char *) *endpoint, "%s", ep+strlen(PIPE_PREFIX));
     }
 
     *status = rpc_s_ok;    

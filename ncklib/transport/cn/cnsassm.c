@@ -2817,7 +2817,7 @@ pointer_t       sm;
     rpc_cn_sm_ctlblk_t  *sm_p;
     rpc_cn_packet_t     *header;  /* used in AUTHENT3_PRED macro */
     rpc_cn_auth_tlr_t   *tlr; /* used in AUTHENT3_PRED macro */  
-    boolean32           three_way; /* used in AUTHENT3_PRED macro */ 
+    boolean32           three_way = 0; /* used in AUTHENT3_PRED macro */ 
     unsigned8		n_state; 
     unsigned32          status;
     unsigned32		st;
@@ -3691,6 +3691,7 @@ unsigned32              *st;
     unsigned32                      verify_client_req_st;
     rpc_cn_bind_auth_value_priv_p_t local_auth_value, priv_auth_value;
     unsigned32                      local_auth_value_len;
+    rpc_authn_protocol_id_t authn_protocol;
 
     RPC_CN_DBG_RTN_PRINTF(SERVER rpc__cn_assoc_process_auth_tlr);
     CODING_ERROR (st);
@@ -3708,6 +3709,9 @@ unsigned32              *st;
         *st = rpc_s_ok;
         goto DONE;
     }
+    RPC_DBG_PRINTF (rpc_e_dbg_auth, 20,
+                 ("(rpc__cn_assoc_process_auth_tlr) auth trailer present\n"));
+
     /*
      * First make sure the authentication protocol requested is
      * supported here. If not, send a bind_nak PDU back to the
@@ -3715,8 +3719,12 @@ unsigned32              *st;
      */
     req_auth_tlr = RPC_CN_PKT_AUTH_TLR (req_header, 
                                         req_header_size);
-    if ( ! RPC_CN_AUTH_INQ_SUPPORTED ( 
-	       RPC_CN_AUTH_CVT_ID_WIRE_TO_API ( req_auth_tlr->auth_type, st)))
+    authn_protocol = RPC_CN_AUTH_CVT_ID_WIRE_TO_API ( req_auth_tlr->auth_type, st);
+    if (*st != rpc_s_ok)
+    {
+        goto DONE;
+    }
+    if ( ! RPC_CN_AUTH_INQ_SUPPORTED ( authn_protocol))
     {
         *st = rpc_s_unknown_auth_protocol;
         goto DONE;
@@ -4277,3 +4285,5 @@ rpc_cn_packet_p_t	header;
 
     return;
 }
+/* vim:sw=4 ts=4
+ * */

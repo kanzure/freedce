@@ -708,6 +708,8 @@ typedef union
  * R P C _ C N _ A U T H 3 _ H D R _ T
  *
  * This is the rpc_auth3 packet header template.
+ *
+ * lkcl: NT has the max_xmit_frag and max_recv_frag here...
  */
 typedef union
 {
@@ -715,11 +717,13 @@ typedef union
     struct
     {
         rpc_cn_common_hdr_t common_hdr; /* 00:16 common to all packets */
+	/*
         rpc_cn_auth_tlr_t auth_tlr;
+	*/
     } hdr;
 } rpc_cn_auth3_hdr_t, *rpc_cn_auth3_hdr_p_t;
 
-#define RPC_CN_PKT_SIZEOF_AUTH3_HDR     (RPC_CN_PKT_SIZEOF_COMMON_HDR + RPC_CN_PKT_SIZEOF_COM_AUTH_TLR)
+#define RPC_CN_PKT_SIZEOF_AUTH3_HDR     (RPC_CN_PKT_SIZEOF_COMMON_HDR)
 
 
 

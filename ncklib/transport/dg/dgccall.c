@@ -887,7 +887,7 @@ unsigned32 *st;
 
             if (delta.tv_sec == 0)
                 has_timed_out = true;
-            else if (delta.tv_sec == rpc_c_cancel_infinite_timeout)
+            else if ((unsigned)delta.tv_sec == rpc_c_cancel_infinite_timeout)
                 ;   /* we never timeout */
             else
             {
@@ -994,7 +994,7 @@ rpc_dg_ccall_p_t ccall;
     if (ccall->cancel.timeout_time == 0)
     {
         RPC_GET_CANCEL_TIMEOUT(ctmo, &tst);
-        if (ctmo != rpc_c_cancel_infinite_timeout)
+        if ((unsigned)ctmo != rpc_c_cancel_infinite_timeout)
         {
             RPC_DBG_PRINTF(rpc_e_dbg_cancel, 10,
                 ("(rpc__dg_ccall_setup_cancel_tmo) %d sec cancel timeout setup\n",

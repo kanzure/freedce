@@ -154,6 +154,14 @@ const long  dce_c_rpc_authn_protocol_none  = 0;   /* No authentication */
 const long  dce_c_rpc_authn_protocol_krb5  = 1;   /* Kerberos v5 authentication */
 const long  dce_c_rpc_authn_protocol_dummy = 2;   /* Non-crypto authentication */
 const long  dce_c_rpc_authn_protocol_dssa  = 3;   /* DEC DSSA authentication */
+const long  dce_c_rpc_authn_protocol_gss_negotiate = 9;   /* GSS-API, SPNEGO mech */
+const long  dce_c_rpc_authn_protocol_winnt         = 10;  /* NTLMSSP authentication */
+const long  dce_c_rpc_authn_protocol_gss_tls        = 14; /* SSL/TLS */
+const long  dce_c_rpc_authn_protocol_dpa            = 16; /* DPA proprietary */
+const long  dce_c_rpc_authn_protocol_msn            = 17; /* MSN proprietary */
+const long  dce_c_rpc_authn_protocol_gss_mskrb      = 18; /* GSS-API, Kerberos mech */
+const long  dce_c_rpc_authn_protocol_netlogon       = 68; /* Netlogon secure channel, perhaps? */
+
 typedef unsigned8 dce_rpc_authn_protocol_id_t;
 
 }

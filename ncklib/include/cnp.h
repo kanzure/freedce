@@ -638,6 +638,11 @@ typedef struct rpc_cn_assoc_s_t
 #define RPC_CN_AUTH_PROT_EPV(prot)              (rpc_cn_auth_epv_t *)(0xbabababa)
 #endif /* CN_AUTH */
 
+#define RPC_CN_AUTH_SEC_THREE_WAY(sec, ind)\
+{\
+    ind = (*(sec)->sec_cn_info->cn_epv->three_way)();\
+}
+
 #define RPC_CN_AUTH_THREE_WAY(prot, ind)\
 {\
     rpc_cn_auth_epv_t   *_cn_epv;\

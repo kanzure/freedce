@@ -131,7 +131,7 @@
 /* define some macros to support atfork handler */
 
 
-#define ATFORK_SUPPORTED
+/*#define ATFORK_SUPPORTED */
 
 #define ATFORK(handler) rpc__atfork(handler)
 

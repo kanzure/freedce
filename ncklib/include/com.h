@@ -147,7 +147,7 @@ EXTERNAL unsigned32    rpc_g_fork_count;
 #define RPC_C_PROTSEQ_ID_NCACN_OSI_DNA  2
 #define RPC_C_PROTSEQ_ID_NCADG_IP_UDP   3
 #define RPC_C_PROTSEQ_ID_NCADG_DDS      4
-#define RPC_C_PROTSEQ_ID_NCALRPC			 5
+#define RPC_C_PROTSEQ_ID_NCALRPC        5
 #ifdef TEST_PROTOCOL
 #define RPC_C_PROTSEQ_ID_NCATP_IP_TCP   6
 #endif /* TEST_PROTOCOL */
@@ -237,7 +237,7 @@ typedef unsigned32       rpc_naf_id_t, *rpc_naf_id_p_t;
  * The Network Protocol IDs.
  */
 
-#define RPC_C_NETWORK_PROTOCOL_ID_UXD   0 /* FIXME: is that OK? */
+#define RPC_C_NETWORK_PROTOCOL_ID_UXD   0
 #define RPC_C_NETWORK_PROTOCOL_ID_TCP   6
 #define RPC_C_NETWORK_PROTOCOL_ID_UDP   17
 #define RPC_C_NETWORK_PROTOCOL_ID_NSP   1
@@ -650,7 +650,21 @@ typedef struct
  */
 typedef unsigned32 rpc_authn_protocol_id_t;
 
-#define RPC_C_AUTHN_PROTOCOL_ID_MAX     16
+/* this has been turned into an extremely large array
+ * in order to accommodate possible binary-compatibility
+ * with authentication types we've come across in other
+ * implementations
+ *
+ * if it wasn't for binary compatibility worries, we could
+ * make this smaller, to match the _actual_ number of
+ * authentication mechanisms implemented.
+ *
+ * it will be a happy day when this statically-allocated
+ * global array is made into a linked list.  or something.
+ *
+ * lkcl/23oct2001
+ */
+#define RPC_C_AUTHN_PROTOCOL_ID_MAX     128
 
 /*
  * R P C _ A U T H Z _ P R O T O C O L _ I D _ T
