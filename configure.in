@@ -15,8 +15,10 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AM_PROG_LEX
 AC_PROG_YACC
+
 dnl Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
+
 RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, /opt/dce,,
 AC_MSG_ERROR([freedce requires libdcethreads!]))
 
@@ -54,8 +56,6 @@ RPC_ARG_DEFINE(debug, DEBUG, yes,Compile with debugging support)
 RPC_ARG_DEFINE(dcom, ENABLE_DCOM, no,Enable experimental DCOM support)
 AM_CONDITIONAL(ENABLE_DCOM, test x$rpc_arg_dcom = yes)
 
-# FIXME: what exactly is AT386 anyway?
-AM_CONDITIONAL(TARGET_OS_AT386, false)
 AM_CONDITIONAL(TARGET_OS_LINUX, test x$target_os = xlinux-gnu)
 
 dnl ============= include subdirs here
