@@ -323,6 +323,17 @@ void rpc_ss_ndr_clean_up  _DCE_PROTOTYPE_ (
 {   address = (idl_byte *)(((address-(idl_byte *)0)+3) & (~3)); \
     address += 4; }
 
+/* values for extra bound info byte in size_is/length_is etc. */
+#define IDL_FC_NONE		0
+#define IDL_FC_DIV_2	1
+#define IDL_FC_MUL_2	2
+#define IDL_FC_ADD_1	3
+#define IDL_FC_SUB_1	4
+#define IDL_FC_ALIGN_2	5
+#define IDL_FC_ALIGN_4	6
+#define IDL_FC_ALIGN_8	7
+#define IDL_FC_CALLBACK	8
+	
 /*
  *  Signatures of interpreter modules
  */
