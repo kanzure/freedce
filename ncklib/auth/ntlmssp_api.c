@@ -83,6 +83,8 @@ int ntlmssp_sign_seal(ntlmssp_sec_state_p_t sec_info,
 	int auth_verify;
 	int auth_seal;
 	prs_struct rverf;
+	RPC_AUTH_NTLMSSP_CHK ntlmssp_chk;
+	memset(&ntlmssp_chk, 0, sizeof(RPC_AUTH_NTLMSSP_CHK));
 
 	uint32 crc32 = 0;
 
@@ -107,15 +109,14 @@ int ntlmssp_sign_seal(ntlmssp_sec_state_p_t sec_info,
 		dump_data(20, data, data_len);
 	}
 
+	make_rpc_auth_ntlmssp_chk(&ntlmssp_chk,
+				  NTLMSSP_SIGN_VERSION, crc32,
+				  sec_info->ntlmssp_seq_num++);
+	dump_data(20, auth_data, auth_data_len);
+	smb_io_rpc_auth_ntlmssp_chk("auth_sign", &ntlmssp_chk, &rverf, 0);
+
 	if (auth_verify)
 	{
-		RPC_AUTH_NTLMSSP_CHK ntlmssp_chk;
-		dump_data(20, auth_data, auth_data_len);
-		make_rpc_auth_ntlmssp_chk(&ntlmssp_chk,
-					  NTLMSSP_SIGN_VERSION, crc32,
-					  sec_info->ntlmssp_seq_num++);
-		smb_io_rpc_auth_ntlmssp_chk("auth_sign", &ntlmssp_chk, &rverf,
-					    0);
 		NTLMSSPcalc_p(sec_info, (uchar *) prs_data(&rverf, 4), 12);
 		dump_data(20, auth_data, auth_data_len);
 	}
@@ -479,6 +480,7 @@ int ntlmssp_create_bind_req(ntlmssp_sec_state_p_t sec_info,
 			       usr->ntlmssp_flags, server_princ_name,
 				   usr->domain);
 
+	RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 10,("create_ntlmssp_bind_req: neg_flags: 0x%x\n", ntlmssp_neg.neg_flgs));
 	smb_io_rpc_auth_ntlmssp_neg("ntlmssp_neg", &ntlmssp_neg, &auth_req, 0);
 
 	*auth_req_len = auth_req.offset;

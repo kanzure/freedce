@@ -683,12 +683,17 @@ unsigned32                      *st;
     ntlmssp = &(ntlmsspauth_info->ntlmssp);
     usr = (struct ntuser_creds *)(sec->sec_info->u.auth_identity);
 
+    if (ntlmsspauth_info->auth_info.authn_level == rpc_c_authn_level_connect)
+    {
+	    usr->ntlmssp_flags &= ~(NTLMSSP_NEGOTIATE_SIGN|
+			            NTLMSSP_NEGOTIATE_SEAL);
+    }
     ntlmsspauth_cn_info = (rpc_ntlmsspauth_cn_info_p_t) (sec->sec_cn_info);
 
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
-                    ("(rpc__ntlmsspauth_cn_fmt_client_req) old_srv: %ld\n",
-		     old_server));
+                    ("(rpc__ntlmsspauth_cn_fmt_client_req) flags: 0x%x old_srv: %ld\n",
+		     usr->ntlmssp_flags, old_server));
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
                     ("(rpc__ntlmsspauth_cn_fmt_client_req) prot->%x level->%x key_id->%x assoc_uuid_crc->%x xmit_seq->%x recv_seq->%x\n",
@@ -738,7 +743,7 @@ unsigned32                      *st;
 				return;
 			}
 		}
-		*auth_len_remain = 0;
+		/**auth_len_remain = 0;*/
 	}
 
 	/* stop compiler bitchin' */
@@ -1109,7 +1114,8 @@ unsigned32                      *st;
     }
 #endif
 
-    if (sec->sec_info->authn_level >= rpc_c_authn_level_pkt)
+    if (sec->sec_info->authn_level >= rpc_c_authn_level_pkt ||
+        sec->sec_info->authn_level >= rpc_c_authn_level_connect)
     {
         if (*auth_value_len < 16)
         {
@@ -1230,6 +1236,9 @@ unsigned32                      *st;
     pdu = (rpc_cn_common_hdr_t *)(iov[0].iov_base);
 
     ptype = pdu->ptype;
+
+    /* Really, really, important to make sure this is initialized. */
+    out_iov->iov_base = NULL;
 
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_GENERAL,
                     ("(rpc__ntlmsspauth_cn_pre_send) authn level->%x packet type->%x iovlen->%d\n", sec->sec_info->authn_level, ptype, iovlen));
