@@ -146,6 +146,8 @@ static boolean type_is_string
     if (index_count == 1
         &&  (base_type_p->kind == AST_character_k
             ||  base_type_p->kind == AST_byte_k
+            ||  base_type_p->kind == AST_short_integer_k
+            ||  base_type_p->kind == AST_long_integer_k
             ||  base_type_p->kind == AST_short_unsigned_k
             ||  base_type_p->kind == AST_long_unsigned_k
             ||  (base_type_p->kind == AST_structure_k
