@@ -193,7 +193,7 @@ unsigned32              *st;
     rpc_iovector_elt_p_t    iov_p;
     rpc_cn_packet_p_t       header_p;
     unsigned32              cancel_count = 0;
-    rpc_clock_t             cancel_timeout;
+    rpc_clock_t             cancel_timeout = 0;
     unsigned32              temp_st;
     pthread_t               current_thread_id;
     boolean                 resolving_thread;
