@@ -117,7 +117,7 @@
 
 
 #define WARNING_CONFLICTING_API_USAGE \
-#error ERROR: Attempted conlicting use of DCE vs. POSIX Draft 7 Pthreads API
+ ERROR: Attempted conlicting use of DCE vs. POSIX Draft 7 Pthreads API
 
 #undef pthread_attr_default
 #undef pthread_mutexattr_default

@@ -1,4 +1,4 @@
-/* dce/dcethreads_conf.h.in.  Generated automatically from configure.in by autoheader.  */
+/* include/dce/dcethreads_conf.h.in.  Generated automatically from configure.in by autoheader.  */
 #ifndef __DCETHREADS_CONF_H
 #define __DCETHREADS_CONF_H
 

@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(exc_handling.c)
-AM_CONFIG_HEADER(dce/dcethreads_conf.h)
-AM_INIT_AUTOMAKE(dcethreads, 2.0.1)
+AC_INIT(src/exc_handling.c)
+AM_CONFIG_HEADER(include/dce/dcethreads_conf.h)
+AM_INIT_AUTOMAKE(dcethreads, 2.0.2)
 AC_PREFIX_DEFAULT(/opt/dce)
 
 dnl Checks for programs.
@@ -35,4 +35,4 @@ AC_CHECK_FUNCS(gettimeofday)
 
 AC_DEFINE(YIELD_AFTER_PTHREAD_CREATE)
 
-AC_OUTPUT(Makefile dce/Makefile tests/Makefile)
+AC_OUTPUT(Makefile include/Makefile include/dce/Makefile src/Makefile tests/Makefile)
