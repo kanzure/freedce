@@ -937,12 +937,14 @@ rpc_cn_assoc_p_t        assoc;
                                                  &pres_context,
                                                  &st);
 
-                call_r->u.server.if_id = &pres_context->syntax_abstract_id.id;
-                call_r->u.server.if_vers = pres_context->syntax_abstract_id.version;
-                call_r->transfer_syntax.index = pres_context->syntax_vector_index;
-                call_r->transfer_syntax.convert_epv = pres_context->syntax_epv;
-                call_r->u.server.ihint = pres_context->syntax_ihint;
-                call_r->context_id = pres_context->syntax_pres_id;
+                /* Thu Aug  7 14:11:53 CEST 2003 schuetzk:
+                 *    Bugfix for CAN-2003-0746 / VU#377804 / VUL_03_025 
+                 *         "SECURITY ALERT : Denial of Service
+                 *                           in various DCE implementations"
+                 *
+                 * the status must be checked before pres_context can be used
+                 *
+                 */
 
                 if (st != rpc_s_ok)
                 {
@@ -951,6 +953,13 @@ rpc_cn_assoc_p_t        assoc;
                     continue;
                 }
                 
+                call_r->u.server.if_id = &pres_context->syntax_abstract_id.id;
+                call_r->u.server.if_vers = pres_context->syntax_abstract_id.version;
+                call_r->transfer_syntax.index = pres_context->syntax_vector_index;
+                call_r->transfer_syntax.convert_epv = pres_context->syntax_epv;
+                call_r->u.server.ihint = pres_context->syntax_ihint;
+                call_r->context_id = pres_context->syntax_pres_id;
+
                 /*
                  * Invoke a call thread.
                  */
