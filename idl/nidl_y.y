@@ -102,7 +102,7 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 %{
 #if YYDEBUG
 #ifdef GCC_VERSION
-#define FREEDCE_UNUSED __attribue__((unused))
+#define FREEDCE_UNUSED __attribute__((unused))
 #else
 #define FREEDCE_UNUSED 
 #endif
