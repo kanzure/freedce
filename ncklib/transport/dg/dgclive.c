@@ -304,6 +304,8 @@ INTERNAL void * network_maintain_liveness(void * unused __attribute__((__unused_
 			  TRY	{
             pthread_detach(&maintain_task);
 			  }
+			  CATCH(pthread_badparam_e) {
+			  }
 			  CATCH_ALL	{
 				  fprintf(stderr, "XXX MIREK: %s: %s: %d: caught exception from detach\n",
 						  __FILE__, __PRETTY_FUNCTION__, __LINE__);
@@ -400,12 +402,25 @@ rpc_fork_stage_id_t stage;
             stop_maintain_thread = true;
             RPC_COND_SIGNAL(maintain_cond, rpc_g_maint_mutex);
             RPC_MAINT_UNLOCK();
-            pthread_join (maintain_task, (void**) &st);
+            TRY {
+                pthread_join (maintain_task, (void**) &st);
+            }
+            CATCH(pthread_cancel_e) {
+            }
+            CATCH(pthread_use_error_e) {
+            }
+            CATCH(pthread_in_use_e) {
+            }
+            CATCH(pthread_badparam_e) {
+            }
+            ENDTRY;
             RPC_MAINT_LOCK();
 				TRY	{
 					pthread_detach(&maintain_task);
 				}
 				CATCH(pthread_use_error_e)	{
+				}
+				CATCH(pthread_badparam_e)	{
 				}
 				ENDTRY;
             maintain_thread_running = false;

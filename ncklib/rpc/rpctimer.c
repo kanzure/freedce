@@ -175,6 +175,8 @@ PRIVATE void rpc__timer_init(void)
     rpc_g_long_sleep	    = 0;
     timer_task_running      = false;
     timer_task_was_running  = false;
+    int successful          = false;
+    DO_NOT_CLOBBER(successful);
     
     /*
      * Initialize the current time...
@@ -184,11 +186,40 @@ PRIVATE void rpc__timer_init(void)
 #ifndef NO_RPC_TIMER_THREAD
     stop_timer              = 0;
     timer_task_running      = true;
-    pthread_create (
-        &timer_task,                            /* new thread    */
-        pthread_attr_default,                   /* attributes    */
-        (pthread_startroutine_t)timer_loop,    /* start routine */
-        NULL);                 /* arguments     */
+    while(!successful) {
+        TRY {
+            pthread_create (
+                &timer_task,                            /* new thread    */
+                pthread_attr_default,                   /* attributes    */
+                (pthread_startroutine_t)timer_loop,    /* start routine */
+                NULL);                 /* arguments     */
+            successful = true;
+         }
+         CATCH (pthread_in_use_e) {
+             fprintf(stderr,"pthread_in_use_e after pthread_create timer thread");
+             successful=false;
+         }
+         CATCH (exc_insfmem_e) {
+             fprintf(stderr,"exc_insfmem_e after pthread_create timer thread");
+             successful=false;
+         }
+         CATCH (pthread_use_error_e) {
+             fprintf(stderr,"pthread_use_error_e after pthread_create timer thread");
+         }
+         CATCH (exc_nopriv_e) {
+             fprintf(stderr,"exc_nopriv_e after pthread_create timer thread");
+         }
+         CATCH (pthread_unimp_e) {
+             fprintf(stderr,"pthread_unimp_e after pthread_create timer thread");
+         }
+         CATCH (pthread_badparam_e) {
+             fprintf(stderr,"pthread_badparam_e after pthread_create timer thread");
+         }
+         CATCH_ALL {
+             fprintf(stderr,"unhandled exception after pthread_create timer thread");
+         }
+         ENDTRY;
+    }
 
 #endif /* NO_RPC_TIMER_THREAD */
 }
@@ -212,6 +243,8 @@ rpc_fork_stage_id_t stage;
 #endif
 {  
     unsigned32 st;
+    int successful = false;
+    DO_NOT_CLOBBER(successful);
 
 #ifndef NO_RPC_TIMER_THREAD
     switch ((int)stage)
@@ -224,14 +257,25 @@ rpc_fork_stage_id_t stage;
                 stop_timer = 1;
                 rpc__timer_prod(0);
                 RPC_TIMER_UNLOCK(0);
-                pthread_join(timer_task, (void**)&st);
+                TRY  {
+                    pthread_join(timer_task, (void**)&st);
+                }
+                CATCH(pthread_cancel_e)      {
+                }
+                CATCH(pthread_use_error_e)   {
+                }
+                CATCH(pthread_in_use_e)      {
+                }
+                CATCH(pthread_badparam_e)    {
+                }
+                ENDTRY;
                 RPC_TIMER_LOCK(0);
-					 TRY	{
-						 pthread_detach(&timer_task);
-					 }
-					 CATCH(pthread_use_error_e)	{
-					 }
-					 ENDTRY;
+                TRY     {
+                    pthread_detach(&timer_task);
+                }
+                CATCH(pthread_use_error_e)      {}
+                CATCH(pthread_badparam_e)       {}
+                ENDTRY;
                 timer_task_was_running = true;
                 timer_task_running = false;
             }
@@ -243,11 +287,40 @@ rpc_fork_stage_id_t stage;
                 timer_task_was_running = false;
                 timer_task_running = true;
                 stop_timer = 0;
-                pthread_create (
-                    &timer_task,                          /* new thread    */
-                    pthread_attr_default,                 /* attributes    */
-                    (pthread_startroutine_t) timer_loop,  /* start routine */
-                    NULL);               /* arguments     */
+                while (!successful) {
+                TRY {
+                   pthread_create (
+                       &timer_task,                          /* new thread    */
+                       pthread_attr_default,                 /* attributes    */
+                       (pthread_startroutine_t) timer_loop,  /* start routine */
+                       NULL);               /* arguments     */
+                   successful=true;
+                }
+                CATCH (pthread_in_use_e) {
+                    fprintf(stderr,"pthread_in_use_e after pthread_create timer thread");
+                    successful=false;
+                }
+                CATCH (exc_insfmem_e) {
+                    fprintf(stderr,"exc_insfmem_e after pthread_create timer thread");
+                    successful=false;
+                }
+                CATCH (pthread_use_error_e) {
+                    fprintf(stderr,"pthread_use_error_e after pthread_create timer thread");
+                }
+                CATCH (exc_nopriv_e) {
+                    fprintf(stderr,"exc_nopriv_e after pthread_create timer thread");
+                }
+                CATCH (pthread_unimp_e) {
+                    fprintf(stderr,"pthread_unimp_e after pthread_create timer thread");
+                }
+                CATCH (pthread_badparam_e) {
+                    fprintf(stderr,"pthread_badparam_e after pthread_create timer thread");
+                }
+                CATCH_ALL {
+                    fprintf(stderr,"unhandled exception after pthread_create timer thread");
+                }
+                ENDTRY;
+                }
             }
             RPC_TIMER_UNLOCK(0);
             break;

@@ -359,7 +359,14 @@ INTERNAL void network_monitor_liveness(void)
                 /*
                  * Nothing left to monitor, so terminate the thread.
                  */
-                pthread_detach(&monitor_task);
+                TRY {
+                    pthread_detach(&monitor_task);
+                }
+                CATCH(pthread_use_error_e) {
+                }
+                CATCH(pthread_badparam_e) {
+                }
+                ENDTRY;
                 monitor_running = false;
                 RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1, 
                     ("(network_monitor_liveness) shutting down (no active)...\n"));
@@ -612,14 +619,27 @@ rpc_fork_stage_id_t stage;
             stop_monitor = true;
             RPC_COND_SIGNAL(monitor_cond, monitor_mutex);
             RPC_MUTEX_UNLOCK(monitor_mutex);
-            pthread_join (monitor_task, (void **) &st);
+            TRY {
+                pthread_join (monitor_task, (void **) &st);
+            }
+            CATCH(pthread_cancel_e) {
+            }
+            CATCH(pthread_use_error_e) {
+            }
+            CATCH(pthread_in_use_e) {
+            }
+            CATCH(pthread_badparam_e) {
+            }
+            ENDTRY;
             RPC_MUTEX_LOCK(monitor_mutex);
-				TRY	{
-            	pthread_detach(&monitor_task);
-				}
-				CATCH(pthread_use_error_e)
-				{}
-				ENDTRY;
+            TRY {
+                pthread_detach(&monitor_task);
+            }
+            CATCH(pthread_use_error_e) {
+            }
+            CATCH(pthread_badparam_e) {
+            }
+            ENDTRY;
             monitor_running = false;
             /*
              * The monitor thread may have nothing to do.

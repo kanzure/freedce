@@ -1023,8 +1023,19 @@ rpc_dg_call_p_t call;
                     "(rpc__dg_call_signal) cancelling private socket thread\n"));
 
         call->priv_cond_signal = true;
-        pthread_cancel(call->thread_id);
-    }
+        TRY {
+            pthread_cancel(call->thread_id);
+        }
+        CATCH (pthread_cancel_e) {
+        }
+        CATCH (pthread_use_error_e) {
+        }
+        CATCH (pthread_in_use_e) {
+        }
+        CATCH (pthread_badparam_e) {
+        }
+        ENDTRY
+   }
     else
     {
         /* 

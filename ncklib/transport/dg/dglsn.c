@@ -651,12 +651,25 @@ PRIVATE void rpc__dg_conv_fork_handler
             convq_stop = true;
             RPC_COND_SIGNAL (convq.cv, convq.m);
             RPC_MUTEX_UNLOCK(convq.m);
-            pthread_join (conv_thread, (void **) &st);
+            TRY {
+                pthread_join (conv_thread, (void **) &st);
+            }
+            CATCH(pthread_cancel_e) {
+            }
+            CATCH(pthread_use_error_e) {
+            }
+            CATCH(pthread_in_use_e) {
+            }
+            CATCH(pthread_badparam_e) {
+            }
+            ENDTRY;
             RPC_MUTEX_LOCK(convq.m);
 				TRY	{
 					pthread_detach(&conv_thread);
 				}
 				CATCH(pthread_use_error_e)	{
+				}
+				CATCH(pthread_badparam_e)	{
 				}
 				ENDTRY;
             convq_running = false;

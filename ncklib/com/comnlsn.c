@@ -157,6 +157,8 @@ unsigned32              idx;
 unsigned32              *status;
 #endif
 {
+    int successful = false;
+    DO_NOT_CLOBBER(successful);
     RPC_MUTEX_LOCK_ASSERT (lstate->mutex);
 
     lstate->socks[idx].is_active = true;
@@ -176,11 +178,40 @@ unsigned32              *status;
     {
         listener_thread_running = true;
         listener_should_handle_cancels = true;
-        pthread_create (
-            &listener_thread,                   /* new thread    */
-            rpc_g_default_pthread_attr,         /* attributes    */
-            (pthread_startroutine_t)lthread,   /* start routine */
-            lstate);           /* arguments     */
+        while (!successful) {
+            TRY {
+                pthread_create (
+                    &listener_thread,                   /* new thread    */
+                    rpc_g_default_pthread_attr,         /* attributes    */
+                    (pthread_startroutine_t)lthread,   /* start routine */
+                    lstate);           /* arguments     */
+                successful = true;
+            }
+            CATCH (pthread_in_use_e) {
+                fprintf(stderr,"pthread_in_use_e after pthread_create listener thread");
+                successful=false;
+            }
+            CATCH (exc_insfmem_e) {
+                fprintf(stderr,"exc_insfmem_e after pthread_create listener thread");
+                successful=false;
+            }
+            CATCH (pthread_use_error_e) {
+                fprintf(stderr,"pthread_use_error_e after pthread_create listener thread");
+            }
+            CATCH (exc_nopriv_e) {
+                fprintf(stderr,"exc_nopriv_e after pthread_create listener thread");
+            }
+            CATCH (pthread_unimp_e) {
+                fprintf(stderr,"pthread_unimp_e after pthread_create listener thread");
+            }
+            CATCH (pthread_badparam_e) {
+                fprintf(stderr,"pthread_badparam_e after pthread_create listener thread");
+            }
+            CATCH_ALL {
+                fprintf(stderr,"unhandled exception after pthread_create listener thread");
+            }
+            ENDTRY;
+        }
     }
 
     *status = rpc_s_ok;
@@ -502,6 +533,8 @@ rpc_fork_stage_id_t stage;
 #endif
 { 
     unsigned32 st;
+    int successful = false;
+    DO_NOT_CLOBBER(successful);
 
     switch ((int)stage)
     {
@@ -511,14 +544,38 @@ rpc_fork_stage_id_t stage;
             if (listener_thread_running)
             {
                 listener_should_handle_cancels = false;
-                pthread_cancel(listener_thread);
+                TRY {
+                    pthread_cancel(listener_thread);
+                }
+                CATCH (pthread_cancel_e) {
+                }
+                CATCH (pthread_use_error_e) {
+                }
+                CATCH (pthread_in_use_e) {
+                }
+                CATCH (pthread_badparam_e) {
+                }
+                ENDTRY
                 RPC_MUTEX_UNLOCK (lstate->mutex);
-                pthread_join(listener_thread, (void**)&st);
+                TRY     {
+                    pthread_join(listener_thread, (void**)&st);
+                }
+                CATCH (pthread_cancel_e) {
+                }
+                CATCH (pthread_use_error_e) {
+                }
+                CATCH (pthread_in_use_e) {
+                }
+                CATCH (pthread_badparam_e) {
+                }
+                ENDTRY
                 RPC_MUTEX_LOCK (lstate->mutex);
 					 TRY	{
 						pthread_detach(&listener_thread);
 					}
 					 CATCH(pthread_use_error_e)
+					 {}
+					 CATCH(pthread_badparam_e)	
 					 {}
 					 ENDTRY;
 						
@@ -533,11 +590,40 @@ rpc_fork_stage_id_t stage;
                 listener_thread_was_running = false;
                 listener_thread_running = true;
                 listener_should_handle_cancels = true;
-                pthread_create (
-                    &listener_thread,                   /* new thread    */
-                    rpc_g_default_pthread_attr,         /* attributes    */
-                    (pthread_startroutine_t)lthread,   /* start routine */
-                    (pthread_addr_t)lstate);           /* arguments*/
+                while(!successful) {
+                    TRY {
+                            pthread_create (
+                                &listener_thread,                   /* new thread    */
+                                rpc_g_default_pthread_attr,         /* attributes    */
+                                (pthread_startroutine_t)lthread,   /* start routine */
+                                (pthread_addr_t)lstate);           /* arguments*/
+                            successful = true;
+                        }
+                    CATCH (pthread_in_use_e) {
+                        fprintf(stderr,"pthread_in_use_e after pthread_create listener thread");
+                        successful=false;
+                    }
+                    CATCH (exc_insfmem_e) {
+                        fprintf(stderr,"exc_insfmem_e after pthread_create listener thread");
+                        successful=false;
+                    }
+                    CATCH (pthread_use_error_e) {
+                        fprintf(stderr,"pthread_use_error_e after pthread_create listener thread");
+                    }
+                    CATCH (exc_nopriv_e) {
+                        fprintf(stderr,"exc_nopriv_e after pthread_create listener thread");
+                    }
+                    CATCH (pthread_unimp_e) {
+                        fprintf(stderr,"pthread_unimp_e after pthread_create listener thread");
+                    }
+                    CATCH (pthread_badparam_e) {
+                        fprintf(stderr,"pthread_badparam_e after pthread_create listener thread");
+                    }
+                    CATCH_ALL {
+                        fprintf(stderr,"unhandled exception after pthread_create listener thread");
+                    }
+                    ENDTRY;
+                }
             }
             RPC_MUTEX_UNLOCK (lstate->mutex);
             break;
