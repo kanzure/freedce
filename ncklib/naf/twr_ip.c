@@ -526,5 +526,10 @@ unsigned32        *status;
     *status = twr_s_ok;
 }
 #else 
-static int _naf_ip_dummy_ = 0 ;
+#ifdef GCC_VERSION
+#define FREEDCE_UNUSED __attribute__((unused))
+#else
+#define FREEDCE_UNUSED
+#endif
+static int _naf_ip_dummy_ FREEDCE_UNUSED = 0 ;
 #endif /* NAF_IP */
