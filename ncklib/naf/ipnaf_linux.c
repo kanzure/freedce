@@ -979,13 +979,26 @@ unsigned32 *status;
         goto free_rpc_addrs;
     }
 
-    RPC_MEM_ALLOC (
+    if (local_ip_addr_vec != NULL)
+    {
+      RPC_MEM_REALLOC (
         local_ip_addr_vec,
         rpc_ip_s_addr_vector_p_t,
         (sizeof *local_ip_addr_vec)
             + ((rpc_addr_vec->len - 1) * (sizeof (local_ip_addr_vec->elt[0]))),
         RPC_C_MEM_UTIL,
         RPC_C_MEM_WAITOK);
+    }else
+    {
+      RPC_MEM_ALLOC (
+        local_ip_addr_vec,
+        rpc_ip_s_addr_vector_p_t,
+        (sizeof *local_ip_addr_vec)
+            + ((rpc_addr_vec->len - 1) * (sizeof (local_ip_addr_vec->elt[0]))),
+        RPC_C_MEM_UTIL,
+        RPC_C_MEM_WAITOK);
+    }
+
     if (local_ip_addr_vec == NULL)
     {
         *status = rpc_s_no_memory;
