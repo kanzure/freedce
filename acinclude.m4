@@ -1,4 +1,4 @@
-dnl $Revision: 1.3 $
+dnl $Revision: 1.4 $
 AC_DEFUN(RPC_ARG_DEFINE,
 [
 AC_ARG_ENABLE($1,
@@ -67,13 +67,13 @@ test "$rpc_incdir_$2" = "no" && for i in $3; do
 		[rpc_incdir_$2="$i/include"
 		break])
 done])
-if test "rpc_incdir_$2" = "no"; then
+if test "$rpc_incdir_$2" = "no"; then
 	unset rpc_incdir_$2
 	$5
 else
-	test rpc_incdir_$2 = "none required" || {
+	test "$rpc_incdir_$2" = "none required" || {
 		AC_MSG_RESULT([found in $rpc_incdir_$2])
 	}
-	test rpc_incdir_$2 = "none required" && unset rpc_incdir_$2
+	test "$rpc_incdir_$2" = "none required" && unset rpc_incdir_$2
 	$4
 fi])

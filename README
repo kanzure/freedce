@@ -51,7 +51,7 @@ You might also need to add /opt/dce/lib to your /etc/ld.so.conf
 How to build your own programs that use DCE RPC
 -----------------------------------------------
 
-CFLAGS+=-D_REENTRANT _GNU_SOURCE
+CFLAGS+=-D_REENTRANT -D_GNU_SOURCE
 LDFLAGS+= -ldcethreads -lpthread
 If you are using the uuid library, you will also need:
 LDFLAGS+= -luuid -lstdc++

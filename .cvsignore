@@ -1,4 +1,5 @@
 Makefile
+Makefile.in
 acconfig.h
 aclocal.m4
 build-defs.h

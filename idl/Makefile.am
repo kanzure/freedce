@@ -36,16 +36,16 @@ BUILT_SOURCES=acf_y.c acf_l.c nidl_y.c nidl_l.c acf_y.h nidl_y.h
 # the idl compiler.
 
 acf_y.c acf_y.h:	acf_y.y
-	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/acf_y.y y.tab.c acf_y.c y.tab.h acf_y.h -- $(AM_YFLAGS) $(YFLAGS) -p acf_yy -d
+	$(YLWRAP) "$(YACC)" $(srcdir)/acf_y.y y.tab.c acf_y.c y.tab.h acf_y.h -- $(AM_YFLAGS) $(YFLAGS) -p acf_yy -d
 
 acf_l.c: acf_l.l
-	$(SHELL) $(YLWRAP) "$(LEX)" $(srcdir)/acf_l.l $(LEX_OUTPUT_ROOT).c acf_l.c -- $(AM_LFLAGS) $(LFLAGS) -Pacf_yy -o$(LEX_OUTPUT_ROOT).c
+	$(YLWRAP) "$(LEX)" $(srcdir)/acf_l.l $(LEX_OUTPUT_ROOT).c acf_l.c -- $(AM_LFLAGS) $(LFLAGS) -Pacf_yy -o$(LEX_OUTPUT_ROOT).c
 
 nidl_y.c nidl_y.h: nidl_y.y
-	$(SHELL) $(YLWRAP) "$(YACC)" $(srcdir)/nidl_y.y y.tab.c nidl_y.c y.tab.h nidl_y.h -- $(AM_YFLAGS) $(YFLAGS) -p nidl_yy -d
+	$(YLWRAP) "$(YACC)" $(srcdir)/nidl_y.y y.tab.c nidl_y.c y.tab.h nidl_y.h -- $(AM_YFLAGS) $(YFLAGS) -p nidl_yy -d
 
 nidl_l.c: nidl_l.l
-	$(SHELL) $(YLWRAP) "$(LEX)" $(srcdir)/nidl_l.l $(LEX_OUTPUT_ROOT).c nidl_l.c -- $(AM_LFLAGS) $(LFLAGS) -Pnidl_yy -o$(LEX_OUTPUT_ROOT).c
+	$(YLWRAP) "$(LEX)" $(srcdir)/nidl_l.l $(LEX_OUTPUT_ROOT).c nidl_l.c -- $(AM_LFLAGS) $(LFLAGS) -Pnidl_yy -o$(LEX_OUTPUT_ROOT).c
 
 # Ensure that YACC/LEX generated files go away during clean
 CLEANFILES=acf_y.o acf_y.c acf_l.o acf_l.c acf_y.h nidl_y.o nidl_y.c nidl_l.o nidl_l.c nidl_y.h

@@ -44,6 +44,7 @@
 #include <message.h>
 #include <nidlmsg.h>
 #include <driver.h>
+#include <stdarg.h>
 
 #define MAX_LINE_LEN    256
 #define WHERE_TEXT_LEN   20

@@ -6,3 +6,5 @@ Makefile.in
 *.tar.gz
 *.tgz
 .deps
+conv.h
+convc.h

@@ -1,6 +1,8 @@
 
+#include <stdio.h>
 #include <dce/rpc.h>
 #include <sys/time.h>
+#include <time.h>
 #include <errno.h>
 
 /*

@@ -7,7 +7,7 @@ case $target_cpu in
 	i?86)	target_cpu="i386";;
 esac
 
-AM_INIT_AUTOMAKE(freedce, 1.1.0.6)
+AM_INIT_AUTOMAKE(freedce, 1.1.0.7)
 
 AC_PREFIX_DEFAULT(/opt/dce)
 
