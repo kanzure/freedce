@@ -388,7 +388,7 @@ typedef enum {
 
 #if defined(ultrix) && defined(vax) && !defined(vaxc)
 #  if GFLOAT != 1
- #error \ 
+ #error \
 "RPC requires GFLOAT:RPC requires VAX G_float data format: build with -Mg option"
 #  endif/* GFLOAT */
 #endif /* ultrix && vax && ! vaxc */

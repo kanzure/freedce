@@ -21,6 +21,7 @@
 #endif
 #include <net/if.h>
 #include <sys/ioctl.h>          
+#include <stdlib.h>
 
 //
 // Invalid Host MAC Addresses
