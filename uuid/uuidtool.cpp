@@ -30,6 +30,8 @@
 
 #include "uuid.hpp"
 
+using namespace std;
+
 void mk_dce_idl_hdr();
 void mk_c_initializer();
 void test_ms_guid();
@@ -254,10 +256,10 @@ mk_c_initializer()
   intl = new_uuid.C_uuid();
   
   cout << "uuid_t foo = { /* uuid (" << new_uuid.String() << ") */" << endl;
-  cout << "  " << "0x" << hex(intl.time_low) << "," << "0x" << hex(intl.time_mid) << "," << 
-    "0x" << hex(intl.time_hi_and_version) << ",";
-  cout << "0x" << hex((int)intl.clock_seq_hi_and_reserved) << "," 
-       << "0x" << hex((int)intl.clock_seq_low) << ",";
+  cout << "  " << "0x" << hex << intl.time_low << "," << "0x" << hex << intl.time_mid << "," << 
+    "0x" << hex << intl.time_hi_and_version << ",";
+  cout << "0x" << hex << (int)intl.clock_seq_hi_and_reserved << "," 
+       << "0x" << hex << (int)intl.clock_seq_low << ",";
   
   //
   // print the 6 byte node id 
@@ -268,7 +270,7 @@ mk_c_initializer()
     {
       v = 0;
       v = intl.node[j];
-      cout << "0x" << hex(v);
+      cout << "0x" << hex << v;
       if (j < 5) cout << ", ";
     }
   cout << " }";
