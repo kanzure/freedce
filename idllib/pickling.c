@@ -37,6 +37,7 @@
 #include <ndrui.h>
 #include <dce/rpcsts.h>
 #include <lsysdep.h>
+#include <stdio.h>
 
 static rpc_syntax_id_t ndr_transfer_syntax_id = {
     {0x8a885d04, 0x1ceb, 0x11c9, 0x9f, 0xe8, {0x8, 0x0, 0x2b, 0x10, 0x48, 

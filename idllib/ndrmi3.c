@@ -38,6 +38,7 @@
 #include <dce/idlddefs.h>
 #include <ndrmi.h>
 #include <lsysdep.h>
+#include <stdio.h>
 
 /******************************************************************************/
 /*                                                                            */

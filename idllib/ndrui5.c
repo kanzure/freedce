@@ -38,6 +38,7 @@
 #include <ndrui.h>
 #include <lsysdep.h>
 #include <ndrmi.h>
+#include <stdio.h>
 
 /******************************************************************************/
 /*                                                                            */

@@ -37,6 +37,7 @@
 #include <dce/idlddefs.h>
 #include <ndrui.h>
 #include <lsysdep.h>
+#include <stdio.h>
 
 /*
  *  Forward function references
@@ -422,6 +423,7 @@ void rpc_ss_ndr_unmar_struct
                 offset_vec_ptr++;
                 rpc_ss_ndr_unmar_n_e_union( (idl_byte *)struct_addr+offset,
                                       field_defn_index, &switch_value, IDL_msp);
+		switch_value &= 0xffff; /* lkcl: XXX HACK! */
                 break;
             case IDL_DT_FULL_PTR:
                 defn_vec_ptr++;     /* Properties byte */
@@ -533,6 +535,7 @@ void rpc_ss_ndr_unmar_struct
                     be written from the cs-shadow */
                 rpc_ss_ndr_unmar_scalar(*defn_vec_ptr, 
                                         (rpc_void_p_t)&switch_value, IDL_msp);
+		switch_value &= 0xffff; /* lkcl: XXX HACK! */
                 defn_vec_ptr++;     /* Type of attribute */
                 offset_vec_ptr++;
                 break;
@@ -1948,6 +1951,7 @@ void rpc_ss_ndr_unmar_interp
                     IDL_GET_LONG_FROM_VECTOR(defn_index,type_vec_ptr);
                     rpc_ss_ndr_unmar_n_e_union( param_addr, defn_index,
                                                      &switch_value, IDL_msp);
+		    switch_value &= 0xffff; /* lkcl: XXX HACK! */
                     if (type_has_pointers)
                     {
                         rpc_ss_ndr_u_n_e_union_ptees( param_addr, switch_value,

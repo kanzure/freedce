@@ -5004,10 +5004,11 @@ static void arm_pointer
 #endif
     /* An arm of a union can't be or contain a [unique] pointer */
 
+#if 0 /* lkcl: XXX HACK: disable this and see what squeaks! */
     if (FE_TEST(type_p->fe_info->flags, FE_HAS_UNIQUE_PTR) ||
         AST_UNIQUE_SET(arm_p))
         CHECKER_error(arm_p, NIDL_ARMUNIQUEPTR);
-
+#endif
     /* [unique] attribute valid only for pointer or array types */
 
     if (AST_UNIQUE_SET(arm_p) && !pointer_attr_valid)

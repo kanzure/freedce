@@ -37,6 +37,7 @@
 #include <dce/idlddefs.h>
 #include <ndrmi.h>
 #include <lsysdep.h>
+#include <stdio.h>
 
 static void rpc_ss_ndr_m_f_or_c_arr_ptees
 (

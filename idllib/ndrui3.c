@@ -38,6 +38,7 @@
 #include <dce/idlddefs.h>
 #include <ndrui.h>
 #include <lsysdep.h>
+#include <stdio.h>
 
 /******************************************************************************/
 /*                                                                            */
@@ -225,6 +226,13 @@ static void rpc_ss_ndr_unmar_union_body
     idl_ulong_int defn_index;
     idl_ulong_int node_number;
 
+    /* lkcl: this is a total hack based on a mistake in MSRPC and an
+     * assumption that who the hell wants more than 65535 cases!
+     * we're truncating the switch value to a size of a short...
+     */
+
+    switch_value &= 0xffff; /* XXX HACK ALERT! */
+
     IDL_GET_LONG_FROM_VECTOR(arm_count, defn_vec_ptr);
     if ( ! rpc_ss_find_union_arm_defn(defn_vec_ptr, arm_count, switch_value,
                                                                 &arm_type_ptr,
@@ -233,7 +241,12 @@ static void rpc_ss_ndr_unmar_union_body
         /* Switch not matched. Is there a default clause? */
         defn_vec_ptr += arm_count * IDL_UNION_ARM_DESC_WIDTH;
         if (*defn_vec_ptr == IDL_DT_DOES_NOT_EXIST)
+	{
+		fprintf(stderr, "rpc_ss_ndr_unmar_union_body: switch %04lx not matched\n", switch_value);
+		fflush(stderr);
+
             RAISE( rpc_x_invalid_tag );
+	}
         else
             arm_type_ptr = defn_vec_ptr;
     }
@@ -462,6 +475,11 @@ void rpc_ss_ndr_u_enc_union_or_ptees
     }
     switch_value = (idl_ulong_int)rpc_ss_get_typed_integer(switch_type,
                                                            union_addr, IDL_msp);
+    switch_value &= 0xffff; /* XXX HACK ALERT! */
+    if (switch_type == IDL_DT_LONG)
+    {
+            (*(idl_long_int *)union_addr) = switch_value;
+    }
     offset_vec_ptr = IDL_msp->IDL_offset_vec + offset_index + 1;
                                             /* + 1 to skip over union size */
     body_addr = (rpc_void_p_t)((idl_byte *)union_addr + *offset_vec_ptr);
@@ -516,6 +534,7 @@ void rpc_ss_ndr_unmar_n_e_union
     *p_switch_value = rpc_ss_get_typed_integer(switch_type,
                                                (rpc_void_p_t)&switch_work_area,
                                                IDL_msp);
+    (*p_switch_value) &= 0xffff; /* lkcl: XXX HACK! */
     /* Unmarshall union */
     rpc_ss_ndr_unmar_union_body(defn_vec_ptr, *p_switch_value, union_addr,
                                                                       IDL_msp);
@@ -567,6 +586,7 @@ void rpc_ss_ndr_u_n_e_union_ptees
         rpc_ss_get_switch_from_data(switch_index, switch_type, struct_addr,
                                  struct_offset_vec_ptr, &switch_value, IDL_msp);
     
+    switch_value &= 0xffff; /* lkcl: XXX HACK! */
     rpc_ss_ndr_unmar_union_ptees(defn_vec_ptr, switch_value, union_addr,
                                                                       IDL_msp);
 }
