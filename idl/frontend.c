@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -419,7 +419,7 @@ static boolean parse_acf        /* Returns true on success */
         FILE_open(acf_file, &acf_yyin);
 
     if (acf_yyparse() != 0 && acf_yynerrs == 0)
-        log_error(acf_yylineno, NIDL_COMPABORT);
+        log_error(acf_yylineno, NIDL_COMPABORT, NULL);
 
     acf_cleanup();
 
@@ -668,7 +668,7 @@ static boolean parse
     yytext_p    = (char*)nidl_yytext;
 
     if (nidl_yyparse() != 0 && error_count == 0)
-        log_error(nidl_yylineno, NIDL_COMPABORT);
+        log_error(nidl_yylineno, NIDL_COMPABORT, NULL);
     *int_p = the_interface;
 
 #ifndef VMS
@@ -1133,3 +1133,5 @@ boolean FE_main                 /* Returns true on success */
 
     return status;
 }
+
+/* preserve coding style vim: set tw=78 sw=4 : */

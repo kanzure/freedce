@@ -278,7 +278,7 @@ interface_tail:
     |   error
         {
             $<y_interface>$ = NULL;
-            log_error(nidl_yylineno,NIDL_MISSONINTER);
+            log_error(nidl_yylineno,NIDL_MISSONINTER, NULL);
         }
     |   error RBRACE
         {
@@ -473,13 +473,13 @@ floating_point_type_spec:
 extraneous_comma:
         /* Nothing */
     |   COMMA
-        { log_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ",");}
+        { log_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ",", NULL);}
     ;
 
 extraneous_semi:
         /* Nothing */
     |   SEMI
-        { log_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ";");}
+        { log_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ";", NULL);}
     ;
 
 optional_unsigned_kw:
@@ -532,7 +532,7 @@ integer_type_spec:
         { $<y_type>$ = AST_lookup_integer_type_node($<y_int_info>1.int_size,$<y_int_info>1.int_signed); }
     |   optional_unsigned_kw INT_KW
         {
-            log_warning(nidl_yylineno,NIDL_INTSIZEREQ);
+            log_warning(nidl_yylineno,NIDL_INTSIZEREQ, NULL);
             $<y_type>$ = AST_lookup_integer_type_node(AST_long_integer_k,$<y_ival>1);
         }
     ;
@@ -744,13 +744,15 @@ union_member:
             {
                 ASTP_attr_flag_t attr1 = ASTP_CASE;
                 log_error(nidl_yylineno, NIDL_EUMEMATTR,
-                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)));
+                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
+		      NULL);
             }
             if (ASTP_TEST_ATTR(&$<y_attributes>1, ASTP_DEFAULT))
             {
                 ASTP_attr_flag_t attr1 = ASTP_DEFAULT;
                 log_error(nidl_yylineno, NIDL_EUMEMATTR,
-                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)));
+                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
+		      NULL);
             }
             $<y_arm>$ = AST_declarator_to_arm($<y_type>2,
                                 $<y_declarator>3, &$<y_attributes>1);
@@ -952,7 +954,7 @@ operation_dcl:
         }
     | error declarators
         {
-        log_error(nidl_yylineno,NIDL_MISSONOP);
+        log_error(nidl_yylineno,NIDL_MISSONOP, NULL);
         $<y_operation>$ = NULL;
         }
     ;
@@ -1031,7 +1033,7 @@ param_dcl:
         }
     |    error old_attribute_syntax declarator_or_null
         {
-            log_error(nidl_yylineno, NIDL_MISSONPARAM);
+            log_error(nidl_yylineno, NIDL_MISSONPARAM, NULL);
             $<y_parameter>$ = (AST_parameter_n_t *)NULL;
         }
     ;
@@ -1094,7 +1096,7 @@ old_attribute_syntax:
             if (($<y_attributes>1.bounds != NULL) ||
                ($<y_attributes>1.attr_flags != 0))
             {
-                log_error(nidl_yylineno,NIDL_ATTRTRANS);
+                log_error(nidl_yylineno,NIDL_ATTRTRANS, NULL);
                 ASTP_free_simple_list((ASTP_node_t *)$<y_attributes>1.bounds);
             }
         }
@@ -1111,7 +1113,7 @@ interface_attributes:
         attribute_opener interface_attr_list attribute_closer
     |   attribute_opener error attribute_closer
         {
-            log_error(nidl_yylineno,NIDL_ERRINATTR);
+            log_error(nidl_yylineno,NIDL_ERRINATTR, NULL);
         }
 
     |   /* Nothing */
@@ -1126,13 +1128,13 @@ interface_attr_list:
 interface_attr:
         UUID_KW error
         {
-            log_error(nidl_yylineno,NIDL_SYNTAXUUID);
+            log_error(nidl_yylineno,NIDL_SYNTAXUUID, NULL);
         }
     |   UUID_KW UUID_REP
         {
             {
                 if (ASTP_IF_AF_SET(the_interface,ASTP_IF_UUID))
-                        log_error(nidl_yylineno, NIDL_ATTRUSEMULT);
+                        log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
                 ASTP_SET_IF_AF(the_interface,ASTP_IF_UUID);
                 the_interface->uuid = $<y_uuid>2;
             }
@@ -1140,20 +1142,20 @@ interface_attr:
     |   ENDPOINT_KW LPAREN port_list RPAREN
         {
             if (ASTP_IF_AF_SET(the_interface,ASTP_IF_PORT))
-                    log_error(nidl_yylineno, NIDL_ATTRUSEMULT);
+                    log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
             ASTP_SET_IF_AF(the_interface,ASTP_IF_PORT);
         }
     |   EXCEPTIONS_KW LPAREN excep_list RPAREN
         {
             if (ASTP_IF_AF_SET(the_interface, ASTP_IF_EXCEPTIONS))
-                log_error(nidl_yylineno, NIDL_ATTRUSEMULT);
+                log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
             ASTP_SET_IF_AF(the_interface, ASTP_IF_EXCEPTIONS);
         }
     |   VERSION_KW LPAREN version_number RPAREN
         {
             {
                 if (ASTP_IF_AF_SET(the_interface,ASTP_IF_VERSION))
-                        log_error(nidl_yylineno, NIDL_ATTRUSEMULT);
+                        log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
                 ASTP_SET_IF_AF(the_interface,ASTP_IF_VERSION);
             }
 
@@ -1162,14 +1164,14 @@ interface_attr:
         {
             {
                 if (AST_LOCAL_SET(the_interface))
-                        log_warning(nidl_yylineno, NIDL_MULATTRDEF);
+                        log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
                 AST_SET_LOCAL(the_interface);
             }
         }
     |   POINTER_DEFAULT_KW LPAREN pointer_class RPAREN
         {
             if (interface_pointer_class != 0)
-                    log_error(nidl_yylineno, NIDL_ATTRUSEMULT);
+                    log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
             interface_pointer_class = $<y_ival>3;
         }
     ;
@@ -1185,7 +1187,8 @@ version_number:
         {
             the_interface->version = $<y_ival>1;
             if ($<y_ival>1 > /*(unsigned int)*/ASTP_C_USHORT_MAX)
-                log_error(nidl_yylineno, NIDL_MAJORTOOLARGE, ASTP_C_USHORT_MAX);
+                log_error(nidl_yylineno, NIDL_MAJORTOOLARGE,
+			  ASTP_C_USHORT_MAX, NULL);
         }
    |    FLOAT_NUMERIC
         {
@@ -1194,9 +1197,11 @@ version_number:
             STRTAB_str_to_string($<y_string>1, &float_text);
             sscanf(float_text,"%d.%d",&major_version,&minor_version);
             if (major_version > (unsigned int)ASTP_C_USHORT_MAX)
-                log_error(nidl_yylineno, NIDL_MAJORTOOLARGE, ASTP_C_USHORT_MAX);
+                log_error(nidl_yylineno, NIDL_MAJORTOOLARGE,
+			  ASTP_C_USHORT_MAX, NULL);
             if (minor_version > (unsigned int)ASTP_C_USHORT_MAX)
-                log_error(nidl_yylineno, NIDL_MINORTOOLARGE, ASTP_C_USHORT_MAX);
+                log_error(nidl_yylineno, NIDL_MINORTOOLARGE,
+			  ASTP_C_USHORT_MAX, NULL);
             the_interface->version = (minor_version * 65536) + major_version;
         }
     ;
@@ -1353,7 +1358,7 @@ rest_of_attribute_list:
          */
         $<y_attributes>$.bounds = NULL;
         $<y_attributes>$.attr_flags = 0;
-        log_error(nidl_yylineno, NIDL_ERRINATTR);
+        log_error(nidl_yylineno, NIDL_ERRINATTR, NULL);
         }
      |  error SEMI
         {
@@ -1362,7 +1367,7 @@ rest_of_attribute_list:
          */
         $<y_attributes>$.bounds = NULL;
         $<y_attributes>$.attr_flags = 0;
-        log_error(nidl_yylineno, NIDL_MISSONATTR);
+        log_error(nidl_yylineno, NIDL_MISSONATTR, NULL);
         search_attributes_table = false;
         }
      ;
@@ -1379,7 +1384,7 @@ attribute_list:
            * a message.
            */
           if (($<y_attributes>1.attr_flags & $<y_attributes>4.attr_flags) != 0)
-                log_warning(nidl_yylineno, NIDL_MULATTRDEF);
+                log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
           $<y_attributes>$.attr_flags = $<y_attributes>1.attr_flags |
                                         $<y_attributes>4.attr_flags;
           $<y_attributes>$.bounds = (ASTP_type_attr_n_t *) AST_concat_element (
@@ -1478,7 +1483,7 @@ attribute:
         {
                 char const *identifier; /* place to receive the identifier text */
                 NAMETABLE_id_to_string ($<y_id>1, &identifier);
-                log_error (nidl_yylineno, NIDL_UNKNOWNATTR, identifier);
+                log_error (nidl_yylineno, NIDL_UNKNOWNATTR, identifier, NULL);
                 $<y_attributes>$.attr_flags = 0;
                 $<y_attributes>$.bounds = NULL;
         }
@@ -1649,7 +1654,8 @@ additive_expression:
             $<y_exp>$.val.integer = $<y_exp>1.val.integer + $<y_exp>3.val.integer;
             if (($<y_exp>$.val.integer < $<y_exp>1.val.integer) &&
                 ($<y_exp>$.val.integer < $<y_exp>3.val.integer))
-                log_error (nidl_yylineno, NIDL_INTOVERFLOW, KEYWORDS_lookup_text(LONG_KW));
+                log_error (nidl_yylineno, NIDL_INTOVERFLOW,
+			   KEYWORDS_lookup_text(LONG_KW), NULL);
         }
    |    additive_expression MINUS multiplicative_expression
         {
@@ -1671,7 +1677,8 @@ multiplicative_expression:
             $<y_exp>$.val.integer = $<y_exp>1.val.integer * $<y_exp>3.val.integer;
             if (($<y_exp>$.val.integer < $<y_exp>1.val.integer) &&
                 ($<y_exp>$.val.integer < $<y_exp>3.val.integer))
-                log_error (nidl_yylineno, NIDL_INTOVERFLOW, KEYWORDS_lookup_text(LONG_KW));
+                log_error (nidl_yylineno, NIDL_INTOVERFLOW,
+			   KEYWORDS_lookup_text(LONG_KW), NULL);
         }
    |    multiplicative_expression SLASH cast_expression
         {
@@ -1681,7 +1688,7 @@ multiplicative_expression:
             if ($<y_exp>3.val.integer != 0)
                 $<y_exp>$.val.integer = $<y_exp>1.val.integer / $<y_exp>3.val.integer;
             else
-                log_error (nidl_yylineno, NIDL_INTDIVBY0);
+                log_error (nidl_yylineno, NIDL_INTDIVBY0, NULL);
         }
    |    multiplicative_expression PERCENT cast_expression
         {
@@ -1691,7 +1698,7 @@ multiplicative_expression:
             if ($<y_exp>3.val.integer != 0)
                 $<y_exp>$.val.integer = $<y_exp>1.val.integer % $<y_exp>3.val.integer;
             else
-                log_error (nidl_yylineno, NIDL_INTDIVBY0);
+                log_error (nidl_yylineno, NIDL_INTDIVBY0, NULL);
         }
    ;
 
@@ -1772,7 +1779,7 @@ primary_expression:
         {
             $<y_exp>$.type = AST_int_const_k;
             $<y_exp>$.val.integer = 0;
-            log_error(nidl_yylineno, NIDL_FLOATCONSTNOSUP);
+            log_error(nidl_yylineno, NIDL_FLOATCONSTNOSUP, NULL);
         }
    ;
 
@@ -1793,14 +1800,14 @@ primary_expression:
  *
  *
  *****************************************************************/
- 
+
 /*****************************************************************
  *
  * Data structure to store the state of a BISON lexxer context
  *
  *****************************************************************/
 
-struct nidl_bisonparser_state 
+struct nidl_bisonparser_state
   {
 
     /*
@@ -1817,19 +1824,19 @@ struct nidl_bisonparser_state
 
 
 typedef struct nidl_bisonparser_state nidl_bisonparser_activation_record;
- 
+
 /*****************************************************************
  *
  * Basic constructors/destructors for FLEX activation states
  *
  *****************************************************************/
- 
+
 void *
 new_nidl_bisonparser_activation_record()
   {
     return (malloc(sizeof(nidl_bisonparser_activation_record)));
   }
- 
+
 void
 delete_nidl_bisonparser_activation_record(void * p)
 {
@@ -1842,51 +1849,51 @@ delete_nidl_bisonparser_activation_record(void * p)
  * Get/Set/Initialize methods
  *
  *****************************************************************/
- 
+
 void *
 get_current_nidl_bisonparser_activation()
   {
     nidl_bisonparser_activation_record * p;
- 
+
     p = (nidl_bisonparser_activation_record * )
                 new_nidl_bisonparser_activation_record();
- 
+
     /*
      * save the statics internal to the parser
      *
      */
-   
-     p->yychar = yychar; 
+
+     p->yychar = yychar;
      p->yynerrs = yynerrs;
      p->yylval = yylval;
 
      return (void *)p;
   }
- 
+
 void
 set_current_nidl_bisonparser_activation(void * ptr)
   {
- 
-    nidl_bisonparser_activation_record * p = 
+
+    nidl_bisonparser_activation_record * p =
       (nidl_bisonparser_activation_record *)ptr;
- 
+
     // restore the statics
- 
-   
-     yychar = p->yychar; 
+
+
+     yychar = p->yychar;
      yynerrs = p->yynerrs;
      yylval = p->yylval;
 
- 
+
   }
 
 void
 init_new_nidl_bisonparser_activation()
   {
     // set some initial conditions for a new Bison parser state
-  
+
     yynerrs = 0;
-    
+
   }
 
-
+/* preserve coding style vim: set tw=78 sw=4 : */

@@ -6486,6 +6486,7 @@ boolean CHECKER_main            /* Returns TRUE on success */
 **          a la printf.
 */
 
+/* FIXME TODO change param list to va_list */
 void CHECKER_error
 (node_p, msgid, arg1, arg2, arg3, arg4, arg5)
     ASTP_node_t         *node_p;        /* [in] Ptr to an AST node */
@@ -6516,6 +6517,7 @@ void CHECKER_error
 **          a la printf.
 */
 
+/* FIXME TODO change param list to va_list */
 void CHECKER_warning
 (node_p, msgid, arg1, arg2, arg3, arg4, arg5)
     ASTP_node_t         *node_p;        /* [in] Ptr to an AST node */
@@ -6545,6 +6547,7 @@ void CHECKER_warning
 **          a la printf.
 */
 
+/* FIXME TODO change param list to va_list */
 void CHECKER_acf_error
 (node_p, msgid, arg1, arg2, arg3, arg4, arg5)
     ASTP_node_t         *node_p;        /* [in] Ptr to an AST node */
@@ -6580,6 +6583,7 @@ void CHECKER_acf_error
 **          a la printf.
 */
 
+/* FIXME TODO change param list to va_list */
 void CHECKER_acf_warning
 (node_p, msgid, arg1, arg2, arg3, arg4, arg5)
     ASTP_node_t         *node_p;        /* [in] Ptr to an AST node */

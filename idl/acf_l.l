@@ -184,7 +184,8 @@ other           .
                     char const *identifier;
                     id = NAMETABLE_add_id((char *)yytext);
                     NAMETABLE_id_to_string(id, &identifier);
-                    log_warning(acf_yylineno, NIDL_IDTOOLONG, identifier, MAX_ID);
+                    log_warning(acf_yylineno, NIDL_IDTOOLONG, identifier,
+				MAX_ID, NULL);
                     /* Truncate the string */
                     yytext[MAX_ID] = '\0';
                     id = NAMETABLE_add_id((char *)yytext);
@@ -222,7 +223,7 @@ static void acf_yymark()
 #ifdef VMS
                 (CMD_DCL_interface) ? "/PREPROCESS" :
 #endif
-                "-cpp_cmd");
+                "-cpp_cmd", NULL);
         }
     }
 
@@ -365,7 +366,7 @@ char * acf_keyword_lookup
  *
  *****************************************************************/
 
-struct acf_flexxer_state_data { 
+struct acf_flexxer_state_data {
 
   /*
    * flex statics - hidden from the outside world. These are
@@ -435,8 +436,8 @@ delete_acf_flexxer_activation_record(void * p)
   {
 
   /*
-   * Note: do not call acf_yy_delete_buffer() from here. 
-   * Always do it from acf_yywrap(). Otherwise, severe 
+   * Note: do not call acf_yy_delete_buffer() from here.
+   * Always do it from acf_yywrap(). Otherwise, severe
    * dementia and psychosis will occur.
    */
 
@@ -496,7 +497,7 @@ get_current_acf_flexxer_activation()
     p->yyleng = acf_yyleng;
     p->yytext = acf_yytext;
 
-    
+
     return (void *)p;
   }
 
@@ -523,7 +524,7 @@ set_current_acf_flexxer_activation(void * ptr)
      * FLEX 2.4 does have them though...
      */
 
-  #if (YY_FLEX_MAJOR_VERSION == 2) && (YY_FLEX_MINOR_VERSION == 4)    
+  #if (YY_FLEX_MAJOR_VERSION == 2) && (YY_FLEX_MINOR_VERSION == 4)
     yy_start_stack_ptr = p->yy_start_stack_ptr;
     yy_start_stack_depth = p->yy_start_stack_depth;
     yy_start_stack = p->yy_start_stack;
@@ -540,7 +541,7 @@ set_current_acf_flexxer_activation(void * ptr)
     acf_yylineno = p->yylineno;
     acf_yylval = p->yylval;
     acf_yyleng = p->yyleng;
-    acf_yytext = p->yytext; 
+    acf_yytext = p->yytext;
 
 
   }
@@ -548,7 +549,7 @@ set_current_acf_flexxer_activation(void * ptr)
 void
 init_new_acf_flexxer_activation()
   {
-    
+
     /*
      * set some initial conditions for a new FLEXER state
      * These were gleaned by looking at the compile-time 
@@ -576,5 +577,4 @@ init_new_acf_flexxer_activation()
 #endif /* FLEX_SCANNER */
 
  /** End of "lex" source file. **/
-
-
+/* preserve coding style vim: set tw=78 sw=4 : */

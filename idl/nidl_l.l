@@ -72,7 +72,7 @@ static int yywrap(void)
     * are FLEX interfaces to the internal buffering system.
     */
 
-   nidl_yy_delete_buffer(yy_current_buffer); 
+   nidl_yy_delete_buffer(yy_current_buffer);
    nidl_yylineno = 1;
    return 1;
 }
@@ -218,9 +218,9 @@ other           .
 "~"             {return(TILDE);}
 
 ^"#".*\n            { yymark() ;}
-^"%"(c|C){ws}\n     { log_error(nidl_yylineno-1,NIDL_USETRANS); }
-^"%pascal"{ws}\n    { log_error(nidl_yylineno-1,NIDL_USETRANS); }
-^"%PASCAL"{ws}\n    { log_error(nidl_yylineno-1,NIDL_USETRANS); }
+^"%"(c|C){ws}\n     { log_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
+^"%pascal"{ws}\n    { log_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
+^"%PASCAL"{ws}\n    { log_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
 
 '\\''   {
     /* Simple escaped single quote character literal */
@@ -237,7 +237,7 @@ other           .
 '\\[^'\n]*' {
     /* Character constants with an escape */
     if ((yyleng > 6) || (yyleng < 4)) {
-          log_error(nidl_yylineno, NIDL_INVCHARLIT);
+          log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
           return(UNKNOWN);
     }
     switch (yytext[2]) {
@@ -256,11 +256,11 @@ other           .
             /* Hex literal value */
             int char_value;
             if (sscanf((char *)&yytext[3],"%x",&char_value) != 1)
-                log_error(nidl_yylineno, NIDL_INVCHARLIT);
+                log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
             else
             {
                 nidl_yylval.y_char = (char )char_value;
-                log_warning(nidl_yylineno, NIDL_NONPORTCHAR);
+                log_warning(nidl_yylineno, NIDL_NONPORTCHAR, NULL);
             }
             break;
         }
@@ -274,17 +274,17 @@ other           .
             /* Octal literal value */
             int char_value;
             if (sscanf((char *)&yytext[2],"%o",&char_value) != 1)
-                log_error(nidl_yylineno, NIDL_INVCHARLIT);
+                log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
             else
             {
                 nidl_yylval.y_char = (char )char_value;
-                log_warning(nidl_yylineno, NIDL_NONPORTCHAR);
+                log_warning(nidl_yylineno, NIDL_NONPORTCHAR, NULL);
             }
             break;
         }
         default:
             /* all others are illegal */
-            log_error(nidl_yylineno, NIDL_INVCHARLIT);
+            log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
             return(UNKNOWN);
     }
 
@@ -298,7 +298,7 @@ other           .
     else {
     nidl_yylval.y_string = STRTAB_add_string((char *)&yytext[1]);
         if (input() == '\n')
-            log_error(nidl_yylineno, NIDL_STRUNTERM);
+            log_error(nidl_yylineno, NIDL_STRUNTERM, NULL);
         return(STRING);
     }
 }
@@ -314,7 +314,7 @@ other           .
         char const *identifier;
         id = NAMETABLE_add_id((char *)yytext);
         NAMETABLE_id_to_string(id, &identifier);
-        log_warning(nidl_yylineno, NIDL_IDTOOLONG, identifier, MAX_ID);
+        log_warning(nidl_yylineno, NIDL_IDTOOLONG, identifier, MAX_ID, NULL);
         /* Truncate the string */
         yytext[MAX_ID] = '\0';
         id = NAMETABLE_add_id((char *)yytext);
@@ -379,12 +379,14 @@ other           .
         || (fval > (FLOAT)ASTP_C_ULONG_MAX)
         || (fval < (FLOAT)ASTP_C_ULONG_MIN)
         ))
-        log_error(nidl_yylineno, NIDL_INTOVERFLOW, KEYWORDS_lookup_text(LONG_KW));
+        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+		  KEYWORDS_lookup_text(LONG_KW), NULL);
     else if ((strlen((char *)yytext) > 11) ||
         (fval > (FLOAT)ASTP_C_LONG_MAX) ||
         (fval < (FLOAT)ASTP_C_LONG_MIN)
         )
-        log_error(nidl_yylineno, NIDL_INTOVERFLOW, KEYWORDS_lookup_text(LONG_KW));
+        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+		  KEYWORDS_lookup_text(LONG_KW), NULL);
     else {
         sscanf((char *)yytext, "%ld", &nidl_yylval.y_ival);
     }
@@ -395,7 +397,7 @@ other           .
         STRTAB_str_t string_id;         /* Entry in string table of integer */
         string_id = STRTAB_add_string(yytext_p);
         STRTAB_str_to_string(string_id, &int_text);
-        log_error(nidl_yylineno, NIDL_INVOCTDIGIT, int_text);
+        log_error(nidl_yylineno, NIDL_INVOCTDIGIT, int_text, NULL);
     }
 
     return(INTEGER_NUMERIC);
@@ -440,7 +442,7 @@ other           .
 
 void commenteof()
 {
-    log_error (nidl_yylineno, NIDL_COMMENTEOF);
+    log_error (nidl_yylineno, NIDL_COMMENTEOF, NULL);
     nidl_terminate();
 }
 
@@ -461,7 +463,7 @@ static void yymark()
 #ifdef VMS
                 (CMD_DCL_interface) ? "/PREPROCESS" :
 #endif
-                "-cpp_cmd");
+                "-cpp_cmd", NULL);
         }
     }
 
@@ -518,7 +520,7 @@ nidl_uuid_t *uuid;
               &v1_time_high, &v1_time_low, &v1_family,
               &v1_host[0], &v1_host[1], &v1_host[2], &v1_host[3],
               &v1_host[4], &v1_host[5], &v1_host[6]) != 10)
-        log_error(nidl_yylineno, NIDL_SYNTAXUUID);
+        log_error(nidl_yylineno, NIDL_SYNTAXUUID, NULL);
 
     /* scanf only returns ints, so scan into ints and copy into smaller types */
     uuid->time_low                  = v1_time_high;
@@ -538,8 +540,8 @@ nidl_uuid_t *uuid;
               uuid->node[0], uuid->node[1], uuid->node[2],
               uuid->node[3], uuid->node[4], uuid->node[5]);
 
-    log_warning(nidl_yylineno, NIDL_OLDUUID);
-    log_warning(nidl_yylineno, NIDL_NEWUUID, uuid_str);
+    log_warning(nidl_yylineno, NIDL_OLDUUID, NULL);
+    log_warning(nidl_yylineno, NIDL_NEWUUID, uuid_str, NULL);
     return (UUID_REP) ;
 }
 
@@ -557,7 +559,7 @@ nidl_uuid_t *uuid;
               &clock_seq_hi_and_reserved, &clock_seq_low,
               &node[0], &node[1], &node[2],
               &node[3], &node[4], &node[5]) != 11)
-        log_error(nidl_yylineno, NIDL_SYNTAXUUID);
+        log_error(nidl_yylineno, NIDL_SYNTAXUUID, NULL);
 
     /* scanf only returns ints, so scan into ints and copy into smaller types */
     uuid->time_low = time_low;
@@ -591,16 +593,16 @@ nidl_uuid_t *uuid;
  *    These are helpful for conditionally compiling in support for
  *    several vintages of FLEX.
  *
- * 
+ *
  *****************************************************************/
 
 /*****************************************************************
- * 
+ *
  * Data structure to store the state of a FLEX lexxer context
  *
  *****************************************************************/
 
-struct nidl_flexxer_state_data { 
+struct nidl_flexxer_state_data {
 
 /*
    * flex statics - hidden from the outside world. These are
@@ -610,10 +612,10 @@ struct nidl_flexxer_state_data {
    * the exact set of static variables that FLEX generates may be
    * different than is what is defined here. In that case, generate
    * the lexxer (i.e. flex nidl.l), grep the resulting generated C
-   * flexxer for the word 'static'. You can then determine what 
+   * flexxer for the word 'static'. You can then determine what
    * variables are new, dont exist, or have been renamed. Another
    * alternative for learning the names of all the static and global
-   * variables used by the flexxer - is to compile the stub and 
+   * variables used by the flexxer - is to compile the stub and
    * examine the object table dump (i.e using nm(1) on the .o file).
    *
    */
@@ -691,7 +693,7 @@ void *
 get_current_nidl_flexxer_activation()
   {
     nidl_flexxer_activation_record * p;
-    
+
     p = (nidl_flexxer_activation_record * )
                 new_nidl_flexxer_activation_record();
 
@@ -735,7 +737,7 @@ get_current_nidl_flexxer_activation()
     p->yyleng = nidl_yyleng;
     p->yytext = nidl_yytext;
 
-    
+
     return (void *)p;
   }
 
@@ -759,7 +761,7 @@ set_current_nidl_flexxer_activation(void * ptr)
     yy_last_accepting_cpos = p->yy_last_accepting_cpos;
     yy_more_flag = p->yy_more_flag;
     yy_more_len = p->yy_more_len;
- 
+
     /* FLEX 2.5 does not have these variables.
      * FLEX 2.4 does have them though...
      */
@@ -769,7 +771,7 @@ set_current_nidl_flexxer_activation(void * ptr)
     yy_start_stack_depth = p->yy_start_stack_depth;
     yy_start_stack = p->yy_start_stack;
   #endif
-   
+
     /*
      * save the globals, these are visible outside the scope
      * of the lexxer
@@ -781,7 +783,7 @@ set_current_nidl_flexxer_activation(void * ptr)
     nidl_yylineno = p->yylineno;
     nidl_yylval = p->yylval;
     nidl_yyleng = p->yyleng;
-    nidl_yytext = p->yytext; 
+    nidl_yytext = p->yytext;
 
 
   }
@@ -822,15 +824,9 @@ init_new_nidl_flexxer_activation(void)
     nidl_yyout = NULL;
     nidl_yylineno = 1;
     nidl_yyleng = 0;
-    
+
 
   }
 
 #endif /* FLEX_SCANNER */
-
-
-
-
-
-
-
+/* preserve coding style vim: set tw=78 sw=4 : */

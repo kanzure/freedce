@@ -407,7 +407,7 @@ AST_parameter_n_t  *AST_declarator_to_param
     {
         char const *identifier;
         NAMETABLE_id_to_string(declarator->name, &identifier);
-        log_error(nidl_yylineno, NIDL_ANONTYPE, identifier);
+        log_error(nidl_yylineno, NIDL_ANONTYPE, identifier, NULL);
     }
 
     /*
@@ -497,7 +497,7 @@ AST_type_n_t *AST_enumerator_node
      * If there was an overflow, log the error message
      */
     if (overflow)
-        log_error(nidl_yylineno, NIDL_TOOMANYELEM, "enum") ;
+        log_error(nidl_yylineno, NIDL_TOOMANYELEM, "enum", NULL) ;
 
 
     /*
@@ -669,7 +669,7 @@ AST_constant_n_t *AST_finish_constant_node
                         (constant_ptr->value.int_val < ASTP_C_SMALL_MIN))
                     {
                         log_error(nidl_yylineno, NIDL_INTOVERFLOW,
-                            KEYWORDS_lookup_text(SMALL_KW));
+                            KEYWORDS_lookup_text(SMALL_KW), NULL);
                     }
                     break;
                 case AST_small_unsigned_k:
@@ -677,7 +677,7 @@ AST_constant_n_t *AST_finish_constant_node
                         (constant_ptr->value.int_val < ASTP_C_USMALL_MIN))
                     {
                         log_error(nidl_yylineno, NIDL_INTOVERFLOW,
-                            KEYWORDS_lookup_text(SMALL_KW));
+                            KEYWORDS_lookup_text(SMALL_KW), NULL);
                     }
                     break;
                 case AST_short_integer_k:
@@ -685,7 +685,7 @@ AST_constant_n_t *AST_finish_constant_node
                         (constant_ptr->value.int_val < ASTP_C_SHORT_MIN))
                     {
                         log_error(nidl_yylineno, NIDL_INTOVERFLOW,
-                            KEYWORDS_lookup_text(SHORT_KW));
+                            KEYWORDS_lookup_text(SHORT_KW), NULL);
                     }
                     break;
                 case AST_short_unsigned_k:
@@ -693,7 +693,7 @@ AST_constant_n_t *AST_finish_constant_node
                         (constant_ptr->value.int_val < ASTP_C_USHORT_MIN))
                     {
                         log_error(nidl_yylineno, NIDL_INTOVERFLOW,
-                            KEYWORDS_lookup_text(SHORT_KW));
+                            KEYWORDS_lookup_text(SHORT_KW), NULL);
                     }
                     break;
                 case AST_long_integer_k:
@@ -701,7 +701,7 @@ AST_constant_n_t *AST_finish_constant_node
                         (constant_ptr->value.int_val < ASTP_C_LONG_MIN))
                     {
                         log_error(nidl_yylineno, NIDL_INTOVERFLOW,
-                            KEYWORDS_lookup_text(LONG_KW));
+                            KEYWORDS_lookup_text(LONG_KW), NULL);
                     }
                     break;
                 case AST_long_unsigned_k:
@@ -712,14 +712,14 @@ AST_constant_n_t *AST_finish_constant_node
 								)
                     {
                         log_error(nidl_yylineno, NIDL_INTOVERFLOW,
-                            KEYWORDS_lookup_text(LONG_KW));
+                            KEYWORDS_lookup_text(LONG_KW), NULL);
                     }
                     break;
 
                 case AST_hyper_integer_k:
                 case AST_hyper_unsigned_k:
                     /* Not currently supported */
-                    log_error (nidl_yylineno, NIDL_HYPERCONST);
+                    log_error (nidl_yylineno, NIDL_HYPERCONST, NULL);
                     break;
 
                 default:
@@ -767,7 +767,7 @@ AST_constant_n_t *AST_finish_constant_node
 
     if (type_check_failed == true)
     {
-        log_error (nidl_yylineno, NIDL_CONSTTYPE);
+        log_error (nidl_yylineno, NIDL_CONSTTYPE, NULL);
     }
 
     /* Free the declarator node */
@@ -986,10 +986,10 @@ AST_exception_n_t *AST_exception_node
             char const *filename;
             STRTAB_str_to_string(binding->fe_info->file, &filename);
             log_error(nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
-                      filename, binding->fe_info->source_line);
+                      filename, binding->fe_info->source_line, NULL);
         }
         else
-            log_error(nidl_yylineno, NIDL_NAMEALRDEC, identifier);
+            log_error(nidl_yylineno, NIDL_NAMEALRDEC, identifier, NULL);
         return NULL;
     }
 
@@ -1442,7 +1442,7 @@ AST_operation_n_t *AST_operation_node
     {
         char const *var_name;
         NAMETABLE_id_to_string(declarator->name, &var_name);
-        log_error(nidl_yylineno, NIDL_VARDECLNOSUP, var_name);
+        log_error(nidl_yylineno, NIDL_VARDECLNOSUP, var_name, NULL);
         return NULL;
     }
 
@@ -1530,7 +1530,7 @@ AST_operation_n_t *AST_operation_node
     {
         char const *identifier;
         NAMETABLE_id_to_string(operation_node_p->name, &identifier);
-        log_error(nidl_yylineno, NIDL_ANONTYPE, identifier);
+        log_error(nidl_yylineno, NIDL_ANONTYPE, identifier, NULL);
     }
 
 
@@ -1721,7 +1721,7 @@ void ASTP_parse_port
     if (protocol_end == NULL)
     {
         /* warn that no endpoint was found */
-        log_warning(1,NIDL_NOENDPOINT,protocol_start);
+        log_warning(1,NIDL_NOENDPOINT,protocol_start, NULL);
         protocol_id = STRTAB_add_string(protocol_start);
         endpoint_id = STRTAB_NULL_STR;
     }
@@ -1747,7 +1747,7 @@ void ASTP_parse_port
             endpoint_end = strchr(endpoint_start,']');  /* Find the close bracket on endpoint field */
             if (endpoint_end == NULL)
             {
-                log_warning(1,NIDL_ENDPOINTSYNTAX,endpoint_start);
+                log_warning(1,NIDL_ENDPOINTSYNTAX,endpoint_start, NULL);
                 protocol_id = STRTAB_add_string(protocol_start);
                 endpoint_id = STRTAB_NULL_STR;
             }
@@ -1759,13 +1759,13 @@ void ASTP_parse_port
                 /* warn that no endpoint was found */
                 if (endpoint_buf[0] == '\0')
                 {
-                    log_warning(1,NIDL_NOENDPOINT,protocol_start);
+                    log_warning(1,NIDL_NOENDPOINT,protocol_start, NULL);
                 }
             }
         }
         else {
             endpoint_id = STRTAB_add_string(endpoint_start);
-            log_warning(1,NIDL_ENDPOINTSYNTAX,endpoint_start);
+            log_warning(1,NIDL_ENDPOINTSYNTAX,endpoint_start, NULL);
         }
     }
 
@@ -1777,7 +1777,7 @@ void ASTP_parse_port
         if (interface_p->protocol[i] == protocol_id)
         {
             found = true;
-            log_warning(1,NIDL_DUPPROTOCOL,protocol_start);
+            log_warning(1,NIDL_DUPPROTOCOL,protocol_start, NULL);
         }
     }
 
@@ -2254,5 +2254,4 @@ AST_type_n_t *AST_pipe_node
 
 
 /*---------------------------------------------------------------------*/
-
-
+/* preserve coding style vim: set tw=78 sw=4 : */

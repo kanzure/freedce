@@ -1,5 +1,5 @@
 /*
- *  
+ *
  *  (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  *  (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  *  (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  *  Packard Company, nor Digital Equipment Corporation makes any
  *  representations about the suitability of this software for any
  *  purpose.
- *  
+ *
  */
 
 /*
@@ -168,6 +168,7 @@ static void process_cs_char_type(AST_interface_n_t *, AST_type_n_t *, char const
 **              it to be called with 1 to 6 arguments.
 */
 
+/* FIXME TODO change param list to va_list */
 static void acf_error(msgid, arg1, arg2, arg3, arg4, arg5)
     long    msgid;              /* [in] Message id */
     char    *arg1;              /* [in] 0 to 5 arguments to fill in message */
@@ -190,6 +191,7 @@ static void acf_error(msgid, arg1, arg2, arg3, arg4, arg5)
 **              it to be called with 1 to 6 arguments.
 */
 
+/* FIXME TODO change param list to va_list */
 static void acf_warning(msgid, arg1, arg2, arg3, arg4, arg5)
     long    msgid;              /* [in] Message id */
     char    *arg1;              /* [in] 0 to 5 arguments to fill in message */
@@ -415,61 +417,61 @@ acf_interface_attr:
         acf_code_attr
     {
         if (interface_attr.bit.code)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         interface_attr.bit.code = TRUE;
     }
     |   acf_nocode_attr
     {
         if (interface_attr.bit.nocode)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         interface_attr.bit.nocode = TRUE;
     }
     |   acf_binding_callout_attr
     {
         if (interface_attr.bit.binding_callout)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT);
+            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         interface_attr.bit.binding_callout = TRUE;
     }
     |   acf_cs_tag_rtn_attr
     {
         if (interface_attr.bit.cs_tag_rtn)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT);
+            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         interface_attr.bit.cs_tag_rtn = TRUE;
     }
     |   acf_explicit_handle_attr
     {
         if (interface_attr.bit.explicit_handle)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         interface_attr.bit.explicit_handle = TRUE;
     }
     |   acf_inline_attr
     {
         if (interface_attr.bit.in_line)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         interface_attr.bit.in_line = TRUE;
     }
     |   acf_outofline_attr
     {
         if (interface_attr.bit.out_of_line)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         interface_attr.bit.out_of_line = TRUE;
     }
     |   acf_implicit_handle_attr
     {
         if (interface_attr.bit.implicit_handle)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT);
+            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         interface_attr.bit.implicit_handle = TRUE;
     }
     |   acf_auto_handle_attr
     {
         if (interface_attr.bit.auto_handle)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         interface_attr.bit.auto_handle = TRUE;
     }
     |   acf_extern_exceps_attr
     {
         if (interface_attr.bit.extern_exceps)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         interface_attr.bit.extern_exceps = TRUE;
     }
     |   IDENTIFIER
@@ -477,17 +479,17 @@ acf_interface_attr:
         if (NAMETABLE_add_id("decode") == $<y_id>1)
         {
             if (interface_attr.bit.decode)
-                log_warning(acf_yylineno, NIDL_MULATTRDEF);
+                log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
             interface_attr.bit.decode = TRUE;
         }
         else if (NAMETABLE_add_id("encode") == $<y_id>1)
         {
             if (interface_attr.bit.encode)
-                log_warning(acf_yylineno, NIDL_MULATTRDEF);
+                log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
             interface_attr.bit.encode = TRUE;
         }
         else
-            log_error(acf_yylineno, NIDL_ERRINATTR);
+            log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
     }
     ;
 
@@ -565,9 +567,9 @@ acf_interface_body:
         LBRACE acf_body_elements RBRACE
     |   LBRACE RBRACE
     |   error
-        { log_error(acf_yylineno, NIDL_SYNTAXERR); }
+        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     |   error RBRACE
-        { log_error(acf_yylineno, NIDL_SYNTAXERR); }
+        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     ;
 
 acf_body_elements:
@@ -581,7 +583,7 @@ acf_body_element:
     |   acf_operation_declaration SEMI
     |   error SEMI
         {
-            log_error(acf_yylineno, NIDL_SYNTAXERR);
+            log_error(acf_yylineno, NIDL_SYNTAXERR, NULL);
             /* Re-initialize attr masks to avoid sticky attributes */
             interface_attr.mask = 0;
             type_attr.mask      = 0;
@@ -600,7 +602,7 @@ acf_include:
         include_list = NULL;
         }
     |   INCLUDE_KW error
-        { log_error(acf_yylineno, NIDL_SYNTAXERR); }
+        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     ;
 
 acf_include_list:
@@ -653,7 +655,7 @@ acf_include_name:
 
 acf_type_declaration:
         TYPEDEF_KW error
-        { log_error(acf_yylineno, NIDL_SYNTAXERR); }
+        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     |   TYPEDEF_KW acf_type_attr_list acf_named_type_list
     {
         type_attr.mask = 0;             /* Reset attribute mask */
@@ -732,11 +734,11 @@ acf_rest_of_attr_list:
         acf_type_attrs RBRACKET
     |   error SEMI
         {
-        log_error(acf_yylineno, NIDL_MISSONATTR);
+        log_error(acf_yylineno, NIDL_MISSONATTR, NULL);
         }
     |   error RBRACKET
         {
-        log_error(acf_yylineno, NIDL_ERRINATTR);
+        log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
         }
     ;
 
@@ -749,31 +751,31 @@ acf_type_attr:
         acf_represent_attr
     {
         if (type_attr.bit.represent_as)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT);
+            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         type_attr.bit.represent_as = TRUE;
     }
     |   acf_cs_char_attr
     {
         if (type_attr.bit.cs_char)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT);
+            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         type_attr.bit.cs_char = TRUE;
     }
     |   acf_heap_attr
     {
         if (type_attr.bit.heap)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         type_attr.bit.heap = TRUE;
     }
     |   acf_inline_attr
     {
         if (type_attr.bit.in_line)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         type_attr.bit.in_line = TRUE;
     }
     |   acf_outofline_attr
     {
         if (type_attr.bit.out_of_line)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         type_attr.bit.out_of_line = TRUE;
     }
     ;
@@ -982,43 +984,43 @@ acf_op_attr:
         acf_commstat_attr
     {
         if (operation_attr.bit.comm_status)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         operation_attr.bit.comm_status = TRUE;
     }
     |   acf_code_attr
     {
         if (operation_attr.bit.code)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         operation_attr.bit.code = TRUE;
     }
     |   acf_nocode_attr
     {
         if (operation_attr.bit.nocode)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         operation_attr.bit.nocode = TRUE;
     }
     |   acf_cs_tag_rtn_attr
     {
         if (operation_attr.bit.cs_tag_rtn)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT);
+            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         operation_attr.bit.cs_tag_rtn = TRUE;
     }
     |   acf_enable_allocate_attr
     {
         if (operation_attr.bit.enable_allocate)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         operation_attr.bit.enable_allocate = TRUE;
     }
     |   acf_explicit_handle_attr
     {
         if (operation_attr.bit.explicit_handle)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         operation_attr.bit.explicit_handle = TRUE;
     }
     |   acf_faultstat_attr
     {
         if (operation_attr.bit.fault_status)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         operation_attr.bit.fault_status = TRUE;
     }
     |   IDENTIFIER
@@ -1026,17 +1028,17 @@ acf_op_attr:
         if (NAMETABLE_add_id("decode") == $<y_id>1)
         {
             if (operation_attr.bit.decode)
-                log_warning(acf_yylineno, NIDL_MULATTRDEF);
+                log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
             operation_attr.bit.decode = TRUE;
         }
         else if (NAMETABLE_add_id("encode") == $<y_id>1)
         {
             if (operation_attr.bit.encode)
-                log_warning(acf_yylineno, NIDL_MULATTRDEF);
+                log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
             operation_attr.bit.encode = TRUE;
         }
         else
-            log_error(acf_yylineno, NIDL_ERRINATTR);
+            log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
     }
     ;
 
@@ -1125,31 +1127,31 @@ acf_param_attr:
         acf_commstat_attr
     {
         if (parameter_attr.bit.comm_status)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         parameter_attr.bit.comm_status = TRUE;
     }
     |   acf_faultstat_attr
     {
         if (parameter_attr.bit.fault_status)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         parameter_attr.bit.fault_status = TRUE;
     }
     |   acf_heap_attr
     {
         if (parameter_attr.bit.heap)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         parameter_attr.bit.heap = TRUE;
     }
     |   acf_inline_attr
     {
         if (parameter_attr.bit.in_line)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         parameter_attr.bit.in_line = TRUE;
     }
     |   acf_outofline_attr
     {
         if (parameter_attr.bit.out_of_line)
-            log_warning(acf_yylineno, NIDL_MULATTRDEF);
+            log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
         parameter_attr.bit.out_of_line = TRUE;
     }
     |   IDENTIFIER
@@ -1157,23 +1159,23 @@ acf_param_attr:
         if (NAMETABLE_add_id("cs_stag") == $<y_id>1)
         {
             if (parameter_attr.bit.cs_stag)
-                log_warning(acf_yylineno, NIDL_MULATTRDEF);
+                log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
             parameter_attr.bit.cs_stag = TRUE;
         }
         else if (NAMETABLE_add_id("cs_drtag") == $<y_id>1)
         {
             if (parameter_attr.bit.cs_drtag)
-                log_warning(acf_yylineno, NIDL_MULATTRDEF);
+                log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
             parameter_attr.bit.cs_drtag = TRUE;
         }
         else if (NAMETABLE_add_id("cs_rtag") == $<y_id>1)
         {
             if (parameter_attr.bit.cs_rtag)
-                log_warning(acf_yylineno, NIDL_MULATTRDEF);
+                log_warning(acf_yylineno, NIDL_MULATTRDEF, NULL);
             parameter_attr.bit.cs_rtag = TRUE;
         }
         else
-            log_error(acf_yylineno, NIDL_ERRINATTR);
+            log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
     }
     ;
 
@@ -2138,49 +2140,51 @@ delete_acf_bisonparser_activation_record(void * p)
  * Get/Set/Initialize methods
  *
  *****************************************************************/
- 
+
 void *
 get_current_acf_bisonparser_activation()
   {
     acf_bisonparser_activation_record * p;
- 
+
     p = (acf_bisonparser_activation_record * )
                 new_acf_bisonparser_activation_record();
- 
+
     /*
      * save the statics internal to the parser
      *
      */
-   
-     p->yychar = yychar; 
+
+     p->yychar = yychar;
      p->yynerrs = yynerrs;
      p->yylval = yylval;
 
      return (void *)p;
   }
- 
+
 void
 set_current_acf_bisonparser_activation(void * ptr)
   {
- 
-    acf_bisonparser_activation_record * p = 
+
+    acf_bisonparser_activation_record * p =
       (acf_bisonparser_activation_record *)ptr;
- 
+
     /* restore the statics */
- 
-   
-     yychar = p->yychar; 
+
+
+     yychar = p->yychar;
      yynerrs = p->yynerrs;
      yylval = p->yylval;
 
- 
+
   }
 
 void
 init_new_acf_bisonparser_activation()
   {
     /* set some initial conditions for a new Bison parser state */
-  
+
     yynerrs = 0;
-    
+
   }
+
+/* preserve coding style vim: set tw=78 sw=4 : */

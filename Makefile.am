@@ -5,7 +5,7 @@ include $(top_srcdir)/include.mk
 # it can use the idl compiler to generate headers for use when building the
 # rest of the rpc code.
 
-SUBDIRS=include idl include idllib uuid ncklib dcelib rpcd demos .
+SUBDIRS=include idl include idllib uuid ncklib dcelib rpcd dcom demos .
 
 EXTRA_DIST=include.mk perf/*
 

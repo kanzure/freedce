@@ -59,7 +59,7 @@ typedef struct error_log_rec_t
     STRTAB_str_t filename;      /* Error file name */
     int     lineno;            /* Source line number */
     long    msg_id;             /* Message identifer */
-    char    *arg1, *arg2, *arg3, *arg4, *arg5;  /* Error Arguments */
+    idl_error_list_t msgs;      /* msgid + args */
     union                       /* Tree node or List node */
     {
         struct
@@ -96,11 +96,7 @@ static  char const *current_file   = NULL;     /* Current source file name */
         int     error_count     = 0;        /* Error count */
         STRTAB_str_t    error_file_name_id; /* Id of current source file */
 
-extern void sysdep_cleanup_temp (
-#ifdef PROTO
-    void
-#endif
-);
+extern void sysdep_cleanup_temp ( void );
 
 /*
  *  y y w h e r e
@@ -186,15 +182,9 @@ void yywhere
  */
 
 void yyerror
-#ifdef PROTO
 (
-    char *message
+    char const *message
 )
-#else
-(message)
-    char *message;
-#endif
-
 {
     static int list = 0;        /* Note: Currently always 0 */
 
@@ -254,29 +244,12 @@ void acf_yyerror(m)
  */
 
 static error_log_rec_t *alloc_log_rec
-#ifdef PROTO
 (
     STRTAB_str_t filename,
     int  lineno,
     long msg_id,
-    char *arg1,
-    char *arg2,
-    char *arg3,
-    char *arg4,
-    char *arg5
+    void* arg[]
 )
-#else
-(filename, lineno, msg_id, arg1, arg2, arg3, arg4, arg5)
-    STRTAB_str_t filename;
-    int             lineno;
-    long            msg_id;
-    char            *arg1;
-    char            *arg2;
-    char            *arg3;
-    char            *arg4;
-    char            *arg5;
-#endif
-
 {
     error_log_rec_t *log_rec_p;
     int             i;
@@ -287,11 +260,8 @@ static error_log_rec_t *alloc_log_rec
     log_rec_p->lineno  = lineno;
     log_rec_p->filename = filename;
     log_rec_p->msg_id = msg_id;
-    log_rec_p->arg1 = arg1;
-    log_rec_p->arg2 = arg2;
-    log_rec_p->arg3 = arg3;
-    log_rec_p->arg4 = arg4;
-    log_rec_p->arg5 = arg5;
+    for (i = 0; i < IDL_ERROR_LIST_SIZE; i++)
+	log_rec_p->msgs.arg[i] = arg[i];
 
     log_rec_p->first_this_line = 0;
     log_rec_p->last_this_line  = 0;
@@ -305,7 +275,8 @@ static error_log_rec_t *alloc_log_rec
      * If this file is not listed in the error file list
      */
     for (i = 0; i < error_file_count; i++)
-        if (error_files[i] == filename) break;
+        if (error_files[i] == filename)
+	    break;
 
     /*
      * Add the file with errors to the error_file list
@@ -316,7 +287,8 @@ static error_log_rec_t *alloc_log_rec
     /*
      * If we have too many files with errors, just ignore some
      */
-    if (error_file_count >= MAX_ERROR_FILES) error_file_count--;
+    if (error_file_count >= MAX_ERROR_FILES)
+	error_file_count--;
 
     return  log_rec_p;
 }
@@ -331,15 +303,9 @@ static error_log_rec_t *alloc_log_rec
  */
 
 static void free_log_rec
-#ifdef PROTO
 (
     error_log_rec_t *log_rec_p
 )
-#else
-(log_rec_p)
-    error_log_rec_t *log_rec_p;
-#endif
-
 {
     if (log_rec_p->links.asBinTree.left  != NULL)
     {
@@ -379,45 +345,26 @@ static void free_log_rec
  */
 
 static void queue_error
-#ifdef PROTO
 (
     error_log_rec_t *log_rec_p,
     STRTAB_str_t filename,
     long msg_id,
-    char *arg1,
-    char *arg2,
-    char *arg3,
-    char *arg4,
-    char *arg5
+    void* arg[]
 )
-#else
-(log_rec_p, filename, msg_id, arg1, arg2, arg3, arg4, arg5)
-    error_log_rec_t *log_rec_p;
-    STRTAB_str_t filename;
-    long            msg_id;
-    char            *arg1;
-    char            *arg2;
-    char            *arg3;
-    char            *arg4;
-    char            *arg5;
-#endif
-
 {
     error_log_rec_t *new_log_rec_p;
 
-    new_log_rec_p = alloc_log_rec(filename, log_rec_p->lineno, msg_id, arg1, arg2, arg3, arg4, arg5);
+    new_log_rec_p = alloc_log_rec(filename, log_rec_p->lineno, msg_id, arg);
 
     if (log_rec_p->first_this_line == NULL)
     {
-        log_rec_p->first_this_line = (struct error_log_rec_t *) new_log_rec_p;
-        log_rec_p->last_this_line  = (struct error_log_rec_t *) new_log_rec_p;
+        log_rec_p->first_this_line = new_log_rec_p;
+        log_rec_p->last_this_line  = new_log_rec_p;
         return;
     }
 
-    log_rec_p->last_this_line->links.asList.next =
-        (struct error_log_rec_t *) new_log_rec_p;
-    log_rec_p->last_this_line =
-        (struct error_log_rec_t *) new_log_rec_p;
+    log_rec_p->last_this_line->links.asList.next = new_log_rec_p;
+    log_rec_p->last_this_line                    = new_log_rec_p;
 }
 
 /*
@@ -432,40 +379,22 @@ static void queue_error
  */
 
 static void add_error_log_rec
-#ifdef PROTO
 (
     error_log_rec_t *log_rec_p,
     STRTAB_str_t filename,
     int lineno,
     long msg_id,
-    char *arg1,
-    char *arg2,
-    char *arg3,
-    char *arg4,
-    char *arg5
+    void* arg[]
 )
-#else
-(log_rec_p, filename, lineno, msg_id, arg1, arg2, arg3, arg4, arg5)
-    error_log_rec_t *log_rec_p;
-    STRTAB_str_t filename;
-    int             lineno;
-    long            msg_id;
-    char            *arg1;
-    char            *arg2;
-    char            *arg3;
-    char            *arg4;
-    char            *arg5;
-#endif
-
 {
     if (log_rec_p->lineno < lineno)
     {
         if (log_rec_p->links.asBinTree.right != NULL)
             add_error_log_rec(log_rec_p->links.asBinTree.right, filename, lineno,
-                    msg_id, arg1, arg2, arg3, arg4, arg5);
+                    msg_id, arg);
         else
             log_rec_p->links.asBinTree.right = alloc_log_rec(filename, lineno,
-                    msg_id, arg1, arg2, arg3, arg4, arg5);
+                    msg_id, arg);
 
         return;
     }
@@ -474,18 +403,63 @@ static void add_error_log_rec
     {
         if (log_rec_p->links.asBinTree.left != NULL)
             add_error_log_rec(log_rec_p->links.asBinTree.left, filename, lineno,
-                    msg_id, arg1, arg2, arg3, arg4, arg5);
+                    msg_id, arg);
 
         else
             log_rec_p->links.asBinTree.left = alloc_log_rec(filename, lineno,
-                    msg_id, arg1, arg2, arg3, arg4, arg5);
+                    msg_id, arg);
         return;
     }
 
     if (log_rec_p->lineno == lineno)
-
-queue_error(log_rec_p, filename, msg_id, arg1, arg2, arg3, arg4, arg5);
+	queue_error(log_rec_p, filename, msg_id, arg);
 }
+
+/*
+ *  l o g _ s o u r c e _ v a
+ *
+ *  Function:   Accumulates a warning or error message for later printout.
+ *              All accumulated errors are printed by print_errors.
+ *              Errors are kept sorted by line number and source
+ *              file name.
+ *
+ *  Inputs:
+ *              counter - which counter should be increased (error/warning)
+ *              filename - STRTAB_str_t of full source file name
+ *              lineno  - the line number of the error.
+ *              msg_id - the error message ID.
+ *              ap - va_list for the parameter last must be NULL if # < IDL_ERROR_LIST_SIZE
+ *
+ *  Outputs:    An error log record is inserted in the error tree.
+ *
+ */
+
+static void log_source_va
+(
+ int*         counter,
+ STRTAB_str_t filename,
+ int          lineno,
+ long         msg_id,
+ va_list      ap
+)
+{
+    void*   arg[IDL_ERROR_LIST_SIZE] = {NULL}; 
+    size_t  idx;
+
+    ++*counter;
+
+    for (idx = 0; idx < IDL_ERROR_LIST_SIZE; idx++) {
+	arg[idx] = va_arg(ap, void*); 
+	if (!arg[idx])
+	    break;
+    }
+
+    if (errors == NULL)
+	errors = alloc_log_rec(filename, lineno, msg_id, arg);
+    else
+	add_error_log_rec(errors, filename, lineno, msg_id, arg);
+}
+
 
 /*
  *  l o g _ s o u r c e _ e r r o r
@@ -506,32 +480,20 @@ queue_error(log_rec_p, filename, msg_id, arg1, arg2, arg3, arg4, arg5);
  */
 
 void log_source_error
-#ifdef PROTO
 (
     STRTAB_str_t filename,
     int lineno,
     long msg_id,
-    char *arg1,
-    char *arg2,
-    char *arg3,
-    char *arg4,
-    char *arg5
+    ...
 )
-#else
-(filename, lineno, msg_id, arg1, arg2, arg3, arg4, arg5)
-    STRTAB_str_t filename;      /* file name string */
-    int     lineno;             /* Source line number */
-    long    msg_id;             /* Message ID */
-    char    *arg1, *arg2, *arg3, *arg4, *arg5;
-#endif
-
 {
-    ++error_count;
+    va_list ap;
 
-    if (errors == NULL)
-        errors = alloc_log_rec(filename, lineno, msg_id, (char *)arg1, (char *)arg2, (char *)arg3, (char *)arg4, (char *)arg5);
-    else
-        add_error_log_rec(errors, filename, lineno, msg_id, (char *)arg1, (char *)arg2, (char *)arg3, (char *)arg4, (char *)arg5);
+    va_start(ap, msg_id);
+
+    log_source_va(&error_count, filename, lineno, msg_id, ap);
+
+    va_end(ap);
 }
 
 /*
@@ -553,36 +515,24 @@ void log_source_error
  */
 
 void log_source_warning
-#ifdef PROTO
 (
     STRTAB_str_t filename,
     int lineno,
     long msg_id,
-    char *arg1,
-    char *arg2,
-    char *arg3,
-    char *arg4,
-    char *arg5
+    ...
 )
-#else
-(filename, lineno, msg_id, arg1, arg2, arg3, arg4, arg5)
-    STRTAB_str_t filename; /* source file name */
-    int     lineno;     /* Source line number */
-    long    msg_id;      /* Message ID */
-    char    *arg1, *arg2, *arg3, *arg4, *arg5;
-#endif
-
 {
+    va_list ap;
+
     /* Return if warnings are suppressed. */
     if (ERR_no_warnings)
-        return;
+	return;
 
-    ++warnings;
+    va_start(ap, msg_id);
 
-    if (errors == NULL)
-        errors = alloc_log_rec(filename, lineno, msg_id, (char *)arg1, (char *)arg2, (char *)arg3, (char *)arg4, (char *)arg5);
-    else
-        add_error_log_rec(errors, filename, lineno, msg_id, (char *)arg1, (char *)arg2, (char *)arg3, (char *)arg4, (char *)arg5);
+    log_source_va(&warnings, filename, lineno, msg_id, ap);
+
+    va_end(ap);
 }
 
 /*
@@ -603,26 +553,21 @@ void log_source_warning
  */
 
 void log_error
-#ifdef PROTO
 (
     int lineno,
     long msg_id,
-    char *arg1,
-    char *arg2,
-    char *arg3,
-    char *arg4,
-    char *arg5
+    ...
 )
-#else
-(lineno, msg_id, arg1, arg2, arg3, arg4, arg5)
-    int     lineno;     /* Source line number */
-    long    msg_id;      /* Message ID */
-    char    *arg1, *arg2, *arg3, *arg4, *arg5;
-#endif
-
 {
-    log_source_error (error_file_name_id, lineno, msg_id, arg1, arg2, arg3, arg4, arg5);
+    va_list ap;
+
+    va_start(ap, msg_id);
+
+    log_source_va(&error_count, error_file_name_id, lineno, msg_id, ap);
+
+    va_end(ap);
 }
+
 
 /*
  *  l o g _ w a r n i n g
@@ -642,25 +587,21 @@ void log_error
  */
 
 void log_warning
-#ifdef PROTO
 (
     int lineno,
     long msg_id,
-    char *arg1,
-    char *arg2,
-    char *arg3,
-    char *arg4,
-    char *arg5
+    ...
 )
-#else
-(lineno, msg_id, arg1, arg2, arg3, arg4, arg5)
-    int     lineno;     /* Source line number */
-    long    msg_id;      /* Message ID */
-    char    *arg1, *arg2, *arg3, *arg4, *arg5;
-#endif
-
 {
-    log_source_warning (error_file_name_id, lineno, msg_id, arg1, arg2, arg3, arg4, arg5);
+    va_list ap;
+
+    if (ERR_no_warnings)
+	return;
+    va_start(ap, msg_id);
+
+    log_source_va(&warnings, error_file_name_id, lineno, msg_id, ap);
+
+    va_end(ap);
 }
 
 
@@ -678,19 +619,11 @@ void log_warning
  */
 
 void seek_for_line
-#ifdef PROTO
 (
     FILE *source_file,
     int lineno,
     char *source_line
 )
-#else
-(source_file, lineno, source_line)
-    FILE    *source_file;
-    int     lineno;
-    char    *source_line;
-#endif
-
 {
     int lines_to_skip;
     int i;
@@ -750,8 +683,12 @@ void print_errors_for_line
             NIDL_FILESOURCE, source, log_rec_ptr->lineno, source_line
         );
         message_print(
-            log_rec_ptr->msg_id, log_rec_ptr->arg1, log_rec_ptr->arg2,
-            log_rec_ptr->arg3, log_rec_ptr->arg4, log_rec_ptr->arg5
+            log_rec_ptr->msgs.msg_id,
+	    log_rec_ptr->msgs.arg[0],
+	    log_rec_ptr->msgs.arg[1],
+	    log_rec_ptr->msgs.arg[2],
+	    log_rec_ptr->msgs.arg[3],
+	    log_rec_ptr->msgs.arg[4]
         );
     }
 
@@ -772,9 +709,14 @@ void print_errors_for_line
             }
 
             /* Now print out the actual error message */
-            message_print(
-                erp->msg_id, erp->arg1, erp->arg2, erp->arg3, erp->arg4, erp->arg5
-            );
+	    message_print(
+			  erp->msgs.msg_id,
+			  erp->msgs.arg[0],
+			  erp->msgs.arg[1],
+			  erp->msgs.arg[2],
+			  erp->msgs.arg[3],
+			  erp->msgs.arg[4]
+			 );
         }
     }
 }
@@ -820,9 +762,7 @@ void print_error_messages
 
 boolean print_errors
 (
-#ifdef PROTO
     void
-#endif
 )
 
 {
@@ -884,7 +824,6 @@ boolean print_errors
  */
 
 void error
-#ifdef PROTO
 (
     long msg_id,
     char *arg1,
@@ -893,12 +832,6 @@ void error
     char *arg4,
     char *arg5
 )
-#else
-(msg_id, arg1, arg2, arg3, arg4, arg5)
-    long    msg_id;      /* Message ID */
-    char    *arg1, *arg2, *arg3, *arg4, *arg5;
-#endif
-
 {
     if (current_file)
         message_print(NIDL_LINEFILE, current_file, *yylineno_p);
@@ -925,19 +858,11 @@ void error
  */
 
 void error_list
-#ifdef PROTO
 (
     int vecsize,
     idl_error_list_p errvec,
     boolean exitflag
 )
-#else
-(vecsize, errvec, exitflag)
-    int vecsize;
-    idl_error_list_p errvec;
-    boolean exitflag;
-#endif
-
 {
     int i;
 
@@ -945,8 +870,13 @@ void error_list
         message_print(NIDL_LINEFILE, current_file, *yylineno_p);
 
     for (i = 0; i < vecsize; i++)
-        message_print(errvec[i].msg_id, errvec[i].arg1, errvec[i].arg2,
-                      errvec[i].arg3, errvec[i].arg4, errvec[i].arg5);
+	message_print(errvec[i].msg_id,
+		      errvec[i].arg[0],
+		      errvec[i].arg[1],
+		      errvec[i].arg[2],
+		      errvec[i].arg[3],
+		      errvec[i].arg[4]
+		     );
 
     if (!exitflag) return;
 
@@ -973,7 +903,6 @@ void error_list
  */
 
 void warning
-#ifdef PROTO
 (
     long msg_id,
     char *arg1,
@@ -982,12 +911,6 @@ void warning
     char *arg4,
     char *arg5
 )
-#else
-(msg_id, arg1, arg2, arg3, arg4, arg5)
-    long    msg_id;      /* Message ID */
-    char    *arg1, *arg2, *arg3, *arg4, *arg5;
-#endif
-
 {
     /* Return if warnings are suppressed. */
     if (ERR_no_warnings)
@@ -1015,15 +938,9 @@ void warning
  */
 
 void set_name_for_errors
-#ifdef PROTO
 (
-    char *filename
+    char const *filename
 )
-#else
-(filename)
-    char *filename;
-#endif
-
 {
     if (filename != NULL)
     {
@@ -1044,18 +961,14 @@ void set_name_for_errors
  */
 
 void inq_name_for_errors
-#ifdef PROTO
 (
     char *name
 )
-#else
-(name)
-    char    *name;
-#endif
-
 {
     if (current_file)
         strcpy(name, current_file);
     else
         *name = '\0';
 }
+
+/* preserve coding style vim: set tw=78 sw=4 : */

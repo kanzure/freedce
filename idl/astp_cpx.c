@@ -129,10 +129,10 @@ static void ASTP_add_tag_binding
         {
             STRTAB_str_to_string(binding->fe_info->file, &filename);
             log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
-                    filename, binding->fe_info->source_line);
+                    filename, binding->fe_info->source_line, NULL);
         }
         else
-            log_error (nidl_yylineno, NIDL_NAMEALRDEC, identifier);
+            log_error (nidl_yylineno, NIDL_NAMEALRDEC, identifier, NULL);
     }
 
     return;
@@ -429,7 +429,8 @@ AST_type_n_t *AST_structure_node
             {
                 char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
-                log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text);
+                log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text,
+			   NULL);
 
                 /* State where the name was previously declared, if known */
                 if ((tag_type_node_ptr->fe_info->source_line != 0) &&
@@ -437,8 +438,9 @@ AST_type_n_t *AST_structure_node
                 {
                     char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-                    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
-                            filename, tag_type_node_ptr->fe_info->source_line);
+		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+			       identifier_text, filename,
+			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
 
                 /* recovery is to return a bogus type node */
@@ -456,11 +458,13 @@ AST_type_n_t *AST_structure_node
                 {
                     char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-                    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
-                            filename, tag_type_node_ptr->fe_info->source_line);
+		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+			       identifier_text, filename,
+			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
                 else
-                    log_error (nidl_yylineno, NIDL_NAMEALRDEC, identifier_text);
+                    log_error (nidl_yylineno, NIDL_NAMEALRDEC,
+			       identifier_text, NULL);
 
                 /* recovery is to return a bogus type node */
                 tag_type_node_ptr = AST_type_node(AST_structure_k);
@@ -705,7 +709,8 @@ AST_type_n_t *AST_disc_union_node
             {
                 char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
-                log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text);
+                log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text,
+			   NULL);
 
                 /* State where the name was previously declared, if known */
                 if ((tag_type_node_ptr->fe_info->source_line != 0) &&
@@ -713,8 +718,9 @@ AST_type_n_t *AST_disc_union_node
                 {
                     char const *filename;             /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-                    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
-                            filename, tag_type_node_ptr->fe_info->source_line);
+		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+			       identifier_text, filename,
+			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
 
                 /* recovery is to return a bogus type node */
@@ -732,11 +738,13 @@ AST_type_n_t *AST_disc_union_node
                 {
                     char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-                    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
-                            filename, tag_type_node_ptr->fe_info->source_line);
+		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+			       identifier_text, filename,
+			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
                 else
-                    log_error (nidl_yylineno, NIDL_NAMEALRDEC, identifier_text);
+                    log_error (nidl_yylineno, NIDL_NAMEALRDEC,
+			       identifier_text, NULL);
 
                 /* recovery is to return a bogus type node */
                 tag_type_node_ptr = AST_type_node(AST_disc_union_k);
@@ -938,7 +946,7 @@ AST_field_n_t *AST_declarators_to_fields
                  attr_ptr = attr_ptr->next)
             {
                 if (attr_ptr->pointer)
-                    log_error(attr_ptr->source_line, NIDL_ATTRVALIND);
+                    log_error(attr_ptr->source_line, NIDL_ATTRVALIND, NULL);
             }
         }
 
@@ -1004,7 +1012,8 @@ AST_arm_n_t *AST_declarator_to_arm
                 ASTP_attr_flag_t attr2 = ASTP_DEFAULT;
                 log_error(nidl_yylineno, NIDL_CONFLICTATTR,
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
-                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr2)));
+                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr2)),
+		      NULL);
             }
             else
                 arm_list->labels = AST_default_case_label_node();
@@ -1034,7 +1043,8 @@ AST_arm_n_t *AST_declarator_to_arm
                 ASTP_attr_flag_t attr2 = ASTP_DEFAULT;
                 log_error(nidl_yylineno, NIDL_CONFLICTATTR,
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
-                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr2)));
+                      KEYWORDS_lookup_text(AST_attribute_to_token(&attr2)),
+		      NULL);
             }
             else
                 new_arm->labels = AST_default_case_label_node();
@@ -1116,7 +1126,7 @@ AST_type_n_t *AST_type_from_tag
         {
             char const *identifier_text; /* place to receive the identifier text */
             NAMETABLE_id_to_string (identifier, &identifier_text);
-            log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text);
+            log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text, NULL);
 
             /* State where the name was previously declared, if known */
             if ((tag_type_node_ptr->fe_info->source_line != 0) &&
@@ -1125,7 +1135,8 @@ AST_type_n_t *AST_type_from_tag
                 char const *filename;         /* place to receive the filename text pointer */
                 STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
                 log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
-                        filename, tag_type_node_ptr->fe_info->source_line);
+                        filename, tag_type_node_ptr->fe_info->source_line,
+			NULL);
             }
 
             /* recovery is to return a bogus type node */
@@ -1218,9 +1229,10 @@ void ASTP_patch_tag_references
             {
                 char const *identifier; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (tag_ref_node_ptr->name, &identifier);
-                log_source_error (tag_ref_node_ptr->type_node_ptr->fe_info->file,
-                        tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
-                        NIDL_BADTAGREF, identifier);
+		log_source_error
+		    (tag_ref_node_ptr->type_node_ptr->fe_info->file,
+		     tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
+		     NIDL_BADTAGREF, identifier, NULL);
 
                 /* State where the name was previously declared, if known */
                 if ((type_node_ptr->fe_info->source_line != 0) &&
@@ -1228,10 +1240,11 @@ void ASTP_patch_tag_references
                 {
                     char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(type_node_ptr->fe_info->file, &filename);
-                    log_source_error (tag_ref_node_ptr->type_node_ptr->fe_info->file,
-                            tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
-                            NIDL_NAMEPREVDECLAT, identifier,
-                            filename, type_node_ptr->fe_info->source_line);
+		    log_source_error
+			(tag_ref_node_ptr->type_node_ptr->fe_info->file,
+			 tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
+			 NIDL_NAMEPREVDECLAT, identifier, filename,
+			 type_node_ptr->fe_info->source_line, NULL);
                 }
             }
 
@@ -1263,9 +1276,10 @@ void ASTP_patch_tag_references
                 continue;
             }
             NAMETABLE_id_to_string (tag_ref_node_ptr->name, &identifier);
-            log_source_error(tag_ref_node_ptr->type_node_ptr->fe_info->file,
-                    tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
-                    NIDL_NAMENOTFND, identifier) ;
+	    log_source_error
+		(tag_ref_node_ptr->type_node_ptr->fe_info->file,
+		 tag_ref_node_ptr->type_node_ptr->fe_info->source_line,
+		 NIDL_NAMENOTFND, identifier, NULL);
         }
     }
 
@@ -1610,7 +1624,4 @@ static void ASTP_process_sp_type
 }
 
 /*---------------------------------------------------------------------*/
-
-
-
-
+/* preserve coding style vim: set tw=78 sw=4 : */

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -80,9 +80,9 @@ boolean FILE_open               /* Returns TRUE on success */
     {
         idl_error_list_t errvec[2];
         errvec[0].msg_id = NIDL_OPENREAD;
-        errvec[0].arg1   = filespec;
+        errvec[0].arg[0] = filespec;
         errvec[1].msg_id = NIDL_SYSERRMSG;
-        errvec[1].arg1   = strerror(errno);
+        errvec[1].arg[0] = strerror(errno);
         error_list(2, errvec, TRUE);
     }
 
@@ -118,9 +118,9 @@ boolean FILE_create             /* Returns TRUE on success */
     {
         idl_error_list_t errvec[2];
         errvec[0].msg_id = NIDL_OPENWRITE;
-        errvec[0].arg1   = filespec;
+        errvec[0].arg[0] = filespec;
         errvec[1].msg_id = NIDL_SYSERRMSG;
-        errvec[1].arg1   = strerror(errno);
+        errvec[1].arg[0] = strerror(errno);
         error_list(2, errvec, TRUE);
     }
 
@@ -340,7 +340,7 @@ boolean FILE_form_filespec      /* Returns TRUE on success */
         if (    (in_filespec != NULL && in_filespec[0] != '\0')
             ||  (dir != NULL && dir[0] != '\0') )
         {
-            /* 
+            /*
              * Setup the related or file type global FILE_def_filespec such
              * that any file lookup is handled appropriately in FILE_parse.
              */
@@ -690,7 +690,7 @@ boolean FILE_parse              /* Returns TRUE on success */
     {
         if (nam.nam$l_fnb & (NAM$M_NODE | NAM$M_EXP_DEV | NAM$M_EXP_DIR))
         {
-            /* 
+            /*
              *  If the directory was explictly in the filespec, do a search to
              *  get the directory that actually contains the file.  If it fails
              *  redo the parse, because we know that the parse succeeded above
@@ -699,7 +699,7 @@ boolean FILE_parse              /* Returns TRUE on success */
             nam.nam$b_nop   = 0;
             rms_status = SYS$PARSE(&fab, 0, 0);
             rms_status = SYS$SEARCH(&fab, 0, 0);
-            if (rms_status != RMS$_NORMAL) 
+            if (rms_status != RMS$_NORMAL)
             {
                 /* Search failed, so just do a syntax_only parse */
                 nam.nam$b_nop   = NAM$M_SYNCHK;
@@ -944,10 +944,10 @@ int FILE_execute_cmd
         status = LIB$SPAWN(&vcmd);
 	/* If it failed, output a message as sometimes the subprocess won't even though it failed */
 	if ((status & 1) != 1) {
-	    /* 
+	    /*
 	    ** If we haven't yet output a message associated with the spawned command, then
 	    ** include it in the message, because the SYSERMSG requires the context of
-	    ** a previously reported message. 
+	    ** a previously reported message.
 	    */
 	    if (msg_id == 0) {
 		idl_error_list_t errvec[2];
@@ -995,3 +995,4 @@ void FILE_delete
     unlink (filename);
 #endif
 }
+/* preserve coding style vim: set tw=78 sw=4 : */

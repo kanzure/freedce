@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -44,6 +44,9 @@
 #include <nametbl.h>
 
 
+#define IDL_ERROR_LIST_SIZE 5
+
+
 /*
  *  The following error and warning routines are NOT function prototyped
  *  since they are designed, a la printf, to accept a variable number of
@@ -52,52 +55,73 @@
 void error();
 void warning();
 
-void log_source_error();
-void log_source_warning();
-void log_error();
-void log_warning();
+void log_source_error
+(
+	/* it is not a nonsense */
+	STRTAB_str_t filename,
+	int lineno,
+	long msg_id,
+	... /* 0..5 args terminated by NULL if less than five */
+);
+
+void log_source_warning
+(
+	/* it is not a nonsense */
+	STRTAB_str_t filename,
+	int lineno,
+	long msg_id,
+	... /* 0..5 args terminated by NULL if less than five */
+);
+
+void log_error
+(
+	/* it is not a nonsense */
+	int lineno, /* Source line number */
+	long msg_id, /* Message ID */
+	... /* 0..5 args terminated by NULL if less than five */
+);
+
+void log_warning
+(
+	/* it is not a nonsense */
+	int lineno, /* Source line number */
+	long msg_id, /* Message ID */
+	... /* 0..5 args terminated by NULL if less than five */
+);
+
 
 typedef struct {
     long msg_id;
-    char *arg1;
-    char *arg2;
-    char *arg3;
-    char *arg4;
-    char *arg5;
+    const void* arg[IDL_ERROR_LIST_SIZE];
 } idl_error_list_t;
 
 typedef idl_error_list_t *idl_error_list_p;
 
-void error_list(
-#ifdef PROTO
+void error_list
+(
     int vecsize,
     idl_error_list_p errvec,
     boolean exitflag
-#endif
 );
 
-void inq_name_for_errors(
-#ifdef PROTO
+void inq_name_for_errors
+(
     char *name
-#endif
 );
 
-void set_name_for_errors(
-#ifdef PROTO
-    char *name
-#endif
+void set_name_for_errors
+(
+    char const *name
 );
 
-boolean print_errors(
-#ifdef PROTO
+boolean print_errors
+(
     void
-#endif
 );
 
-void yyerror(
-#ifdef PROTO
-    char *message
-#endif
+void yyerror
+(
+    char const *message
 );
 
 void yywhere(void);
@@ -134,3 +158,4 @@ extern STRTAB_str_t error_file_name_id;
 #define INTERNAL_ERROR(string) {error(NIDL_INTERNAL_ERROR,__FILE__,__LINE__); printf(string);}
 #endif
 #endif
+/* preserve coding style vim: set tw=78 sw=4 : */
