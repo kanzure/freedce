@@ -13,3 +13,4 @@ acf_y.h
 *.tar.gz
 *.tgz
 .deps
+sysdep.h
