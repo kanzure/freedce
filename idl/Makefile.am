@@ -11,9 +11,9 @@ LIBS:=$(subst -ldcethread,,$(LIBS))
 
 CFLAGS+=-DMIA
 
-bin_PROGRAMS = idl
+bin_PROGRAMS = dceidl
 
-idl_SOURCES = acf_y.y acf_l.l nidl_y.y nidl_l.l astp_com.c astp_cpx.c \
+dceidl_SOURCES = acf_y.y acf_l.l nidl_y.y nidl_l.l astp_com.c astp_cpx.c \
 	astp_gbl.c astp_sim.c astp_dmp.c checker.c chkichar.c command.c \
 	driver.c errors.c files.c frontend.c getflags.c keywds.c main.c \
 	message.c nametbl.c namdump.c propagat.c sysdep.c mtsbacke.c \
@@ -32,6 +32,9 @@ noinst_HEADERS= acf.h ast.h astp.h astp_dmp.h backend.h be_pvt.h bedeck.h \
 
 BUILT_SOURCES=acf_y.c acf_l.c nidl_y.c nidl_l.c acf_y.h nidl_y.h
 
+# Ensure that YACC/LEX generated files go away during clean
+CLEANFILES=acf_y.o acf_y.c acf_l.o acf_l.c acf_y.h nidl_y.o nidl_y.c nidl_l.o nidl_l.c nidl_y.h
+
 # Override the standard YACC/LEX rules so we can build two scanners into
 # the idl compiler.
 
@@ -47,6 +50,5 @@ nidl_y.c nidl_y.h: nidl_y.y
 nidl_l.c: nidl_l.l
 	$(YLWRAP) "$(LEX)" $(srcdir)/nidl_l.l $(LEX_OUTPUT_ROOT).c nidl_l.c -- $(AM_LFLAGS) $(LFLAGS) -Pnidl_yy -o$(LEX_OUTPUT_ROOT).c
 
-# Ensure that YACC/LEX generated files go away during clean
-CLEANFILES=acf_y.o acf_y.c acf_l.o acf_l.c acf_y.h nidl_y.o nidl_y.c nidl_l.o nidl_l.c nidl_y.h
-
+install-exec-local:
+	test -f $(bindir)/idl || $(LN_S) dceidl $(bindir)/idl
