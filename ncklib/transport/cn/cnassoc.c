@@ -1399,7 +1399,7 @@ rpc_cn_call_rep_p_t  call_rep;
 **
 **  INPUTS/OUTPUTS:     none
 **
-**  OUTPUTS:            none
+**  OUTPUTS:            status
 **
 **  IMPLICIT INPUTS:    none
 **
@@ -1416,15 +1416,19 @@ PRIVATE void rpc__cn_assoc_push_call
 #ifdef _DCE_PROTO_
 (
   rpc_cn_assoc_p_t        assoc,
-  rpc_cn_call_rep_p_t     call_r
+  rpc_cn_call_rep_p_t     call_r,
+  unsigned32              *st
 )
 #else
-(assoc, call_r)
+(assoc, call_r, st)
 rpc_cn_assoc_p_t        assoc;
 rpc_cn_call_rep_p_t     call_r;
+unsigned32              *st;
 #endif
 {
     rpc_cn_assoc_grp_t  *assoc_grp;
+
+    *st=rpc_s_ok;
 
     RPC_LOG_CN_ASSOC_PUSH_CALL_NTR;
     RPC_CN_DBG_RTN_PRINTF(rpc__cn_assoc_push_call);
@@ -1438,6 +1442,10 @@ rpc_cn_call_rep_p_t     call_r;
      * Increment the association group's total call count.
      */
     assoc_grp = RPC_CN_ASSOC_GRP (assoc->assoc_grp_id);
+    if (!assoc_grp) {
+        *st = rpc_s_unknown_error;
+        return;
+    }
     assoc_grp->grp_callcnt++;
     RPC_LOG_CN_ASSOC_PUSH_CALL_XIT;
 }
@@ -4242,6 +4250,11 @@ unsigned32      *st;
     assoc = (rpc_cn_assoc_t *) 
         rpc__list_element_alloc (&rpc_g_cn_assoc_lookaside_list, wait);
     
+    if (assoc == NULL){
+      fprintf(stderr, "rpc__list_element_alloc returns NULL in %s", __FUNCTION__);
+      *st = rpc_s_no_memory;
+      return (NULL);
+    }
     assoc->cn_ctlblk.rpc_addr = NULL;
 
     /*
@@ -4512,6 +4525,8 @@ PRIVATE void rpc__cn_assoc_acb_create
 rpc_cn_assoc_p_t        assoc;
 #endif
 {
+    int successful = false;
+    DO_NOT_CLOBBER(successful);
     RPC_LOG_CN_ASSOC_ACB_CR_NTR;
     RPC_CN_DBG_RTN_PRINTF(rpc__cn_assoc_acb_create);
     
@@ -4525,10 +4540,39 @@ rpc_cn_assoc_p_t        assoc;
     RPC_DBG_PRINTF (rpc_e_dbg_threads, RPC_C_CN_DBG_THREADS,
         ( "####### assoc->%x Created receiver thread\n", assoc ));
 
-    pthread_create (&(assoc->cn_ctlblk.cn_rcvr_thread_id),
-                    rpc_g_default_pthread_attr,
-                    (pthread_startroutine_t) rpc__cn_network_receiver,
-                    (pthread_addr_t) assoc);
+    while(!successful) {
+        TRY {
+            pthread_create (&(assoc->cn_ctlblk.cn_rcvr_thread_id),
+                            rpc_g_default_pthread_attr,
+                            (pthread_startroutine_t) rpc__cn_network_receiver,
+                            (pthread_addr_t) assoc);
+            successful = true;
+        }
+        CATCH (pthread_in_use_e) {
+            fprintf(stderr,"pthread_in_use_e after pthread_create receiver thread");
+            successful=false;
+        }
+        CATCH (exc_insfmem_e) {
+            fprintf(stderr,"exc_insfmem_e after pthread_create receiver thread");
+            successful=false;
+        }
+        CATCH (pthread_use_error_e) {
+            fprintf(stderr,"pthread_use_error_e after pthread_create receiver thread");
+        }
+        CATCH (exc_nopriv_e) {
+            fprintf(stderr,"exc_nopriv_e after pthread_create receiver thread");
+        }
+        CATCH (pthread_unimp_e) {
+            fprintf(stderr,"pthread_unimp_e after pthread_create receiver thread");
+        }
+        CATCH (pthread_badparam_e) {
+            fprintf(stderr,"pthread_badparam_e after pthread_create receiver thread");
+        }
+        CATCH_ALL {
+            fprintf(stderr,"unhandled exception after pthread_create receiver thread");
+        }
+        ENDTRY;
+    }
 
     RPC_LOG_CN_ASSOC_ACB_CR_XIT;
 }
@@ -4608,8 +4652,19 @@ rpc_cn_assoc_p_t        assoc;
         RPC_COND_DELETE (ccb->cn_rcvr_cond, rpc_g_global_mutex);
         RPC_COND_DELETE (assoc->assoc_msg_cond, rpc_g_global_mutex);
         ccb->exit_rcvr = true;
-        pthread_cancel (ccb->cn_rcvr_thread_id);
-    }
+        TRY {
+            pthread_cancel (ccb->cn_rcvr_thread_id);
+        }
+        CATCH (pthread_cancel_e) {
+        }
+        CATCH (pthread_use_error_e) {
+        }
+        CATCH (pthread_in_use_e) {
+        }
+        CATCH (pthread_badparam_e) {
+        }
+        ENDTRY
+   }
     else
     {
         /*
@@ -4622,7 +4677,18 @@ rpc_cn_assoc_p_t        assoc;
          * until the receiver thread has terminated.
          */
         ccb->exit_rcvr = true;
-        pthread_cancel (ccb->cn_rcvr_thread_id);
+        TRY {
+            pthread_cancel (ccb->cn_rcvr_thread_id);
+        }
+        CATCH (pthread_cancel_e) {
+        }
+        CATCH (pthread_use_error_e) {
+        }
+        CATCH (pthread_in_use_e) {
+        }
+        CATCH (pthread_badparam_e) {
+        }
+        ENDTRY
 
         /*
          * Since this is a cancellable operation we'll turn cancels
@@ -4636,8 +4702,19 @@ rpc_cn_assoc_p_t        assoc;
          */
 		  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &prev_cancel_state);
         RPC_CN_UNLOCK ();
-        pthread_join (ccb->cn_rcvr_thread_id,
-                      &pthread_exit_status);
+        TRY     {
+            pthread_join (ccb->cn_rcvr_thread_id,
+                          &pthread_exit_status);
+        }
+        CATCH (pthread_cancel_e) {
+        }
+        CATCH (pthread_use_error_e) {
+        }
+        CATCH (pthread_in_use_e) {
+        }
+        CATCH (pthread_badparam_e) {
+        }
+        ENDTRY
         RPC_CN_LOCK ();
 		  pthread_setcancelstate(prev_cancel_state, NULL);
 
@@ -4652,6 +4729,8 @@ rpc_cn_assoc_p_t        assoc;
 		 pthread_detach (&ccb->cn_rcvr_thread_id);
 	 }
 	 CATCH(pthread_use_error_e)	{
+	 }
+	 CATCH(pthread_badparam_e)	{
 	 }
 	 ENDTRY;
 		 

@@ -662,6 +662,7 @@ pointer_t       sm;
     rpc_cn_call_rep_p_t     call_rep_p;
     rpc_cn_sm_event_entry_t event_entry;
     unsigned32              status;
+    unsigned32              push_call_st;
     rpc_cn_sm_ctlblk_t 	    *sm_p;
  
     RPC_CN_DBG_RTN_PRINTF(CLIENT allocate_assoc_action_rtn);
@@ -683,12 +684,18 @@ pointer_t       sm;
           &status)) != NULL)
     {
         call_rep_p->max_seg_size = RPC_CN_ASSOC_MAX_XMIT_FRAG (call_rep_p->assoc);
-        rpc__cn_assoc_push_call (call_rep_p->assoc, call_rep_p);
+        rpc__cn_assoc_push_call (call_rep_p->assoc, call_rep_p, &push_call_st);
 
-        event_entry.event_id = RPC_C_CALL_ALLOC_ASSOC_ACK;
-        event_entry.event_param = (pointer_t) NULL;
+        if (push_call_st!=rpc_s_ok) {
+            event_entry.event_id = RPC_C_CALL_ALLOC_ASSOC_NAK;
+            event_entry.event_param = (pointer_t) NULL;
+            status = push_call_st;
+        } else {
+            event_entry.event_id = RPC_C_CALL_ALLOC_ASSOC_ACK;
+            event_entry.event_param = (pointer_t) NULL;
 
-        status = rpc_s_ok;
+            status = rpc_s_ok;
+        }
     }
     else
     {

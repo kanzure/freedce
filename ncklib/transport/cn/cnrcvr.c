@@ -447,6 +447,7 @@ rpc_cn_assoc_p_t        assoc;
     unsigned32                  auth_st;
     rpc_cn_sec_context_t        *sec_context;
     boolean                     already_unpacked;
+    unsigned32                  push_call_st;
 
 	DO_NOT_CLOBBER(unpack_ints);
 	DO_NOT_CLOBBER(i);
@@ -815,7 +816,15 @@ rpc_cn_assoc_p_t        assoc;
                  * Place the new call rep in the association for
                  * use in cancel processing.
                  */
-                rpc__cn_assoc_push_call (assoc, call_r); 
+                rpc__cn_assoc_push_call (assoc, call_r, &push_call_st);
+                if (push_call_st != rpc_s_ok)
+                {
+                    rpc__list_element_free(&rpc_g_cn_call_lookaside_list,
+                                           call_r);
+                    assoc->call_rep = NULL;
+                    break;
+                }
+
                 
                 /*
                  * Initialize the server call state machine.
@@ -1129,7 +1138,7 @@ unsigned32              *st;
     CODING_ERROR (st);
     
     /*
-     * One time (auto) initialization.
+     * One time (auto) initialization. (see *ovf_fragbuf_p)
      */
     fbp = NULL;
 

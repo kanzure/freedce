@@ -190,7 +190,8 @@ PRIVATE rpc_cn_call_rep_t *rpc__cn_assoc_pop_call _DCE_PROTOTYPE_ ((
 
 PRIVATE void rpc__cn_assoc_push_call _DCE_PROTOTYPE_ ((
     rpc_cn_assoc_p_t             /* assoc */,
-    rpc_cn_call_rep_p_t         /* call_r */ ));
+    rpc_cn_call_rep_p_t         /* call_r */,
+    unsigned32*                 /* status */ ));
 
 /*
  * R P C _ _ C N _ A S S O C _ Q U E U E _ F R A G
