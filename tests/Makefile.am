@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES=-I$(top_srcdir)
+INCLUDES=-I$(top_srcdir)/include
 
 EXTRA_PROGRAMS = test1 test2 test3 test3var test4 test5 test_atfork1
 TESTS=test1 test2 test3 test3var test4 invert-test5 test_atfork1
@@ -10,7 +10,7 @@ DEFS = -DCOMPILING_DCETHREADS -I. -I$(srcdir)
 
 CLEANFILES=$(EXTRA_PROGRAMS) $(TESTS)
 
-THREADLIB=$(top_builddir)/libdcethreads.la
+THREADLIB=$(top_builddir)/src/libdcethreads.la
 
 # Create a symlink to our generic result inverting script.
 # If it is possible to adjust the command line that "make check" runs, then a
