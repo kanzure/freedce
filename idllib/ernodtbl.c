@@ -647,6 +647,40 @@ zero/NULL).  It pre-expands the node number tree to be one level deep
 have to be done now).
 */
 
+/* lkcl: XXX HACK ALERT! this turns full pointers into unique ones
+ * ah ha.  ah ha.  the semantics of [ptr] must dieeee until i have
+ * had time to make it possible for non-encapsulated onions to take
+ * the "full pointer" route - in order to allocate memory for the
+ * pointee AFTER the union has been unmarshalled.
+ *
+ * there's a myth about it not being possible to do [unique] on
+ * non-encapsulated onions and that myth is propagated because of
+ * the _implementation_ of [unique] pointers, not because of any
+ * actual real restriction in the protocol...
+ *
+ * if you treat pointed-to objects in non-encapsulated onions
+ * as "full" i.e. take the full pointer codepath _even_ though
+ * they are marked as [unique], everything is hunky-dory.
+ *
+ * and to do that in the simplest possible way, you must _force_
+ * the pointer to be "unique" when going down the full-pointer
+ * codepath - using this horrible-hack rework_pointer function
+ * is one way to do that...
+ */
+static void rework_pointer(unsigned long *num  __attribute__((__unused__)))
+{
+#if 0 /* disabled for a commit - for now */
+	static int max_ptr = 1;
+	if ((*num) == 0) /* null needs no rework */
+		return; 
+	if ((*num) > 0xffff0000) /* already reworked */
+		return;
+	if ((*num) < 0x00010000) /* assume no more than 65536 pointers */
+		return;
+	(*num) = ++max_ptr;
+#endif
+}
+
 /*
  * Define HASH_STATS to monitor hash table efficiency.
  * Define UNIT_TEST_ERNODTBL to build stand-alone for unit testing.
@@ -1821,7 +1855,7 @@ byte_p_t rpc_ss_return_pointer_to_node
 #ifdef IDL_PROTOTYPES
 (
     rpc_ss_node_table_t tab,
-    unsigned long       num,
+    unsigned long       *num,
     long                size,
     rpc_void_p_t        (*p_allocate)(idl_size_t size),
     long                *has_been_unmarshalled,
@@ -1830,7 +1864,7 @@ byte_p_t rpc_ss_return_pointer_to_node
 #else
 (tab, num, size, p_allocate, has_been_unmarshalled, new_node)
     rpc_ss_node_table_t tab;
-    unsigned long       num;
+    unsigned long       *num;
     long                size;
     rpc_void_p_t        (*p_allocate)();
     long                *has_been_unmarshalled;
@@ -1850,7 +1884,8 @@ byte_p_t rpc_ss_return_pointer_to_node
      * but without the hassle of "eeuw you can't have a non-encapsulated union
      * with unique pointers in it...
      */
-    /* p = rpc_ss_lookup_node_by_num (tab, num); */
+    rework_pointer(num);
+    p = rpc_ss_lookup_node_by_num (tab, *num);
 
     if (p == NULL)
     {
@@ -1866,7 +1901,7 @@ byte_p_t rpc_ss_return_pointer_to_node
         }
         if (p ==NULL)
             RAISE (rpc_x_no_memory);
-        rpc_ss_register_node_by_num (tab, num, p);
+        rpc_ss_register_node_by_num (tab, *num, p);
     }
     else
         if (new_node != NULL) *new_node = (long)idl_false;
@@ -1932,17 +1967,17 @@ byte_p_t rpc_ss_lookup_pointer_to_node
 #ifdef IDL_PROTOTYPES
 (
     rpc_ss_node_table_t tab,
-    unsigned long num,
+    unsigned long *num,
     long *has_been_unmarshalled
 )
 #else
 (tab, num, has_been_unmarshalled)
     rpc_ss_node_table_t tab;
-    unsigned long num;
+    unsigned long *num;
     long *has_been_unmarshalled;
 #endif
 {
-    byte_p_t p;
+    byte_p_t p = NULL;
     rpc_ss_pvt_node_table_t * str;
     rpc_ss_hash_entry_t * hash_entry;
 
@@ -1950,7 +1985,8 @@ byte_p_t rpc_ss_lookup_pointer_to_node
     RPC_SS_LOOKUP_POINTER_TO_NODE_N;
 #endif
 
-    p = rpc_ss_lookup_node_by_num (tab, num);
+    rework_pointer(num);
+    p = rpc_ss_lookup_node_by_num (tab, *num);
 
     if (p == NULL)
     {
@@ -2005,13 +2041,13 @@ byte_p_t rpc_ss_inquire_pointer_to_node
 #ifdef IDL_PROTOTYPES
 (
     rpc_ss_node_table_t tab,
-    unsigned long num,
+    unsigned long *num,
     long *has_been_unmarshalled
 )
 #else
 (tab, num, has_been_unmarshalled)
     rpc_ss_node_table_t tab;
-    unsigned long num;
+    unsigned long *num;
     long *has_been_unmarshalled;
 #endif
 {
@@ -2027,8 +2063,8 @@ byte_p_t rpc_ss_inquire_pointer_to_node
      * but without the hassle of "eeuw you can't have a non-encapsulated union
      * with unique pointers in it...
      */
-    num = num;
-    /* p = rpc_ss_lookup_node_by_num (tab, num); */
+    rework_pointer(num);
+    p = rpc_ss_lookup_node_by_num (tab, *num);
 
     if (p == NULL)
     {

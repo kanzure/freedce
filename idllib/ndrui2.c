@@ -83,8 +83,9 @@ static void rpc_ss_ndr_unmar_ptr_ptee
     {
         case IDL_DT_FULL_PTR:
             /* Unmarshall the node number */
+            p_node = *(rpc_void_p_t*)IDL_msp->IDL_mp;
             IDL_UNMAR_ULONG( &node_number );
-            *(rpc_void_p_t *)p_node = (rpc_void_p_t)node_number;
+            *(rpc_void_p_t *)p_node = (rpc_void_p_t*)node_number;
             defn_vec_ptr++;
             pointee_desc.dimensionality = 0;
             rpc_ss_ndr_unmar_pointee_desc( pointee_type, defn_vec_ptr,
@@ -301,7 +302,7 @@ void rpc_ss_ndr_unmar_pointee
     {
         p_node = (rpc_void_p_t)rpc_ss_return_pointer_to_node(
                     IDL_msp->IDL_node_table,
-                    node_number, node_size,
+                    (unsigned long *)p_pointer, node_size,
                     (IDL_msp->IDL_side == IDL_client_side_k)
                         ? IDL_msp->IDL_p_allocate : NULL,
                     &already_unmarshalled,
@@ -1793,7 +1794,7 @@ void rpc_ss_ndr_unmar_pointee_desc
             return;
         p_node = (rpc_void_p_t)rpc_ss_inquire_pointer_to_node(
                                                     IDL_msp->IDL_node_table,
-                                                    *(idl_ulong_int *)p_pointer,
+                                                    (idl_ulong_int *)p_pointer,
                                                     &already_unmarshalled);
         p_pointee_desc->already_unmarshalled = already_unmarshalled;
         if (p_pointee_desc->already_unmarshalled)

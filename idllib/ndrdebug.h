@@ -1,7 +1,7 @@
-#ifdef DEBUG_INTERP
-
 #ifndef __NDR_DEBUG__
 #define __NDR_DEBUG__
+
+#ifdef DEBUG_INTERP
 
 #include <commonp.h>
 #include <rpcdbg.h>

@@ -124,7 +124,7 @@ rpc_ss_ur_short_float
     node_size =    sizeof(idl_short_float );
     if (NIDL_node_type == rpc_ss_mutable_node_k)
       p_node = (idl_short_float *)rpc_ss_return_pointer_to_node(
-          p_unmar_params->node_table, node_number, node_size,
+          p_unmar_params->node_table, (unsigned long*)p_referred_to_by, node_size,
           p_unmar_params->p_allocate, &NIDL_already_unmarshalled, (long *)NULL);
     else
     {

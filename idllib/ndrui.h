@@ -211,7 +211,7 @@ void rpc_ss_ndr_u_struct_cs_shadow
 byte_p_t rpc_ss_inquire_pointer_to_node
 (
     rpc_ss_node_table_t tab,
-    unsigned long num,
+    unsigned long *num,
     long *has_been_unmarshalled
 );
 

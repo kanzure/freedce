@@ -940,13 +940,13 @@ byte_p_t rpc_ss_lookup_node_by_num   _DCE_PROTOTYPE_ ((
 
 byte_p_t rpc_ss_lookup_pointer_to_node   _DCE_PROTOTYPE_ ((
     rpc_ss_node_table_t  /*tab*/,
-    unsigned long  /*num*/,
+    unsigned long * /*num*/,
     long * /*has_been_unmarshalled*/
 ));
 
 byte_p_t rpc_ss_return_pointer_to_node   _DCE_PROTOTYPE_ ((
     rpc_ss_node_table_t  /*tab*/,
-    unsigned long  /*num*/,
+    unsigned long * /*num*/,
     long  /*size*/,
     rpc_void_p_t (*p_allocate) _DCE_PROTOTYPE_(( idl_size_t)),
     long * /*has_been_unmarshalled*/,
