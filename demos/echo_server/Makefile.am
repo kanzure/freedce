@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 include $(top_srcdir)/include.mk
 
-IDLFLAGS+=-I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include $(DCETHREADINCLUDES)
+IDL_FLAGS=-I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include $(DCETHREADINCLUDES)
 
 install-strip:	install
 
@@ -22,5 +22,5 @@ echo_client_LDADD=echo_cstub.o $(libs)
 
 echo_server.c: echo.h
 echo.h echo_sstub.o echo_cstub.o: echo.idl
-	$(IDL) $(IDLFLAGS) $(top_srcdir)/demos/echo_server/echo.idl
+	$(IDL) $(IDL_FLAGS) $(top_srcdir)/demos/echo_server/echo.idl
 

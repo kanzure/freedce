@@ -1,4 +1,4 @@
-/* $Id: obase.idl,v 1.2 2005/02/11 20:38:31 lkcl Exp $ 
+/* $Id: obase.idl,v 1.3 2005/02/11 20:54:04 lkcl Exp $ 
  * This file is derived from the DCOM specification 1.0
  * Copyright (C) Microsoft Corporation, 1992-1998.
  * 
@@ -208,32 +208,30 @@ interface ObjectRpcBaseTypes
 		unsigned long flags;               /* OBJREF flags (see above) */
 		GUID          iid;                 /* interface identifier */
 
-#if 0 /* conformant array invalid inside a union...
-		[switch_is(flags), switch_type(unsigned long)] union
-		{
-			[case(OBJREF_STANDARD)] struct
-			{
-				STDOBJREF       std;       /* standard objref */
-				DUALSTRINGARRAY saResAddr; /* resolver address */
-			} u_standard;
+//		[switch_is(flags), switch_type(unsigned long)] union
+//		{
+//			[case(OBJREF_STANDARD)] struct
+//			{
+//				STDOBJREF       std;       /* standard objref */
+//				DUALSTRINGARRAY saResAddr; /* resolver address */
+//			} u_standard;
+//
+//			[case(OBJREF_HANDLER)] struct
+//			{
+//				STDOBJREF       std;       /* standard objref */
+//				CLSID           clsid;     /* Clsid of handler code */
+//				DUALSTRINGARRAY saResAddr; /* resolver address */
+//			} u_handler;
+//
+//			[case(OBJREF_CUSTOM)] struct
+//			{
+//				CLSID           clsid;     /* Clsid of unmarshaling code */
+//				unsigned long   cbExtension;/* size of extension data */
+//				unsigned long   size;      /* size of data that follows */
+//				[size_is(size), ref] byte *pData; /* extension + class specific data */
+//			} u_custom;
+//		} u_objref;
 
-			[case(OBJREF_HANDLER)] struct
-			{
-				STDOBJREF       std;       /* standard objref */
-				CLSID           clsid;     /* Clsid of handler code */
-				DUALSTRINGARRAY saResAddr; /* resolver address */
-			} u_handler;
-
-			[case(OBJREF_CUSTOM)] struct
-			{
-				CLSID           clsid;     /* Clsid of unmarshaling code */
-				unsigned long   cbExtension;/* size of extension data */
-				unsigned long   size;      /* size of data that follows */
-				[size_is(size), ref] byte *pData; /* extension + class specific data */
-			} u_custom;
-		} u_objref;
-
-#endif
 	} OBJREF;
 	/* wire representation of a marshalled interface pointer */
 	typedef struct tagMInterfacePointer
