@@ -177,6 +177,8 @@ olduuid         \({opt_ws}{octet2}{octet2}{octet}{octet_dot}{octet_dot}{octet_do
 uuid            \({opt_ws}{octet2}{octet2_dash}{octet2_dash}{octet2_dash}{octet2_dash}{octet2}{octet2}{octet2}{opt_ws}\)
 other           .
 
+%option yylineno
+
 %%
 {ws}            { /* No action, and no return */ }
 '\n'            { /* GNU FLEX doesnt automatically track line #'s */
@@ -627,8 +629,14 @@ struct nidl_flexxer_state_data {
   int             yy_init;
   int             yy_start;
   int             yy_did_buffer_switch_on_eof;
+#ifdef YY_USES_REJECT
+  yy_state_type  *yy_state_ptr;
+  char           *yy_full_match;
+  int		  yy_lp;
+#else
   yy_state_type   yy_last_accepting_state;
   char          * yy_last_accepting_cpos;
+#endif
   int             yy_more_flag;
   int             yy_more_len;
 
@@ -709,8 +717,14 @@ get_current_nidl_flexxer_activation()
     p->yy_init = yy_init;
     p->yy_start = yy_start;
     p->yy_did_buffer_switch_on_eof = yy_did_buffer_switch_on_eof;
+#ifdef YY_USES_REJECT
+    p->yy_state_ptr = yy_state_ptr;
+    p->yy_full_match = yy_full_match;
+    p->yy_lp = yy_lp;
+#else
     p->yy_last_accepting_state = yy_last_accepting_state;
     p->yy_last_accepting_cpos = yy_last_accepting_cpos;
+#endif
     p->yy_more_flag = yy_more_flag;
     p->yy_more_len = yy_more_len;
 
@@ -757,8 +771,14 @@ set_current_nidl_flexxer_activation(void * ptr)
     yy_init = p->yy_init;
     yy_start = p->yy_start;
     yy_did_buffer_switch_on_eof = p->yy_did_buffer_switch_on_eof;
+#ifdef YY_USES_REJECT
+    yy_state_ptr = p->yy_state_ptr;
+    yy_full_match = p->yy_full_match;
+    yy_lp = p->yy_lp;
+#else
     yy_last_accepting_state = p->yy_last_accepting_state;
     yy_last_accepting_cpos = p->yy_last_accepting_cpos;
+#endif
     yy_more_flag = p->yy_more_flag;
     yy_more_len = p->yy_more_len;
 

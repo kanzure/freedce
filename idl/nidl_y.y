@@ -162,6 +162,7 @@ static ASTP_attr_k_t       ASTP_bound_type;    /* Array bound attribute */
 %token MIN_IS_KW
 %token MUTABLE_KW
 %token OUT_KW
+%token OBJECT_KW
 %token POINTER_DEFAULT_KW
 %token ENDPOINT_KW
 %token PTR_KW

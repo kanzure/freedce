@@ -144,6 +144,8 @@ hex_digit       [0-9A-Fa-f]
 id              {letter}({letter}|{digit})*
 other           .
 
+%option yylineno
+
 %%
 
 
@@ -391,8 +393,14 @@ struct acf_flexxer_state_data {
   int             yy_init;
   int             yy_start;
   int             yy_did_buffer_switch_on_eof;
+#ifdef YY_USES_REJECT
+  yy_state_type  *yy_state_ptr;
+  char           *yy_full_match;
+  int		  yy_lp;
+#else
   yy_state_type   yy_last_accepting_state;
   char          * yy_last_accepting_cpos;
+#endif
 
  #if (YY_FLEX_MAJOR_VERSION == 2) && (YY_FLEX_MINOR_VERSION == 4)
   int             yy_start_stack_ptr;
@@ -471,8 +479,14 @@ get_current_acf_flexxer_activation()
     p->yy_init = yy_init;
     p->yy_start = yy_start;
     p->yy_did_buffer_switch_on_eof = yy_did_buffer_switch_on_eof;
+#ifdef YY_USES_REJECT
+    p->yy_state_ptr = yy_state_ptr;
+    p->yy_full_match = yy_full_match;
+    p->yy_lp = yy_lp;
+#else
     p->yy_last_accepting_state = yy_last_accepting_state;
     p->yy_last_accepting_cpos = yy_last_accepting_cpos;
+#endif
 
     /* FLEX 2.5 does not have these variables.
      * FLEX 2.4 does have them though...
@@ -517,8 +531,14 @@ set_current_acf_flexxer_activation(void * ptr)
     yy_init = p->yy_init;
     yy_start = p->yy_start;
     yy_did_buffer_switch_on_eof = p->yy_did_buffer_switch_on_eof;
+#ifdef YY_USES_REJECT
+    yy_state_ptr = p->yy_state_ptr;
+    yy_full_match = p->yy_full_match;
+    yy_lp = p->yy_lp;
+#else
     yy_last_accepting_state = p->yy_last_accepting_state;
     yy_last_accepting_cpos = p->yy_last_accepting_cpos;
+#endif
 
     /* FLEX 2.5 does not have these variables.
      * FLEX 2.4 does have them though...

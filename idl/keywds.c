@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -156,6 +156,7 @@ static keyword_attrib_t keywords [] = {
 {0, 0, "maybe", MAYBE_KW},
 {0, 0, "min_is", MIN_IS_KW},
 {0, 0, "out", OUT_KW},
+{0, 0, "object", OBJECT_KW},
 {0, 0, "pointer_default", POINTER_DEFAULT_KW},
 {0, 0, "ptr", PTR_KW},
 {0, 0, "reflect_deletions", REFLECT_DELETIONS_KW},

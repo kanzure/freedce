@@ -98,8 +98,8 @@ extern void acf_init(
 
 
 /* Globals */
-int acf_yylineno;
-int nidl_yylineno;
+extern int acf_yylineno;
+extern int nidl_yylineno;
 
 /* Local data definitions. */
 
