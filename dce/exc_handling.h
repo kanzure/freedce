@@ -94,12 +94,10 @@
 */
 
 
-/* we need internal _pthread_cleanup_*_defer() */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
+#ifndef __DCETHREADS_CONF_H
+#  include "dcethreads_conf.h"
 #endif
 
-#include <features.h>
 #include </usr/include/pthread.h>          /* Import platform LinuxThreads */
 #include "pthread_dce_common.h"
 #include "pthread_dce.h"

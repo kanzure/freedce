@@ -46,7 +46,9 @@
  */
 
 
-static char rcsid [] __attribute__((__unused__)) = "$Id: pthread_dce_atfork.c,v 1.1 2000/08/20 08:42:22 mirek-dn Exp $";
+#include "dce/dcethreads_conf.h"
+
+static char rcsid [] __attribute__((__unused__)) = "$Id: pthread_dce_atfork.c,v 1.2 2000/09/02 21:35:55 mirek-dn Exp $";
 
 
 #include </usr/include/pthread.h>

@@ -78,23 +78,23 @@ SUBDIRS = . tests dce
 
 INCLUDES = -I$(top_srcdir)# -I$(top_srcdir)/dce
 
-CFLAGS = -Wall -W -O2 -pipe -Werror -DYIELD_AFTER_PTHREAD_CREATE
+CFLAGS = -Wall -W -O2 -pipe -Werror# -DCOMPILING_DCETHREADS
+DEFS = -DCOMPILING_DCETHREADS -I. -I$(srcdir)
 
-EXTRA_DIST = Versions
+EXTRA_DIST = Versions pthread_dce_atfork.h acconfig.h
 
 #  Build the exception/thread library
 lib_LTLIBRARIES = libdcethreads.la
 libdcethreads_la_SOURCES = exc_handling.c pthd4_libc_wrapers.c  pthread_dce_atfork.c pthread_dce.c pthread_dceexc.c
 
 
-libdcethreads_la_LDFLAGS = -version-info 2:0:0 -Wl,--version-script,./Versions
+libdcethreads_la_LDFLAGS = -version-info 2:1:0 -Wl,--version-script,./Versions
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ./dce/dcethreads_conf.h
 CONFIG_CLEAN_FILES = 
 LTLIBRARIES =  $(lib_LTLIBRARIES)
 
-
-DEFS = @DEFS@ -I. -I$(srcdir) 
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
@@ -106,8 +106,9 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
-Makefile.in NEWS aclocal.m4 config.guess config.sub configure \
-configure.in install-sh ltconfig ltmain.sh missing mkinstalldirs
+Makefile.in NEWS acconfig.h aclocal.m4 config.guess config.sub \
+configure configure.in dce/dcethreads_conf.h.in dce/stamp-h.in \
+install-sh ltconfig ltmain.sh missing mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -136,6 +137,34 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
+
+dce/dcethreads_conf.h: dce/stamp-h
+	@if test ! -f $@; then \
+		rm -f dce/stamp-h; \
+		$(MAKE) dce/stamp-h; \
+	else :; fi
+dce/stamp-h: $(srcdir)/dce/dcethreads_conf.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=dce/dcethreads_conf.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > dce/stamp-h 2> /dev/null
+$(srcdir)/dce/dcethreads_conf.h.in: $(srcdir)/dce/stamp-h.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/dce/stamp-h.in; \
+		$(MAKE) $(srcdir)/dce/stamp-h.in; \
+	else :; fi
+$(srcdir)/dce/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/dce/stamp-h.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f dce/dcethreads_conf.h
+
+maintainer-clean-hdr:
 
 mostlyclean-libLTLIBRARIES:
 
@@ -418,18 +447,18 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-tags mostlyclean-depend \
-		mostlyclean-generic
+mostlyclean-am:  mostlyclean-hdr mostlyclean-libLTLIBRARIES \
+		mostlyclean-compile mostlyclean-libtool \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-libLTLIBRARIES clean-compile clean-libtool clean-tags \
-		clean-depend clean-generic mostlyclean-am
+clean-am:  clean-hdr clean-libLTLIBRARIES clean-compile clean-libtool \
+		clean-tags clean-depend clean-generic mostlyclean-am
 
 clean: clean-recursive
 
-distclean-am:  distclean-libLTLIBRARIES distclean-compile \
+distclean-am:  distclean-hdr distclean-libLTLIBRARIES distclean-compile \
 		distclean-libtool distclean-tags distclean-depend \
 		distclean-generic clean-am
 	-rm -f libtool
@@ -437,7 +466,8 @@ distclean-am:  distclean-libLTLIBRARIES distclean-compile \
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
+maintainer-clean-am:  maintainer-clean-hdr \
+		maintainer-clean-libLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-tags maintainer-clean-depend \
 		maintainer-clean-generic distclean-am
@@ -447,7 +477,8 @@ maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
 clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
 uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
 distclean-compile clean-compile maintainer-clean-compile \

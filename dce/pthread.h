@@ -47,7 +47,11 @@
  *  MA 02139, USA.
  */
 
-    
+ 
+#ifndef __DCETHREADS_CONF_H
+#  include "dcethreads_conf.h"
+#endif
+
 #include </usr/include/pthread.h>           /* Import platform LinuxThreads */
 
 

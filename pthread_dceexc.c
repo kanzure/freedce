@@ -53,8 +53,10 @@
  *  MA 02139, USA.
  */
 
+#include "dce/dcethreads_conf.h"
+
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.2 2000/08/20 08:42:22 mirek-dn Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.3 2000/09/02 21:35:55 mirek-dn Exp $";
 #endif
 
 /*
@@ -69,6 +71,7 @@ static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v
 
 /* #include "dce/exc_handling.h" */
 
+#include "dce/dcethreads_conf.h"
 #include </usr/include/pthread.h>
 
 #define _DCE_PTHREADS_COMPAT_MACROS_

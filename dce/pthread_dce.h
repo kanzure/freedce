@@ -322,7 +322,9 @@
 #ifndef __PTHREAD_DCE
 #define __PTHREAD_DCE
 
-#include <features.h>
+#ifndef __DCETHREADS_CONF_H
+#  include "dcethreads_conf.h"
+#endif
 
 __BEGIN_DECLS
 
