@@ -38,6 +38,12 @@
 #include "rpc_ntlmssp.h"
 #include "crc32.h"
 
+int winbind_auth_chal_request(const char *user, const char *domain,
+			char *chal, int chal_len,
+			char *lm_pw, int lm_pw_len,
+			char *nt_pw, int nt_pw_len,
+			size_t *len, void **blob);
+
 
 static void NTLMSSPcalc_p(ntlmssp_sec_state_p_t a, uchar * data, int len)
 {
@@ -172,7 +178,7 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 {
 	uchar lm_owf[24];
 	uchar nt_owf[128];
-	uchar lm_hash[16]; /* comes back off wire! */
+	NET_USER_INFO_3 info3;
 	size_t lm_owf_len;
 	size_t nt_owf_len;
 	size_t usr_len;
@@ -180,6 +186,12 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 	size_t wks_len;
 	int auth_validated = True;
 	int unicode = False;
+
+	fstring user_name;
+	fstring domain;
+	fstring wks;
+	size_t blob_len = 0;
+	void *blob = NULL;
 
 	RPC_AUTH_NTLMSSP_RESP ntlmssp_resp;
 
@@ -208,20 +220,17 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 	unicode = IS_BITS_SET_ALL
 	    (sec_info->ntlmssp_chal.neg_flags, NTLMSSP_NEGOTIATE_UNICODE);
 
-#if 0
-	fstring user_name;
-	fstring domain;
-	fstring wks;
+	if (unicode)
 	{
 		unibuf_to_ascii(user_name, ntlmssp_resp.user,
-				MIN(ntlmssp_resp.hdr_usr.str_str_len / 2,
-				    sizeof(user_name) - 1));
+				MIN((size_t)(ntlmssp_resp.hdr_usr.str_str_len / 2),
+				    (size_t)(sizeof(user_name) - 1)));
 		unibuf_to_ascii(domain, ntlmssp_resp.domain,
-				MIN(ntlmssp_resp.hdr_domain.str_str_len / 2,
-				    sizeof(domain) - 1));
+				MIN((size_t)(ntlmssp_resp.hdr_domain.str_str_len / 2),
+				    (size_t)(sizeof(domain) - 1)));
 		unibuf_to_ascii(wks, ntlmssp_resp.wks,
-				MIN(ntlmssp_resp.hdr_wks.str_str_len / 2,
-				    sizeof(wks) - 1));
+				MIN((size_t)(ntlmssp_resp.hdr_wks.str_str_len / 2),
+				    (size_t)(sizeof(wks) - 1)));
 	}
 	else
 	{
@@ -230,17 +239,18 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 		fstrcpy(wks, ntlmssp_resp.wks);
 	}
 
-	l->auth_validated = check_domain_security(user_name, domain,
-						  (const uchar *)
-						  sec_info->ntlmssp_chal.challenge,
-						  lm_owf, lm_owf_len, nt_owf,
-						  nt_owf_len, lm_hash) == 0x0;
-#else
-	{
-		UNISTR2 pwd = { 4, 1, 4, { 'T', 'E', 'S', 'T' }};
-		lm_owf_genW(&pwd, lm_hash);
-	}
-#endif
+	RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 3, ("NTLMSSP %s %s\n",
+				  user_name, domain));
+	dump_data(3, sec_info->ntlmssp_chal.challenge, 8);
+	dump_data(3, lm_owf, lm_owf_len);
+	dump_data(3, nt_owf, nt_owf_len);
+	auth_validated = winbind_auth_chal_request(user_name, domain,
+						  (char *)
+						  sec_info->ntlmssp_chal.challenge, 8,
+						  lm_owf, lm_owf_len,
+						  nt_owf, nt_owf_len,
+						  &blob_len, &blob) == 0x0;
+	RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 3, ("status: %d\n", auth_validated));
 
 	if (auth_validated)
 	{
@@ -248,7 +258,16 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 		/****************** lkclXXXX - NTLMv1 ONLY! *****************/
 		/************************************************************/
 
-		ntlmssp_sec_state_init(sec_info, lm_hash, lm_owf, True);
+		prs_struct data_i;
+		prs_create(&data_i, blob, blob_len, 4, UNMARSHALL);
+
+		auth_validated = net_io_user_info3("usr", &info3, &data_i, 0);
+		prs_free_data(&data_i);
+	}
+
+	if (auth_validated)
+	{
+		ntlmssp_sec_state_init(sec_info, info3.padding, lm_owf, True);
 	}
 
 	return auth_validated;

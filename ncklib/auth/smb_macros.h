@@ -72,8 +72,8 @@
 /* assert macros */
 #define SMB_ASSERT(b) ((b)?(void)0: \
         (RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 0,("PANIC: assert failed at %s(%d)\n", \
-		 __FILE__, __LINE__)), smb_panic("assert failed")))
-#define SMB_ASSERT_ARRAY(a,n) SMB_ASSERT((sizeof(a)/sizeof((a)[0])) >= (n))
+		 __FILE__, __LINE__)), exit(1)))
+#define SMB_ASSERT_ARRAY(a,n) SMB_ASSERT(((size_t)(sizeof(a)/sizeof((a)[0]))) >= (n))
 
 /* these are useful macros for checking validity of handles */
 #define OPEN_FSP(fsp)    ((fsp) && !(fsp)->is_directory)

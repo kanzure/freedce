@@ -33,6 +33,10 @@ dnl Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
 AC_CHECK_LIB(dl, dlopen)
 
+SAMBA_TNG_DIRS="/usr/local/samba"
+AC_ARG_WITH(dcethreads-dir, [  --with-samba-tng-dir   Specify where you have installed Samba (The Next Generation)],
+[SAMBA_TNG_DIRS="$withval $SAMBA_TNG_DIRS"])
+
 THREADS_DIRS="/opt/dce"
 AC_ARG_WITH(dcethreads-dir, [  --with-dcethreads-dir   Specify where you have installed dcethreads],
 [THREADS_DIRS="$withval $THREADS_DIRS"])

@@ -261,4 +261,8 @@ void sam_pwd_hash(unsigned int rid, const uchar *in, uchar *out, int forw);
 
 void mdfour(unsigned char *out, const unsigned char *in, int n);
 
+/*The following definitions come from  parse_net.c  */
+
+BOOL net_io_user_info3(const char *, NET_USER_INFO_3 *, prs_struct *, int);
+
 #endif /* _LIB_SMB_PROTO_H_ */

@@ -28,6 +28,7 @@
 
 /* miscellaneous structures / defines */
 #include "rpc_misc.h"
+#include "parse_net.h"
 
 struct parse_struct;
 

@@ -422,6 +422,8 @@
 #include "byteorder.h"
 #include "md5.h"
 #include "hmacmd5.h"
+#include "rpc_parse.h"
+#include "parse_net.h"
 
 /***** automatically generated prototypes *****/
 #include "lib_smb_proto.h"
