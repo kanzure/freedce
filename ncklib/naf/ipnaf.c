@@ -966,9 +966,13 @@ unsigned32              *status;
     rpc_ip_addr_p_t     ip_addr = (rpc_ip_addr_p_t) *rpc_addr;
     boolean             numeric;
 #ifndef DO_NOT_ALLOW_HOSTNAMES
-    struct hostent      *he;
+    struct hostent      he;
 #endif
 
+    size_t buflen;
+    char *buf = NULL;
+    struct hostent *result = NULL;
+    int herr = 0;
 
     CODING_ERROR (status);  
 
@@ -1013,14 +1017,32 @@ unsigned32              *status;
         return;
     }
 
-    he = gethostbyname ((char *) netaddr);
-    if (he == NULL)
+    buflen = 1024;
+    buf = (char*)malloc(buflen);
+
+    while ( 0 != gethostbyname_r((const char *)netaddr,
+                              &he, buf, buflen,
+			      &result, &herr
+			     )
+	)
     {
-        *status = rpc_s_inval_net_addr;
-        return;
+        if (herr != NETDB_INTERNAL || errno != ERANGE)
+	{
+	    free(buf);
+            *status = rpc_s_inval_net_addr;
+            return;
+	}
+        else
+        {
+            /* Enlarge buffer.  */
+            buflen *= 2;
+            free(buf);
+	    buf = malloc(buflen);
+        }
     }
 
-    ip_addr->sa.sin_addr.s_addr = * (unsigned32 *) he->h_addr;
+    ip_addr->sa.sin_addr.s_addr = * (unsigned32 *) he.h_addr;
+    free(buf);
 
     *status = rpc_s_ok;
  
