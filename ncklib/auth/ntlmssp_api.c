@@ -101,6 +101,7 @@ int ntlmssp_sign_seal(ntlmssp_sec_state_p_t sec_info,
 	if (auth_verify)
 	{
 		crc32 = crc32_calc_buffer(data_len, data);
+		sec_info->ntlmssp_seq_num++;
 	}
 	if (auth_seal)
 	{
@@ -111,7 +112,7 @@ int ntlmssp_sign_seal(ntlmssp_sec_state_p_t sec_info,
 
 	make_rpc_auth_ntlmssp_chk(&ntlmssp_chk,
 				  NTLMSSP_SIGN_VERSION, crc32,
-				  sec_info->ntlmssp_seq_num++);
+				  sec_info->ntlmssp_seq_num);
 	dump_data(20, auth_data, auth_data_len);
 	smb_io_rpc_auth_ntlmssp_chk("auth_sign", &ntlmssp_chk, &rverf, 0);
 
