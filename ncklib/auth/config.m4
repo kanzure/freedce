@@ -37,6 +37,6 @@ if test "x${rpc_arg_dummyauth}" = "xyes" ; then
 	AUTH_DUMMY_EXTRAS=""
 	test "x${rpc_arg_ncacn}" = "xyes" && AUTH_DUMMY_EXTRAS="$AUTH_DUMMY_EXTRAS noauthcn.c"
 	test "x${rpc_arg_ncadg}" = "xyes" && AUTH_DUMMY_EXTRAS="$AUTH_DUMMY_EXTRAS noauthdg.c"
-	AC_SUBST(AUTH_DUMMY_EXTRAS)
+	AC_SUBST([AUTH_DUMMY_EXTRAS])
 fi
 

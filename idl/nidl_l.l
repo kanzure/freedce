@@ -72,7 +72,11 @@ static int yywrap(void)
     * are FLEX interfaces to the internal buffering system.
     */
 
+#if (YY_FLEX_MAJOR_VERSION == 2) && (YY_FLEX_MINOR_VERSION == 5)
+   nidl_yy_delete_buffer(YY_CURRENT_BUFFER);
+#else
    nidl_yy_delete_buffer(YY_CURRENT_BUFFER_LVALUE);
+#endif
    nidl_yylineno = 1;
    return 1;
 }
@@ -717,8 +721,12 @@ get_current_nidl_flexxer_activation()
      *
      */
 
-	yyensure_buffer_stack();
+    yyensure_buffer_stack();
+  #if (YY_FLEX_MAJOR_VERSION == 2) && (YY_FLEX_MINOR_VERSION == 5)
+    p->yy_current_buffer = YY_CURRENT_BUFFER;
+  #else
     p->yy_current_buffer = YY_CURRENT_BUFFER_LVALUE;
+  #endif
     p->yy_hold_char = yy_hold_char;
     p->yy_n_chars = yy_n_chars;
     p->yy_c_buf_p = yy_c_buf_p;
@@ -826,7 +834,7 @@ init_new_nidl_flexxer_activation(void)
      *
      */
 
-	yyensure_buffer_stack();
+    yyensure_buffer_stack();
     YY_CURRENT_BUFFER_LVALUE = 0;
     yy_c_buf_p = (char *) 0;
     yy_init = 1;

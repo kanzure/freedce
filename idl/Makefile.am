@@ -41,16 +41,16 @@ CLEANFILES=acf_y.o acf_y.c acf_l.o acf_l.c acf_y.h nidl_y.o nidl_y.c nidl_l.o ni
 # the idl compiler.
 
 acf_y.c acf_y.h:	acf_y.y
-	$(YLWRAP) "$(YACC)" $(srcdir)/acf_y.y y.tab.c acf_y.c y.tab.h acf_y.h -- $(AM_YFLAGS) $(YFLAGS) -p acf_yy -d
+	$(YLWRAP) $(srcdir)/acf_y.y y.tab.c acf_y.c y.tab.h acf_y.h -- "$(YACC)" $(AM_YFLAGS) $(YFLAGS) -p acf_yy -d
 
 acf_l.c: acf_l.l
-	$(YLWRAP) "$(LEX)" $(srcdir)/acf_l.l $(LEX_OUTPUT_ROOT).c acf_l.c -- $(AM_LFLAGS) $(LFLAGS) -Pacf_yy -o$(LEX_OUTPUT_ROOT).c
+	$(YLWRAP) $(srcdir)/acf_l.l $(LEX_OUTPUT_ROOT).c acf_l.c -- "$(LEX)" $(AM_LFLAGS) $(LFLAGS) -Pacf_yy -o$(LEX_OUTPUT_ROOT).c
 
 nidl_y.c nidl_y.h: nidl_y.y
-	$(YLWRAP) "$(YACC)" $(srcdir)/nidl_y.y y.tab.c nidl_y.c y.tab.h nidl_y.h -- $(AM_YFLAGS) $(YFLAGS) -p nidl_yy -d
+	$(YLWRAP) $(srcdir)/nidl_y.y y.tab.c nidl_y.c y.tab.h nidl_y.h -- "$(YACC)" $(AM_YFLAGS) $(YFLAGS) -p nidl_yy -d
 
 nidl_l.c: nidl_l.l
-	$(YLWRAP) "$(LEX)" $(srcdir)/nidl_l.l $(LEX_OUTPUT_ROOT).c nidl_l.c -- $(AM_LFLAGS) $(LFLAGS) -Pnidl_yy -o$(LEX_OUTPUT_ROOT).c
+	$(YLWRAP) $(srcdir)/nidl_l.l $(LEX_OUTPUT_ROOT).c nidl_l.c -- "$(LEX)" $(AM_LFLAGS) $(LFLAGS) -Pnidl_yy -o$(LEX_OUTPUT_ROOT).c
 
 install-exec-local:
 	test -f $(bindir)/idl || $(LN_S) dceidl $(bindir)/idl

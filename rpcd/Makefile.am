@@ -6,7 +6,7 @@ C_FLAGS=-DNCK -D_POSIX_SOURCE=1 -I$(top_srcdir)/ncklib/include -I$(top_srcdir)/n
 CFLAGS+=$(C_FLAGS)
 CXXFLAGS+=$(C_FLAGS)
 
-IDLFLAGS=-keep c_source -v -no_mepv -cepv -client none -server none -I. -I$(IDL_INCLUDE_DIR)/.. $(DCETHREADINCLUDES)
+IDLFLAGS+=-keep c_source -v -no_mepv -cepv -client none -server none -I. -I$(IDL_INCLUDE_DIR)/.. $(DCETHREADINCLUDES)
 
 bin_PROGRAMS=rpcd
 

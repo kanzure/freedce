@@ -3,7 +3,7 @@ include $(top_builddir)/config.mk
 dce_includes=-I$(top_srcdir)/include $(DCETHREADINCLUDES)
 
 CFLAGS= -g -Wall -W -O -pipe -Werror
-INCLUDES+=$(dce_includes)
+INCLUDES=$(dce_includes)
 
 SUFFIXES=.idl
 

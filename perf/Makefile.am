@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 include $(top_srcdir)/include.mk
 
-IDLFLAGS=-no_mepv -I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include $(DCETHREADINCLUDES)
+IDLFLAGS+=-no_mepv -I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include $(DCETHREADINCLUDES)
 libs=$(top_builddir)/dcelib/libdcerpc.la \
 	$(top_builddir)/uuid/libuuid.la -lstdc++ \
 	$(top_builddir)/ncklib/transport/cn/libprot_ncacn.la \

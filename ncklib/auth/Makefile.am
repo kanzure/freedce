@@ -4,7 +4,10 @@ include $(top_srcdir)/ncklib/ncklib.mk
 
 if AUTH_DUMMY
 auth_none=libauth_none.la
-libauth_none_la_SOURCES=noauth.c @AUTH_DUMMY_EXTRAS@
+libauth_none_la_SOURCES=noauth.c 
+EXTRA_libauth_none_la="noauthcn.c noauthdg.c"
+libauth_none_la_LIBADD = @AUTH_DUMMY_EXTRAS@
+libauth_none_la_DEPENDENCIES = @AUTH_DUMMY_EXTRAS@
 endif
 
 if AUTH_NTLMSSP

@@ -1,4 +1,4 @@
-/* $Id: obase.idl,v 1.1 2001/07/26 18:56:14 wez Exp $ 
+/* $Id: obase.idl,v 1.2 2005/02/11 20:38:31 lkcl Exp $ 
  * This file is derived from the DCOM specification 1.0
  * Copyright (C) Microsoft Corporation, 1992-1998.
  * 
@@ -208,6 +208,7 @@ interface ObjectRpcBaseTypes
 		unsigned long flags;               /* OBJREF flags (see above) */
 		GUID          iid;                 /* interface identifier */
 
+#if 0 /* conformant array invalid inside a union...
 		[switch_is(flags), switch_type(unsigned long)] union
 		{
 			[case(OBJREF_STANDARD)] struct
@@ -232,6 +233,7 @@ interface ObjectRpcBaseTypes
 			} u_custom;
 		} u_objref;
 
+#endif
 	} OBJREF;
 	/* wire representation of a marshalled interface pointer */
 	typedef struct tagMInterfacePointer

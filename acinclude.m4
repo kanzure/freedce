@@ -1,5 +1,5 @@
-dnl $Revision: 1.6 $
-AC_DEFUN(RPC_ARG_DEFINE,
+dnl $Revision: 1.7 $
+AC_DEFUN([RPC_ARG_DEFINE],
 [
 AC_ARG_ENABLE($1,
 dnl $1=option name
@@ -28,7 +28,7 @@ fi
 ])
 
 dnl Find out where the dcethreads library has been installed
-AC_DEFUN(RPC_CHECK_LIBDIR,
+AC_DEFUN([RPC_CHECK_LIBDIR],
 dnl RPC_CHECK_LIBDIR(func, library, dirs,action-present,action-notpresent)
 [AC_PREREQ([2.13])
 AC_CACHE_CHECK([for -l$2 in one of $3], [rpc_libdir_$2],
@@ -58,7 +58,7 @@ else	:
 fi])
 
 dnl Find out where the dcethreads includes has been installed
-AC_DEFUN(RPC_CHECK_INCDIR,
+AC_DEFUN([RPC_CHECK_INCDIR],
 dnl RPC_CHECK_LIBDIR(header, desc, dirs, action-present, action-notpresent)
 [AC_PREREQ([2.13])
 AC_CACHE_CHECK([for $2 header in one of $3], [rpc_incdir_$2],
