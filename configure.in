@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(uuid/uuid.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(freedce, 1.1.0.5)
+AM_INIT_AUTOMAKE(freedce, 2.0)
 
 AC_PREFIX_DEFAULT(/opt/dce)
 
@@ -19,12 +19,17 @@ AC_PROG_YACC
 dnl Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
 
-RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, /opt/dce,,
+THREADS_DIRS="/opt/dce"
+
+AC_ARG_WITH(dcethreads-dir, [  --with-dcethreads-dir   Specify where you have installed dcethreads],
+[THREADS_DIRS="$withval $THREADS_DIRS"])
+
+RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, $THREADS_DIRS,,
 AC_MSG_ERROR([freedce requires libdcethreads!]))
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(features.h sys/cdefs.h)
-RPC_CHECK_INCDIR(dce/pthread_exc.h, dcethreads, /opt/dce,,
+RPC_CHECK_INCDIR(dce/pthread_exc.h, dcethreads, $THREADS_DIRS,,
 AC_MSG_ERROR([freedce requires dcethreads include files!]))
 DCETHREADINCLUDES="${rpc_incdir_dcethreads+-I$rpc_incdir_dcethreads}"
 AC_SUBST(DCETHREADINCLUDES)

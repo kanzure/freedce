@@ -1,4 +1,4 @@
-dnl $Revision: 1.2 $
+dnl $Revision: 1.3 $
 AC_DEFUN(RPC_ARG_DEFINE,
 [
 AC_ARG_ENABLE($1,
@@ -37,9 +37,9 @@ if test "$rpc_libdir_$2" = "no"; then
 	LIBS="-l$2 $rpc_func_save_LIBS"
 	AC_TRY_LINK_FUNC([$1], [rpc_libdir_$2="none required"])
 	test "$rpc_libdir_$2" = "no" && for i in $3; do
-		LIBS="-L$i -l$2 $rpc_func_save_LIBS"
+		LIBS="-L$i/lib -l$2 $rpc_func_save_LIBS"
 		AC_TRY_LINK_FUNC([$1],
-		[rpc_libdir_$2="$i"
+		[rpc_libdir_$2="$i/lib"
 		break])
 	done
 fi
@@ -63,8 +63,8 @@ AC_CACHE_CHECK([for $2 header in one of $3], [rpc_incdir_$2],
 [rpc_incdir_$2="no"
 AC_CHECK_HEADER($1, [rpc_incdir_$2="none required"])
 test "$rpc_incdir_$2" = "no" && for i in $3; do
-	AC_CHECK_HEADER($i/$1,
-		[rpc_incdir_$2="$i"
+	AC_CHECK_HEADER($i/include/$1,
+		[rpc_incdir_$2="$i/include"
 		break])
 done])
 if test "rpc_incdir_$2" = "no"; then
