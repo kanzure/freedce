@@ -86,6 +86,8 @@
 #endif
 
 #ifdef DEBUG
+#include <ctype.h>
+#define RPC_CN_MEM_DUMP_CHAR(c) (isprint((char)c) ? c : '.')
 #define RPC_CN_MEM_DUMP(addr, len, acc)\
 {\
     if (RPC_DBG2(rpc_e_dbg_cn_pkt, RPC_C_CN_DBG_PKT_DUMP))\
@@ -94,6 +96,8 @@
         char  *p_, buff_[80];\
         for (i_ = 0; i_ < (len);)\
         {\
+		unsigned16 i2_ = i_; \
+		unsigned16 acc2 = acc; \
             p_ = buff_;\
             sprintf(p_, "PACKET: <%04d> ", (acc));\
             p_ = buff_ + strlen(buff_);\
@@ -105,6 +109,17 @@
                 p_ = buff_ + strlen(buff_);\
                 i_ += 2;\
                 (acc) += 2;\
+            }\
+            sprintf(p_, "\t");\
+		p_ += 1; \
+            for (j_ = 0; (i2_ < (len)) && (j_ < 8); j_++)\
+            {\
+                sprintf(p_, "%c%c",\
+                                 (char)RPC_CN_MEM_DUMP_CHAR(((char *)(addr))[i2_]),\
+                                 (char)RPC_CN_MEM_DUMP_CHAR(((char *)(addr))[i2_ + 1]));\
+                p_ += 2; \
+                i2_ += 2;\
+                (acc2) += 2;\
             }\
             sprintf(p_, "\n");\
             RPC_DBG_PRINTF(rpc_e_dbg_cn_pkt, RPC_C_CN_DBG_PKT_DUMP, (buff_));\
