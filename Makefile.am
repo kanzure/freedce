@@ -5,3 +5,7 @@ SUBDIRS=idl include idllib uuid ncklib dcelib rpcd dcom demos .
 
 EXTRA_DIST=include.mk perf/*
 
+dist-hook:
+	-chmod -R a+r $(distdir)
+	$(TAR) choIf $(distdir).tar.bz2 $(distdir)
+
