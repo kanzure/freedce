@@ -56,7 +56,7 @@
 #include "dce/dcethreads_conf.h"
 
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.3 2000/09/02 21:35:55 mirek-dn Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.4 2000/10/09 13:33:38 wez Exp $";
 #endif
 
 /*
@@ -125,7 +125,7 @@ do {								\
 				break;				\
 	case EINVAL:		RAISE(pthread_badparam_e);      \
 				break;                          \
-	default:		printf("map_errno_to_exc: hucking a %d\n", x); RAISE(pthread_badparam_e);      \
+	default:		printf(__FUNCTION__ ": map_errno_to_exc: hucking a %d\n", x); RAISE(pthread_badparam_e);      \
 				break;				\
 	}							\
 } while (0)
@@ -990,7 +990,7 @@ pthd4exc_atfork(void *userstate,
 	cb.cb.fh4.parent = parent_fork;
 	cb.cb.fh4.child  = child_fork;
 	res = pthd4_pthread_atfork(&cb);
-	if (!res)
+	if (res != SUCCESS)
 		pthd4_map_errno_to_exc(res);
 }
 
