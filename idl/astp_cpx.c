@@ -168,8 +168,7 @@ ASTP_array_index_n_t *ASTP_array_index_node
 {
     ASTP_array_index_n_t *index_node_ptr;
 
-    index_node_ptr =
-            (ASTP_array_index_n_t *) CALLOC (1, sizeof (ASTP_array_index_n_t));
+    index_node_ptr = NEW (ASTP_array_index_n_t);
 
     /* Fill in array bound type for lower and upper bounds */
     index_node_ptr->lower_bound_type = lower_bound_type;
@@ -232,8 +231,7 @@ AST_array_index_n_t *AST_array_index_node
                         *index_node;
 
 
-    index_vector = (AST_array_index_n_t *)
-                      CALLOC (1, (sizeof (AST_array_index_n_t)) * array_size);
+    index_vector = NEW_VEC (AST_array_index_n_t, array_size);
 
     for (i = 0, index_node = index_vector;
          i<array_size;
@@ -269,8 +267,7 @@ AST_array_n_t *AST_array_node
 {
     AST_array_n_t *array_node_ptr;
 
-    array_node_ptr =
-            (AST_array_n_t *) CALLOC (1, sizeof (AST_array_n_t));
+    array_node_ptr = NEW (AST_array_n_t);
 
 
     /* Link in the element type */
@@ -302,8 +299,7 @@ AST_field_attr_n_t *AST_field_attr_node
 {
     AST_field_attr_n_t *field_attr_node_ptr;
 
-    field_attr_node_ptr = (AST_field_attr_n_t *)
-                            CALLOC (1, sizeof (AST_field_attr_n_t));
+    field_attr_node_ptr = NEW (AST_field_attr_n_t);
     ASTP_set_fe_info((ASTP_node_t *)field_attr_node_ptr, fe_field_attr_n_k);
 
     return field_attr_node_ptr;
@@ -335,8 +331,7 @@ AST_field_ref_n_t *AST_field_ref_node
     AST_field_ref_n_t *field_ref_vector,
                       *field_ref_node;
 
-    field_ref_vector = (AST_field_ref_n_t *)
-                      CALLOC (1, (sizeof (AST_field_ref_n_t)) * dimension);
+    field_ref_vector = NEW_VEC (AST_field_ref_n_t, dimension);
 
     for (i = 0, field_ref_node = field_ref_vector;
          i<dimension;
@@ -381,8 +376,7 @@ AST_type_n_t *AST_structure_node
      * Allocate and initialize the structure node which contains the
      * tag name and pointer to field list.
      */
-    structure_node_ptr =
-            (AST_structure_n_t  *) CALLOC (1, sizeof (AST_structure_n_t));
+    structure_node_ptr = NEW (AST_structure_n_t);
     structure_node_ptr->fields = field_list;
     structure_node_ptr->tag_name = identifier;
     ASTP_set_fe_info((ASTP_node_t *)structure_node_ptr,fe_structure_n_k);
@@ -573,8 +567,7 @@ AST_case_label_n_t *AST_case_label_node
     /*
      * Allocate and fill fields of case label node
      */
-    case_label_node =
-            (AST_case_label_n_t  *) CALLOC (1, sizeof (AST_case_label_n_t));
+    case_label_node = NEW (AST_case_label_n_t);
     case_label_node->default_label = FALSE;
     case_label_node->value = case_label;
 
@@ -658,8 +651,7 @@ AST_type_n_t *AST_disc_union_node
     /*
      * Allocate and initiailze the disc_union node
      */
-    disc_union_node_ptr =
-            (AST_disc_union_n_t  *) CALLOC (1, sizeof (AST_disc_union_n_t));
+    disc_union_node_ptr = NEW (AST_disc_union_n_t);
     disc_union_node_ptr->tag_name = identifier;
     disc_union_node_ptr->union_name = union_name;
     disc_union_node_ptr->discrim_name = disc_name;
@@ -824,7 +816,7 @@ AST_arm_n_t *AST_arm_node
     /*
      * Allocate and initialize a node representing one case of this disc union.
      */
-    arm_node_ptr = (AST_arm_n_t *) CALLOC (1, sizeof (AST_arm_n_t));
+    arm_node_ptr = NEW (AST_arm_n_t);
     arm_node_ptr->labels = label;
     arm_node_ptr->name = name;
     arm_node_ptr->type = type;
@@ -875,7 +867,7 @@ static AST_field_n_t * AST_field_node
     /*
      * Create and initialize a node to contain a field of a structure.
      */
-    field_node_ptr = (AST_field_n_t *) CALLOC (1, sizeof (AST_field_n_t));
+    field_node_ptr = NEW (AST_field_n_t);
     field_node_ptr->name = field_name;
 
     /*
@@ -1270,7 +1262,7 @@ void ASTP_patch_tag_references
                 /* Construct a minimal struct - not needed for its content */
                 AST_structure_n_t *struct_p;
                 struct_p = type_node_ptr->type_structure.structure =
-                    (AST_structure_n_t *)CALLOC(1, sizeof(AST_structure_n_t));
+                    NEW (AST_structure_n_t);
                 ASTP_set_fe_info((ASTP_node_t *)struct_p, fe_structure_n_k);
                 struct_p->tag_name = tag_ref_node_ptr->name;
                 continue;

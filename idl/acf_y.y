@@ -1558,7 +1558,7 @@ static acf_param_t *alloc_param()
     }
     else
     {
-        p = (acf_param_t *)MALLOC(sizeof(acf_param_t));
+        p = NEW (acf_param_t);
         p->next                 = NULL;
         p->parameter_attr.mask  = 0;
         p->param_id             = NAMETABLE_NIL_ID;

@@ -98,7 +98,7 @@ ASTP_type_attr_n_t *AST_array_bound_info
 {
     ASTP_type_attr_n_t *attr_node_p;
 
-    attr_node_p = (ASTP_type_attr_n_t *) CALLOC(1, sizeof(ASTP_type_attr_n_t));
+    attr_node_p = NEW (ASTP_type_attr_n_t);
 
     attr_node_p->kind = kind ;
     attr_node_p->name = name;
@@ -189,7 +189,7 @@ AST_constant_n_t *AST_constant_node
 {
     AST_constant_n_t *constant_node_p;
 
-    constant_node_p = (AST_constant_n_t *) CALLOC (1, sizeof(AST_constant_n_t));
+    constant_node_p = NEW (AST_constant_n_t);
 
     constant_node_p->name = NAMETABLE_NIL_ID;
     constant_node_p->kind = kind;
@@ -223,8 +223,7 @@ static AST_operation_n_t *AST_create_operation_node
 {
     AST_operation_n_t *operation_node_p;
 
-    operation_node_p = (AST_operation_n_t  *)
-                        CALLOC (1, sizeof (AST_operation_n_t ));
+    operation_node_p = NEW (AST_operation_n_t);
     ASTP_set_fe_info((ASTP_node_t *)operation_node_p, fe_operation_n_k);
 
     operation_node_p->name = op_name;
@@ -262,8 +261,7 @@ ASTP_declarator_n_t *AST_declarator_node
 {
     ASTP_declarator_n_t  *declarator_node_ptr;
 
-    declarator_node_ptr =
-            (ASTP_declarator_n_t  *) CALLOC (1, sizeof (ASTP_declarator_n_t ));
+    declarator_node_ptr = NEW (ASTP_declarator_n_t );
 
     declarator_node_ptr->name = name;
 
@@ -327,8 +325,7 @@ void AST_declarator_operation
     /*
      * Create and initialize the new declarator operation
      */
-    declarator_op =
-            (ASTP_declarator_op_n_t  *) CALLOC (1, sizeof (ASTP_declarator_op_n_t ));
+    declarator_op = NEW (ASTP_declarator_op_n_t);
     declarator_op->op_kind = op_kind;
 
     /*
@@ -503,8 +500,7 @@ AST_type_n_t *AST_enumerator_node
     /*
      * Allocate and initialize the enumeration node
      */
-    enum_node_ptr =
-            (AST_enumeration_n_t *) CALLOC (1, sizeof (AST_enumeration_n_t));
+    enum_node_ptr = NEW (AST_enumeration_n_t);
     type_node_ptr = AST_type_node(AST_enum_k);
 
 
@@ -562,7 +558,7 @@ AST_export_n_t *AST_export_node
     if (export_ptr == NULL) return NULL;
 
     /* Build export node */
-    export_node_ptr = (AST_export_n_t *) CALLOC (1, sizeof (AST_export_n_t));
+    export_node_ptr = NEW (AST_export_n_t);
 
     export_node_ptr->kind = kind;
 
@@ -912,7 +908,7 @@ AST_include_n_t *AST_include_node
 {
     AST_include_n_t *include_node_ptr;
 
-    include_node_ptr = (AST_include_n_t *) CALLOC (1, sizeof (AST_include_n_t));
+    include_node_ptr = NEW (AST_include_n_t);
     include_node_ptr->file_name = include_file;
     include_node_ptr->simple_file_name = include_file_name;
     ASTP_set_fe_info((ASTP_node_t *)include_node_ptr, fe_include_n_k);
@@ -942,7 +938,7 @@ AST_import_n_t *AST_import_node
 {
     AST_import_n_t *import_node_ptr;
 
-    import_node_ptr = (AST_import_n_t *) CALLOC (1, sizeof (AST_import_n_t));
+    import_node_ptr = NEW (AST_import_n_t);
 
     import_node_ptr->file_name = imported_file;
 
@@ -993,7 +989,7 @@ AST_exception_n_t *AST_exception_node
         return NULL;
     }
 
-    excep_node_ptr = (AST_exception_n_t *)CALLOC(1, sizeof (AST_exception_n_t));
+    excep_node_ptr = NEW (AST_exception_n_t);
     excep_node_ptr->name = excep_name;
     ASTP_set_fe_info((ASTP_node_t *)excep_node_ptr, fe_exception_n_k);
 
@@ -1024,7 +1020,7 @@ AST_name_n_t *AST_name_node
 {
     AST_name_n_t *name_node_ptr;
 
-    name_node_ptr = (AST_name_n_t *) CALLOC (1, sizeof (AST_name_n_t));
+    name_node_ptr = NEW (AST_name_n_t);
     name_node_ptr->name = name;
     /* This node doesn't carry any fe_info */
 
@@ -1133,8 +1129,7 @@ AST_interface_n_t *AST_interface_node
 {
     AST_interface_n_t *interface_node_p;
 
-    interface_node_p =
-                (AST_interface_n_t *) CALLOC (1, sizeof (AST_interface_n_t));
+    interface_node_p = NEW (AST_interface_n_t);
 
     ASTP_set_fe_info((ASTP_node_t *)interface_node_p, fe_interface_n_k);
     ASTP_CLR_IF_AF(interface_node_p);
@@ -1585,8 +1580,7 @@ AST_parameter_n_t * AST_parameter_node
 {
     AST_parameter_n_t  * parameter_node_ptr;
 
-    parameter_node_ptr = (AST_parameter_n_t  *)
-                            CALLOC (1, sizeof (AST_parameter_n_t ));
+    parameter_node_ptr = NEW (AST_parameter_n_t);
 
     ASTP_set_fe_info((ASTP_node_t *)parameter_node_ptr, fe_parameter_n_k);
 
@@ -1634,7 +1628,7 @@ AST_rep_as_n_t *AST_represent_as_node
 {
     AST_rep_as_n_t *represent_as_node;
 
-    represent_as_node = (AST_rep_as_n_t  *) CALLOC (1, sizeof(AST_rep_as_n_t ));
+    represent_as_node = NEW (AST_rep_as_n_t);
 
     represent_as_node->type_name = name;
     represent_as_node->file_name = STRTAB_NULL_STR;
@@ -1660,7 +1654,7 @@ AST_cs_char_n_t *AST_cs_char_node
 {
     AST_cs_char_n_t *cs_char_node;
 
-    cs_char_node = (AST_cs_char_n_t  *) CALLOC (1, sizeof(AST_cs_char_n_t ));
+    cs_char_node = NEW (AST_cs_char_n_t);
 
     cs_char_node->type_name = name;
 
@@ -1789,14 +1783,14 @@ void ASTP_parse_port
         interface_p->number_of_ports++;
         if (interface_p->number_of_ports == 1)
         {
-            interface_p->protocol = (STRTAB_str_t *)MALLOC(sizeof(STRTAB_str_t));
-            interface_p->endpoints = (STRTAB_str_t *)MALLOC(sizeof(STRTAB_str_t));
+            interface_p->protocol  = NEW (STRTAB_str_t);
+            interface_p->endpoints = NEW (STRTAB_str_t);
         }
         else {
-            interface_p->protocol = (STRTAB_str_t *)REALLOC(interface_p->protocol,
-                interface_p->number_of_ports * sizeof(STRTAB_str_t));
-            interface_p->endpoints = (STRTAB_str_t *)REALLOC(interface_p->endpoints,
-                interface_p->number_of_ports * sizeof(STRTAB_str_t));
+	    interface_p->protocol =
+		RENEW (interface_p->protocol, interface_p->number_of_ports);
+	    interface_p->endpoints =
+		RENEW (interface_p->endpoints, interface_p->number_of_ports);
         }
         (interface_p->protocol)[i] = protocol_id;
         (interface_p->endpoints)[i] = endpoint_id;
@@ -1853,7 +1847,7 @@ AST_type_n_t *AST_type_node
 {
     AST_type_n_t *type_node_ptr;
 
-    type_node_ptr = (AST_type_n_t *) CALLOC (1, sizeof (AST_type_n_t));
+    type_node_ptr = NEW (AST_type_n_t);
 
     type_node_ptr->name = NAMETABLE_NIL_ID;
     type_node_ptr->kind = kind;
@@ -1937,7 +1931,7 @@ AST_type_p_n_t *AST_type_ptr_node
 {
     AST_type_p_n_t *type_p_node;
 
-    type_p_node = (AST_type_p_n_t  *) CALLOC (1, sizeof (AST_type_p_n_t ));
+    type_p_node = NEW (AST_type_p_n_t );
 
     ASTP_set_fe_info((ASTP_node_t *)type_p_node, fe_type_p_n_k);
 
@@ -2224,8 +2218,7 @@ AST_type_n_t *AST_pipe_node
     /*
      * Allocate and initialize the pipe node
      */
-    pipe_node_ptr =
-            (AST_pipe_n_t *) CALLOC (1, sizeof (AST_pipe_n_t));
+    pipe_node_ptr = NEW (AST_pipe_n_t);
     type_node_ptr = AST_type_node(AST_pipe_k);
 
 

@@ -206,7 +206,7 @@ static void type_visit
 {
     visit_t             *visit_p;
 
-    visit_p = (visit_t *)MALLOC(sizeof(visit_t));
+    visit_p = NEW (visit_t);
 
     visit_p->next = visited_list;
     visit_p->type = type_p;

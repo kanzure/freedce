@@ -80,8 +80,7 @@ static void IR_push_scope
         IR_scope_t      *new_scope_a;
         int             i;
 
-        new_scope_a = (IR_scope_t *)MALLOC(sizeof(IR_scope_t) *
-                                            ctx_p->scope_stack_size * 2);
+	new_scope_a = NEW_VEC (IR_scope_t, ctx_p->scope_stack_size * 2);
         for (i = 0; i < ctx_p->scope_stack_size; i++)
         {
             new_scope_a[i].scope_k = ctx_p->scope_a[i].scope_k;
@@ -146,8 +145,7 @@ static void IR_push_type
         IR_type_scope_t *new_type_s_a;
         int             i;
 
-        new_type_s_a = (IR_type_scope_t *)MALLOC(sizeof(IR_type_scope_t) *
-                                                 ctx_p->type_stack_size * 2);
+	new_type_s_a = NEW_VEC (IR_type_scope_t, ctx_p->type_stack_size * 2);
         for (i = 0; i < ctx_p->type_stack_size; i++)
             new_type_s_a[i] = ctx_p->type_s_a[i];
 
@@ -206,15 +204,13 @@ IR_scope_ctx_t *IR_init_scope           /* Returns ptr to new scope context */
 {
     IR_scope_ctx_t      *ctx_p;
 
-    ctx_p = (IR_scope_ctx_t *)MALLOC(sizeof(IR_scope_ctx_t));
+    ctx_p = NEW (IR_scope_ctx_t);
     ctx_p->param_p      = param_p;
     ctx_p->saved_inst_p = NULL;
-    ctx_p->type_s_a     = (IR_type_scope_t *)MALLOC(sizeof(IR_type_scope_t) *
-                                                    IR_TYP_STACK_INIT);
+    ctx_p->type_s_a     = NEW_VEC (IR_type_scope_t, IR_TYP_STACK_INIT);
     ctx_p->type_s_a[0].type_p = NULL;
     ctx_p->type_s_a[0].flags  = 0;
-    ctx_p->scope_a      = (IR_scope_t *)MALLOC(sizeof(IR_scope_t) *
-                                               IR_SCP_STACK_INIT);
+    ctx_p->scope_a      = NEW_VEC (IR_scope_t, IR_SCP_STACK_INIT);
     ctx_p->scope_a[0].scope_k = IR_SCP_TOPLEVEL;
     ctx_p->scope_a[0].type_p  = NULL;
     ctx_p->scope_a[0].inst_p  = NULL;

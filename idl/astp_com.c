@@ -584,7 +584,7 @@ AST_pointer_n_t * AST_pointer_node
 {
     AST_pointer_n_t * pointer_node_ptr;
 
-    pointer_node_ptr = (AST_pointer_n_t *) CALLOC (1, sizeof (AST_pointer_n_t));
+    pointer_node_ptr = NEW (AST_pointer_n_t);
     pointer_node_ptr->pointee_type = pointee;
     ASTP_set_fe_info((ASTP_node_t *)pointer_node_ptr,fe_pointer_n_k);
     return pointer_node_ptr;
@@ -1563,8 +1563,7 @@ static void ASTP_save_field_ref_context
 {
     ASTP_field_ref_ctx_t *field_ref_ctx_ptr;
 
-    field_ref_ctx_ptr = (ASTP_field_ref_ctx_t *)
-                            CALLOC (1, sizeof (ASTP_field_ref_ctx_t));
+    field_ref_ctx_ptr = NEW (ASTP_field_ref_ctx_t);
     field_ref_ctx_ptr->fe_info = fe_info;
 
     /* Save context and link to context list */
@@ -2465,7 +2464,7 @@ void ASTP_save_tag_ref
      * fill in the structure information in the type node when it becomes
      * known.
      */
-    tag_ref_node_ptr = (ASTP_tag_ref_n_t *) CALLOC (1, sizeof (ASTP_tag_ref_n_t));
+    tag_ref_node_ptr = NEW (ASTP_tag_ref_n_t);
     tag_ref_node_ptr->ref_kind = kind;
     tag_ref_node_ptr->name = identifier;
     tag_ref_node_ptr->type_node_ptr = type_node_ptr;

@@ -480,8 +480,7 @@ NAMETABLE_id_t NAMETABLE_add_id
      * it into the tree.
      */
 
-    This = (NAMETABLE_id_t) MALLOC (sizeof (NAMETABLE_n_t) +
-                                                strlen (id) + 1);
+    This = MALLOC (sizeof (NAMETABLE_n_t) + strlen (id) + 1);
 
     /* Get a pointer to the buffer after the nametable node. */
     np = This;
@@ -503,7 +502,7 @@ NAMETABLE_id_t NAMETABLE_add_id
 
     /* If a temporary node, record it. */
     if (NAMETABLE_names_are_temporary) {
-        new_temp_name_block = (NAMETABLE_temp_name_t*)MALLOC (sizeof (NAMETABLE_temp_name_t));
+        new_temp_name_block = NEW (NAMETABLE_temp_name_t);
         new_temp_name_block->next = NAMETABLE_temp_chain;
         new_temp_name_block->node = This;
         NAMETABLE_temp_chain = new_temp_name_block;
@@ -640,7 +639,7 @@ boolean NAMETABLE_add_binding
          */
 
         /* Allocate and initialize the new binding. */
-        bindingP = (NAMETABLE_binding_n_t *) MALLOC (sizeof (NAMETABLE_binding_n_t));
+        bindingP = NEW (NAMETABLE_binding_n_t);
         bindingP->oldBinding = NULL;
 
     } else {
@@ -654,7 +653,7 @@ boolean NAMETABLE_add_binding
 
 
         /* Allocate and init this binding, making it the chain head. */
-        newBindingP = (NAMETABLE_binding_n_t *) MALLOC (sizeof (NAMETABLE_binding_n_t));
+        newBindingP = NEW (NAMETABLE_binding_n_t);
         newBindingP->oldBinding = bindingP;
         bindingP = newBindingP;
     };
@@ -747,7 +746,7 @@ boolean NAMETABLE_add_tag_binding
          */
 
         /* Allocate and initialize the new binding. */
-        bindingP = (NAMETABLE_binding_n_t *) MALLOC (sizeof (NAMETABLE_binding_n_t));
+        bindingP = NEW (NAMETABLE_binding_n_t);
         bindingP->oldBinding = NULL;
 
     } else {
@@ -761,7 +760,7 @@ boolean NAMETABLE_add_tag_binding
 
 
         /* Allocate and init this binding, making it the chain head. */
-        newBindingP = (NAMETABLE_binding_n_t *) MALLOC (sizeof (NAMETABLE_binding_n_t));
+        newBindingP = NEW (NAMETABLE_binding_n_t);
         newBindingP->oldBinding = bindingP;
         bindingP = newBindingP;
     };

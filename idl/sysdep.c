@@ -69,7 +69,7 @@ char *sysdep_save_temp
         char new_name[64];
         char *new_name_ptr;
         sprintf(new_name,"IDL%02d.TMP", temp_count);
-        new_name_ptr = temp_names[temp_count] = MALLOC(strlen(new_name)+1);
+        new_name_ptr = temp_names[temp_count] = NEW_VEC (char, strlen(new_name) + 1);
         strcpy(temp_names[temp_count++], new_name);
         unlink(new_name);
         if(rename(old_name, new_name))

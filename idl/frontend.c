@@ -525,7 +525,7 @@ static boolean already_imported
      */
     if (!alr_imp)
     {
-        imported_file = (FE_import_file_n_t *) MALLOC (sizeof(FE_import_file_n_t));
+        imported_file = NEW (FE_import_file_n_t);
         imported_file -> imported_fn_id = new_import_fn_id;
         imported_file -> imported_full_fn_id = new_import_full_fn_id;
         imported_file -> next = imported_file_list;
@@ -1038,8 +1038,7 @@ static boolean parse_idl        /* Returns true on success */
          */
         if (FILE_lookup(file_name, NULL, &stat_buf, imported_fn))
         {
-            imported_file = (FE_import_file_n_t *)
-                            MALLOC(sizeof(FE_import_file_n_t));
+            imported_file = NEW (FE_import_file_n_t);
             imported_file->imported_fn_id = STRTAB_add_string(file_name_part);
             imported_file->imported_full_fn_id = STRTAB_add_string(imported_fn);
             imported_file->next = imported_file_list;

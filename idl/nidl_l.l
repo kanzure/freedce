@@ -454,7 +454,7 @@ static void yymark()
     char    *source ; /* Source file name in #line directive */
     int prev_lineno = nidl_yylineno - 1;
 
-    source = (char *) MALLOC(yyleng) ;
+    source = NEW_VEC (char, yyleng);
     source[0] ='\0';
     /* If the format wasn't # line {int} {string}, then reparse without "line" identifier */
     if (sscanf((char *)yytext, "# line %d %s", &nidl_yylineno, source) < 1)

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  * (c) Copyright 1989 OPEN SOFTWARE FOUNDATION, INC.
  * (c) Copyright 1989 HEWLETT-PACKARD COMPANY
  * (c) Copyright 1989 DIGITAL EQUIPMENT CORPORATION
@@ -16,7 +16,7 @@
  * Packard Company, nor Digital Equipment Corporation makes any
  * representations about the suitability of this software for any
  * purpose.
- * 
+ *
  */
 /*
 **
@@ -126,24 +126,105 @@ typedef enum {
  * The macros guarantee that control will not return to the caller without
  * memory; therefore the call site doesn't have to test.
  */
-/*
- *  A temp pointer to be used by the MALLOC macros.
+
+/**
+ * Returns pointer to a new allocated object of the specified type.
+ * It behaves like C++ new. The returned pointer is already correctly typed to
+ * type *. So you should not cast it. Let the compiler detect any errors
+ * instead of casting.
+ *
+ * The the returned memory is cleared.
+ *
+ * @param type of the object that should be allocated
+ * @return a valid pointer correctly typed
  */
-static heap_mem * MALLOC_temp_ptr __attribute__((__unused__));
+#define NEW(type)							\
+( __extension__								\
+	({								\
+		type * __local_pointer = calloc(1, sizeof(type));	\
+		if (NULL == __local_pointer)				\
+			error (NIDL_OUTOFMEM);				\
+		__local_pointer;					\
+	}))
 
-#define MALLOC(n)                                \
-    (((MALLOC_temp_ptr = (heap_mem*)calloc (1,(n))) == (heap_mem*)NULL) ?  \
-        (error (NIDL_OUTOFMEM), (heap_mem*)NULL) : MALLOC_temp_ptr)
 
-#define CALLOC(n,m)                                   \
-    (((MALLOC_temp_ptr = (heap_mem*)calloc ((n), (m))) == (heap_mem*)NULL) ?  \
-        (error (NIDL_OUTOFMEM), (heap_mem*)NULL) : MALLOC_temp_ptr)
+/**
+ * Allocates and returns pointer to a vector of objects.
+ * It behaves like C++ new. The returned pointer is already correctly typed to
+ * type *. So you should not cast it. Let the compiler detect any errors
+ * instead of casting.
+ *
+ * The the returned memory is cleared.
+ *
+ * @notice size is the _number_ of objects to be allocated
+ *
+ * @param type of the object that should be allocated
+ * @param size number of objects to be allocated
+ * @return a valid pointer correctly typed
+ */
+#define NEW_VEC(type, size)						\
+( __extension__								\
+	({								\
+		type * __local_pointer = calloc((size), sizeof(type));	\
+		if (NULL == __local_pointer)				\
+			error (NIDL_OUTOFMEM);				\
+		__local_pointer;					\
+	}))
 
-#define REALLOC(p,n)                                           \
-    (((MALLOC_temp_ptr = (heap_mem*)realloc ((char*)(p), (n))) == (heap_mem*)NULL) ? \
-        (error (NIDL_OUTOFMEM), (heap_mem*)NULL) : MALLOC_temp_ptr )
 
-#define FREE(p) free ((heap_mem*) (p));
+/**
+ * Reallocates prevoiusly allocated memory area and returns the pointer to it.
+ * It behaves like C++ new and C realloc. The returned pointer is already
+ * correctly typed to typeof(pointer). So you should not cast it. Let the compiler
+ * detect any errors instead of casting.
+ *
+ * The the returned memory is _not_ cleared.
+ *
+ * @notice size is the _number_ of objects to be allocated
+ *
+ * @param pointer points to previously allocated vector
+ * @param size number of objects to be allocated
+ * @return a valid pointer correctly typed
+ */
+#define RENEW(pointer, size)							\
+( __extension__									\
+	({									\
+		__typeof__ (pointer) __local_pointer;				\
+		__local_pointer =						\
+			realloc((pointer),					\
+				size * sizeof(__typeof__ (* (pointer))));	\
+		if (NULL == __local_pointer)					\
+			error (NIDL_OUTOFMEM);					\
+		__local_pointer;						\
+	}))
+
+
+/**
+ * Allocates some memory area.
+ * The returned pointer is always valid. Do not use this function. The better
+ * sollution is to use one of the above *NEW* function which return already
+ * typed pointers.
+ *
+ * @param size of the area to be allocated
+ * @return a valid pointer to the allocated memory
+ */
+#define MALLOC(size)						\
+( __extension__							\
+	({							\
+		void * __local_pointer = calloc(1, (size));	\
+		if (NULL == __local_pointer)			\
+			error (NIDL_OUTOFMEM);			\
+		__local_pointer;				\
+	}))
+
+
+
+/**
+ * Frees memory allocated with one of the above functions
+ *
+ * @param pointer to the memory to be freed
+ */
+#define FREE(pointer) free (pointer);
 
 
 /*

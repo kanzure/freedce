@@ -177,7 +177,7 @@ static NAMETABLE_id_t
  */
 #define DDBE_NEW_ENTRY(new_p, p_defn_p, _comment)\
 {\
-    new_p = (DDBE_vec_rep_t *)MALLOC(sizeof(DDBE_vec_rep_t));\
+    new_p = NEW (DDBE_vec_rep_t);\
     DDBE_STRTAB_ENTRY(new_p->comment, _comment);\
     /* Insert new entry after current element (p_defn_p) and make it current */\
     new_p->next    = (*(p_defn_p))->next;\
@@ -192,7 +192,7 @@ static NAMETABLE_id_t
  */
 #define DDBE_VEC_SENTINEL(vec_rep_p) \
 { \
-    (vec_rep_p) = (DDBE_vec_rep_t *)MALLOC(sizeof(DDBE_vec_rep_t)); \
+    (vec_rep_p) = NEW (DDBE_vec_rep_t); \
     (vec_rep_p)->kind = DDBE_vec_noop_k; \
     (vec_rep_p)->next = NULL; \
 }
@@ -979,7 +979,7 @@ static void DDBE_init_vectors
 {
     DDBE_vectors_t      *vip;       /* Vector information pointer */
 
-    *p_vip = vip = (DDBE_vectors_t *)MALLOC(sizeof(DDBE_vectors_t));
+    *p_vip = vip = NEW (DDBE_vectors_t);
 
     DDBE_VEC_SENTINEL(vip->defn_p);
     DDBE_VEC_SENTINEL(vip->type_p);
@@ -995,7 +995,7 @@ static void DDBE_init_vectors
     vip->ind_sp    = NULL;
     vip->tup_sp    = NULL;
     vip->ast_int_p = int_p;
- 
+
     /* Re-initializable data */
     DDBE_VEC_INIT(vip);
 }
@@ -1156,7 +1156,7 @@ static void DDBE_push_indirection_scope
      * Save current vector pointer on indirection stack.  Current vector
      * becomes definition vector for the life of the indirection.
      */
-    new_p = (DDBE_ind_stack_t *)MALLOC(sizeof(DDBE_ind_stack_t));
+    new_p = NEW (DDBE_ind_stack_t);
     new_p->ind_p = *(vip->p_cur_p);
     new_p->off_p = vip->offset_p;
     new_p->rtn_p = vip->rtn_p;
@@ -1244,13 +1244,11 @@ static void DDBE_operation_info
 {
     AST_parameter_n_t   *param_p;
 
-    oper_p->be_info.dd_oper = (DDBE_oper_i_t *)CALLOC(1, sizeof(DDBE_oper_i_t));
+    oper_p->be_info.dd_oper = NEW (DDBE_oper_i_t);
 
     for (param_p = oper_p->parameters; param_p != NULL; param_p = param_p->next)
-        param_p->be_info.dd_param = 
-            (DDBE_param_i_t *)CALLOC(1, sizeof(DDBE_param_i_t));
-    oper_p->result->be_info.dd_param =
-        (DDBE_param_i_t *)CALLOC(1, sizeof(DDBE_param_i_t));
+        param_p->be_info.dd_param = NEW (DDBE_param_i_t);
+    oper_p->result->be_info.dd_param = NEW (DDBE_param_i_t);
 }
 
 
@@ -1274,7 +1272,7 @@ static void DDBE_type_info
     DDBE_type_i_t   *type_i_p;      /* Ptr to backend type info node */
     char    inst_name[MAX_ID+1];    /* Instance name */
 
-    type_i_p = (DDBE_type_i_t *)CALLOC(1, sizeof(DDBE_type_i_t));
+    type_i_p = NEW (DDBE_type_i_t);
 
     /*
      * Construct a unique name so that an instance of this type can be spelled
@@ -1350,7 +1348,7 @@ static void DDBE_op_type_indirect
      * Save current (next) tuple pointer on tuple stack.
      * Switch tuple pointer over to type's data_tups.
      */
-    new_p = (DDBE_tup_stack_t *)MALLOC(sizeof(DDBE_tup_stack_t));
+    new_p = NEW (DDBE_tup_stack_t);
     new_p->tup_p    = tup_p->next;
     new_p->next     = vip->tup_sp;
     vip->tup_sp     = new_p;

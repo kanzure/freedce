@@ -924,7 +924,7 @@ int FILE_execute_cmd
     int     status;
 
     /* Alloc space and create command string */
-    cmd = (char *)MALLOC(strlen(cmd_string) + strlen(p1) + strlen(p2) + 3);
+    cmd = NEW_VEC (char, strlen(cmd_string) + strlen(p1) + strlen(p2) + 3);
     cmd[0] = '\0';
     strcat(cmd,cmd_string);
     strcat(cmd," ");

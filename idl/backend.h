@@ -72,7 +72,5 @@ void BE_pop_malloc_ctx
 
 heap_mem *BE_ctx_malloc
 (
-#ifdef PROTO
-      int size
-#endif
+      size_t size
 );

@@ -495,7 +495,7 @@ static char *alloc_and_copy     /* Returns address of new string */
     if (orig_str == NULL || orig_str[0] == '\0')
         return UNSPECIFIED;     /* Empty string */
 
-    new_str = (char *)MALLOC(strlen(orig_str) + 1);
+    new_str = NEW_VEC (char, strlen(orig_str) + 1);
 
     strcpy(new_str, orig_str);
 
@@ -1111,7 +1111,7 @@ boolean CMD_parse_args          /* Returns TRUE on success */
                 error(NIDL_FILENOTDIR, out_dir);
             else
             {
-                out_dir = (char *)MALLOC(strlen(odir)+1);
+		out_dir = NEW_VEC (char, strlen(odir) + 1);
                 strcpy(out_dir, odir);
             }
         else

@@ -173,7 +173,7 @@ static void be_init
  */
 typedef struct malloc_t {
       struct malloc_t *next;    /* Pointer to next allocation on this chain */
-      char *data;               /* Start of memory returned to caller */
+      void *data;               /* Start of memory returned to caller */
       } malloc_t;
 
 /*
@@ -194,25 +194,22 @@ static malloc_ctx_t *malloc_ctx = NULL;
 ** BE_ctx_malloc: allocate memory in the current context.
 */
 heap_mem *BE_ctx_malloc
-#ifdef PROTO
 (
-    int size
+    size_t size
 )
-#else
-(size)
-    int size;
-#endif
 {
       malloc_t *new;
 
       /* If no malloc context, just return memory */
-      if (malloc_ctx == NULL) return MALLOC(size);
+      if (malloc_ctx == NULL)
+	  return MALLOC (size);
 
       /* If current malloc context is permanent, then just return memory */
-      if (malloc_ctx->permanent == true) return MALLOC(size);
+      if (malloc_ctx->permanent == true)
+	  return MALLOC (size);
 
       /* Allocate memory with our context header */
-      new = (malloc_t *)MALLOC(size + sizeof(malloc_t));
+      new = MALLOC (size + sizeof(malloc_t));
 
       /* Link the new allocation on the current context list */
       new->next = malloc_ctx->list;
@@ -220,11 +217,12 @@ heap_mem *BE_ctx_malloc
 
 #ifdef DUMPERS
       /* If BE_zero_mem set, initialize allocated memory to help find bugs */
-      if (BE_zero_mem) memset(&new->data, 0xFF, size);
+      if (BE_zero_mem)
+	  memset(&new->data, 0xFF, size);
 #endif
 
       /* Return the value after our header for use by the caller */
-      return (heap_mem*)&new->data;
+      return &new->data;
 }
 
 /*
@@ -243,11 +241,11 @@ void BE_push_malloc_ctx
        * Allocate a malloc context block to hang allocations made in this
        * context off of.
        */
-      malloc_ctx_t *new = (malloc_ctx_t*)MALLOC(sizeof(malloc_ctx_t));
+      malloc_ctx_t *new = NEW (malloc_ctx_t);
 
       /* Link new context on the top of the context stack */
       new->next = malloc_ctx;
-      new->list = (malloc_t*)NULL;
+      new->list = NULL;
       new->permanent = false;
       malloc_ctx = new;
 }

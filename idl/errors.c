@@ -252,7 +252,7 @@ static error_log_rec_t *alloc_log_rec
     error_log_rec_t *log_rec_p;
     int             i;
 
-    log_rec_p = (error_log_rec_t *) MALLOC(sizeof(error_log_rec_t));
+    log_rec_p = NEW (error_log_rec_t);
 
     log_rec_p->lineno  = lineno;
     log_rec_p->filename = filename;

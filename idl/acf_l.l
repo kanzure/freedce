@@ -216,7 +216,7 @@ static void acf_yymark()
     char    *source ; /* Source file name in #line directive */
     int prev_lineno = acf_yylineno - 1;
 
-    source = (char *) MALLOC(yyleng) ;
+    source = NEW_VEC (char, yyleng);
     if (sscanf((char *)yytext, "# line %d %s", &acf_yylineno, source) < 1)
     {
 	if (sscanf((char *)yytext, "# %d %s", &acf_yylineno, source) < 1)

@@ -64,7 +64,7 @@ static void IR_gen_type_rep(
 #define IR_INIT_INFO(node_p)\
 {\
     /* Create an IREP information node */\
-    node_p->ir_info = (IR_info_n_t *)CALLOC(1, sizeof(IR_info_n_t));\
+    node_p->ir_info = NEW (IR_info_n_t);\
 }
 
 
@@ -78,10 +78,10 @@ static void IR_gen_type_rep(
 #define IR_INIT_NODE(node_p)\
 {\
     /* Create an IREP information node */\
-    node_p->ir_info = (IR_info_n_t *)CALLOC(1, sizeof(IR_info_n_t));\
+    node_p->ir_info = NEW (IR_info_n_t);\
 \
     /* Create a sentinel tuple to simplify list manipulation */\
-    node_p->data_tups = (IR_tup_n_t *)MALLOC(sizeof(IR_tup_n_t));\
+    node_p->data_tups = NEW (IR_tup_n_t);\
     node_p->data_tups->opcode = IR_op_noop_k;\
     node_p->data_tups->flags  = 0;\
     node_p->data_tups->next   = NULL;\
@@ -166,7 +166,7 @@ static IR_tup_n_t *IR_gen_irep_tup  /* Returns ptr to generated tuple */
 {
     IR_tup_n_t          *tup_p;     /* Ptr to irep tuple and args */
 
-    tup_p = (IR_tup_n_t *)MALLOC(sizeof(IR_tup_n_t));
+    tup_p = NEW (IR_tup_n_t);
     tup_p->opcode = opcode;
     tup_p->flags  = 0;
     tup_p->next   = NULL;
@@ -731,7 +731,7 @@ static void IR_gen_union_type_rep
      */
     if (num_arms != 0)
     {
-    array_p = (IR_case_info_n_t *)MALLOC(num_arms * sizeof(IR_case_info_n_t));
+    array_p = NEW_VEC (IR_case_info_n_t, num_arms);
     beg_array_p = array_p;
     end_array_p = array_p;
     for (arm_p = union_p->arms; arm_p != NULL; arm_p = arm_p->next)
