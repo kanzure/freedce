@@ -51,6 +51,23 @@
 
 #include <comprot.h>
 
+#include <comp.h>
+void rpc__module_init_func(void)
+{
+	static rpc_protocol_id_elt_t prot[1] = {
+		{
+			rpc__ncadg_init,                /* Datagram-RPC */
+			NULL,
+			RPC_C_PROTOCOL_ID_NCADG,
+			NULL, NULL, NULL, NULL 
+		}
+	};
+	rpc__register_protocol_id(prot, 1);
+}
+
+
+
+
 void rpc__ncadg_init
 #ifdef _DCE_PROTO_
 (

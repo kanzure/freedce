@@ -395,7 +395,7 @@ INTERNAL void init_once(void)
 
 	/* pre-load modules */
 	rpc__load_modules();
-	
+
 	for (ctr = 0; ctr < RPC_C_NAF_ID_MAX; ctr++)
 	{
 		naf = (rpc_naf_id_elt_p_t) &(rpc_g_naf_id[ctr]);

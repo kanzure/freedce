@@ -556,67 +556,6 @@ unsigned32          *status;
     unsigned32          version_major;
     unsigned32          version_minor;
 
-    /*
-     * Static table used on by this routine.
-     *
-     * This table contains the valid combination of protocol ids for
-     * upper floor 3 and the lower tower floors.  This table maps each
-     * combination to the appropriate RPC protocol id sequence.
-     * 
-     * Note, we use RPC_C_PROTSEQ_ID_MAX+1 since there are two entries
-     * in our table for RPC_C_PROTSEQ_ID_NCACN_OSI_DNA - one for nsp
-     * and the other for tp4.  (This came about since Phase V session
-     * control does not allow selection between the two.
-     */
-    static rpc_tower_prot_ids_t   rpc_tower_prot_ids[RPC_C_PROTSEQ_ID_MAX+1] =
-    {
-        { RPC_C_PROTSEQ_ID_NCACN_IP_TCP,   3, 
-          { {0x0B,   { 0, 0, 0, 0, 0, {0} }},
-            {0x07,   { 0, 0, 0, 0, 0, {0} }},
-            {0x09,   { 0, 0, 0, 0, 0, {0} }},
-            {0x00,   { 0, 0, 0, 0, 0, {0} }}
-          }
-        },
-        { RPC_C_PROTSEQ_ID_NCACN_DNET_NSP, 4, 
-           { {0x0B,   { 0, 0, 0, 0, 0, {0} }},
-             {0x02,   { 0, 0, 0, 0, 0, {0} }},
-             {0x04,   { 0, 0, 0, 0, 0, {0} }},
-             {0x06,   { 0, 0, 0, 0, 0, {0} }} 
-           } 
-        },
-        { RPC_C_PROTSEQ_ID_NCACN_OSI_DNA,  4, 
-           { {0x0B,   { 0, 0, 0, 0, 0, {0} }},
-             {0x03,   { 0, 0, 0, 0, 0, {0} }},
-             {0x04,   { 0, 0, 0, 0, 0, {0} }},
-             {0x06,   { 0, 0, 0, 0, 0, {0} }}
-           } 
-        },
-        { RPC_C_PROTSEQ_ID_NCACN_OSI_DNA,  4, 
-           { {0x0B,   { 0, 0, 0, 0, 0, {0} }},
-             {0x03,   { 0, 0, 0, 0, 0, {0} }},
-             {0x05,   { 0, 0, 0, 0, 0, {0} }},
-             {0x06,   { 0, 0, 0, 0, 0, {0} }}
-           } 
-        },
-        { RPC_C_PROTSEQ_ID_NCADG_IP_UDP,   3, 
-           { {0x0A,   { 0, 0, 0, 0, 0, {0} }},
-             {0x08,   { 0, 0, 0, 0, 0, {0} }},
-             {0x09,   { 0, 0, 0, 0, 0, {0} }},
-             {0x00,   { 0, 0, 0, 0, 0, {0} }}
-           } 
-        },
-        { RPC_C_PROTSEQ_ID_NCADG_DDS,      3, 
-           { {0x0A,   { 0, 0, 0, 0, 0, {0} }},
-             {0x0D,   {0x9865a080UL, 0xbb73, 0x11c9, 0x96, 0x3c, 
-                    {0x08,0x00, 0x2b, 0x13, 0xec, 0x4e}}},
-             {0x0D,   {0x9b86b6a0UL, 0xbb73, 0x11c9, 0xb8, 0x89, 
-                    {0x08, 0x00, 0x2b, 0x13, 0xec, 0x4e}}},
-             {0x00,   { 0, 0, 0, 0, 0, {0} }}
-           } 
-        }
-    };
-
-
     CODING_ERROR (status);
 
     /*  
@@ -742,14 +681,14 @@ unsigned32          *status;
      * RPC_C_PROTSEQ_ID_NCACN_OSI_DNA - one for nsp 
      * and the other for tp4.
      */
-    for (i = 0; i < RPC_C_PROTSEQ_ID_MAX + 1; i++)
+    for (i = 0; i < rpc_g_tower_prot_id_number; i++)
     {
         /*
          * If the number of floors to process does not
          * match the number of floors for this protocol
          * sequence, skip it.
          */
-        if (floors_to_search != rpc_tower_prot_ids[i].num_floors)
+        if (floors_to_search != rpc_g_tower_prot_ids[i].num_floors)
         {
             continue;
         }
@@ -760,13 +699,13 @@ unsigned32          *status;
          * a local array.  Do this for the number
          * of floors in this protocol sequence.
          */
-        for (k = 0; k < rpc_tower_prot_ids[i].num_floors; k++)
+        for (k = 0; k < rpc_g_tower_prot_ids[i].num_floors; k++)
         {
             master_prot_ids[k].prefix = 
-                rpc_tower_prot_ids[i].floor_prot_ids[k].prefix;
+                rpc_g_tower_prot_ids[i].floor_prot_ids[k].prefix;
 
             master_prot_ids[k].uuid = 
-                rpc_tower_prot_ids[i].floor_prot_ids[k].uuid;
+                rpc_g_tower_prot_ids[i].floor_prot_ids[k].uuid;
         }
 
         /*
@@ -781,7 +720,7 @@ unsigned32          *status;
          */
         *status = rpc_s_ok;
 
-        for (k = 0; k < rpc_tower_prot_ids[i].num_floors; k++)
+        for (k = 0; k < rpc_g_tower_prot_ids[i].num_floors; k++)
         {
             for (j = 0; j < floors_to_search; j++)
             {
@@ -807,7 +746,7 @@ unsigned32          *status;
         /*
          * See if a match was found
          */
-        for (k = 0, match = true; k < rpc_tower_prot_ids[i].num_floors; k++)
+        for (k = 0, match = true; k < rpc_g_tower_prot_ids[i].num_floors; k++)
         {
             if (master_prot_ids[k].prefix != 0)
             {
@@ -818,7 +757,7 @@ unsigned32          *status;
 
         if (match)
         {
-            *protseq_id = rpc_tower_prot_ids[i].rpc_protseq_id;
+            *protseq_id = rpc_g_tower_prot_ids[i].rpc_protseq_id;
 
             /*
              * Status is already set above.

@@ -188,6 +188,62 @@ GLOBAL rpc_mem_stats_elt_t  rpc_g_mem_stats[RPC_C_MEM_MAX_TYPES];
 GLOBAL rpc_g_ns_specific_free_fn_t  rpc_g_ns_specific_free_fn = NULL;
 
 
+
+/* This table is used only by comtwrref.c to validate towers, but we need
+ * it accessible by the dynamic loading code so that new modules can register
+ * with the runtime.
+ * We allocate extra space, since there may be mulitple entries: eg
+ * RPC_C_PROTSEQ_ID_NCACN_OSI_DNA
+ * */
+GLOBAL unsigned32 rpc_g_tower_prot_id_number = 0;	/* number of elts in rpc_g_tower_prot_ids */
+GLOBAL rpc_tower_prot_ids_t rpc_g_tower_prot_ids[RPC_C_PROTSEQ_ID_MAX*2] = 
+{
+#if 0
+	{ RPC_C_PROTSEQ_ID_NCACN_IP_TCP,   3, 
+		{ {0x0B,   { 0, 0, 0, 0, 0, {0} }},
+			{0x07,   { 0, 0, 0, 0, 0, {0} }},
+			{0x09,   { 0, 0, 0, 0, 0, {0} }},
+			{0x00,   { 0, 0, 0, 0, 0, {0} }}
+		}
+	},
+	{ RPC_C_PROTSEQ_ID_NCACN_DNET_NSP, 4, 
+		{ {0x0B,   { 0, 0, 0, 0, 0, {0} }},
+			{0x02,   { 0, 0, 0, 0, 0, {0} }},
+			{0x04,   { 0, 0, 0, 0, 0, {0} }},
+			{0x06,   { 0, 0, 0, 0, 0, {0} }} 
+		} 
+	},
+	{ RPC_C_PROTSEQ_ID_NCACN_OSI_DNA,  4, 
+		{ {0x0B,   { 0, 0, 0, 0, 0, {0} }},
+			{0x03,   { 0, 0, 0, 0, 0, {0} }},
+			{0x04,   { 0, 0, 0, 0, 0, {0} }},
+			{0x06,   { 0, 0, 0, 0, 0, {0} }}
+		} 
+	},
+	{ RPC_C_PROTSEQ_ID_NCACN_OSI_DNA,  4, 
+		{ {0x0B,   { 0, 0, 0, 0, 0, {0} }},
+			{0x03,   { 0, 0, 0, 0, 0, {0} }},
+			{0x05,   { 0, 0, 0, 0, 0, {0} }},
+			{0x06,   { 0, 0, 0, 0, 0, {0} }}
+		} 
+	},
+	{ RPC_C_PROTSEQ_ID_NCADG_IP_UDP,   3, 
+		{ {0x0A,   { 0, 0, 0, 0, 0, {0} }},
+			{0x08,   { 0, 0, 0, 0, 0, {0} }},
+			{0x09,   { 0, 0, 0, 0, 0, {0} }},
+			{0x00,   { 0, 0, 0, 0, 0, {0} }}
+		} 
+	},
+	{ RPC_C_PROTSEQ_ID_NCADG_DDS,      3, 
+		{ {0x0A,   { 0, 0, 0, 0, 0, {0} }},
+			{0x0D,   {0x9865a080UL, 0xbb73, 0x11c9, 0x96, 0x3c, {0x08,0x00, 0x2b, 0x13, 0xec, 0x4e}}},
+			{0x0D,   {0x9b86b6a0UL, 0xbb73, 0x11c9, 0xb8, 0x89, {0x08, 0x00, 0x2b, 0x13, 0xec, 0x4e}}},
+			{0x00,   { 0, 0, 0, 0, 0, {0} }}
+		} 
+	}
+#endif
+};
+
 /***********************************************************************/
 /*
  * R P C _ G _ P R O T S E Q _ I D
@@ -239,6 +295,7 @@ GLOBAL
 #endif
 rpc_protseq_id_elt_t     rpc_g_protseq_id[RPC_C_PROTSEQ_ID_MAX] = 
 {
+#if 0
     {                                   /* Connection-RPC / IP / TCP */
         0,
         RPC_C_PROTSEQ_ID_NCACN_IP_TCP,
@@ -306,6 +363,7 @@ rpc_protseq_id_elt_t     rpc_g_protseq_id[RPC_C_PROTSEQ_ID_MAX] =
         (rpc_port_restriction_list_p_t) NULL
 #endif /* TEST_PROTOCOL */
     }
+#endif
 };
 
 
@@ -345,6 +403,7 @@ rpc_protseq_id_elt_t     rpc_g_protseq_id[RPC_C_PROTSEQ_ID_MAX] =
 
 GLOBAL rpc_protocol_id_elt_t     rpc_g_protocol_id[RPC_C_PROTOCOL_ID_MAX] = 
 {
+#if 0
 #ifdef PROT_NCACN
     {
         rpc__ncacn_init,                /* Connection-RPC */
@@ -374,6 +433,7 @@ GLOBAL rpc_protocol_id_elt_t     rpc_g_protocol_id[RPC_C_PROTOCOL_ID_MAX] =
         RPC_C_PROTOCOL_ID_NCATP,
         NULL, NULL, NULL, NULL 
     }
+#endif
 #endif
 };
 
@@ -408,6 +468,7 @@ GLOBAL rpc_protocol_id_elt_t     rpc_g_protocol_id[RPC_C_PROTOCOL_ID_MAX] =
 
 GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] = 
 {
+#if 0
     {NULL, 0, 0, NULL},
     {NULL, 0, 0, NULL},
 #ifdef NAF_IP_STATIC
@@ -464,6 +525,7 @@ GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] =
 #else
     {NULL, 0, 0, NULL}
 #endif
+#endif
 };
 
 /***********************************************************************/
@@ -503,7 +565,7 @@ GLOBAL rpc_naf_id_elt_t     rpc_g_naf_id[RPC_C_NAF_ID_MAX] =
 
 GLOBAL rpc_authn_protocol_id_elt_t rpc_g_authn_protocol_id[RPC_C_AUTHN_PROTOCOL_ID_MAX] =
 {
-
+#if 0
     {                               /* 0 */
         NULL, 
         rpc_c_authn_none, 
@@ -539,6 +601,7 @@ GLOBAL rpc_authn_protocol_id_elt_t rpc_g_authn_protocol_id[RPC_C_AUTHN_PROTOCOL_
         NULL,
 		  NULL
     }
+#endif 
 };
 
 

@@ -10,5 +10,3 @@ noinst_LTLIBRARIES=libtrans.la
 
 libtrans_la_SOURCES=comsoc_bsd.c
 
-libtrans_la_LIBADD=cn/libtranscon.la dg/libtransdgram.la
-

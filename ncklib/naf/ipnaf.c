@@ -271,11 +271,61 @@ INTERNAL void inq_max_frag_size _DCE_PROTOTYPE_ ((
 **/
 
 #if !NAF_IP_STATIC
-#include <comnafimage.h>
-RPC_MODULE_INIT_NAF_FUNC(
-		RPC_C_NAF_ID_IP,
-		rpc__ip_init,
-		RPC_C_NETWORK_IF_ID_DGRAM);
+#include <comp.h>
+PRIVATE void rpc__module_init_func(void)
+{
+	static rpc_naf_id_elt_t naf[1] = {
+		{
+			rpc__ip_init,
+			RPC_C_NAF_ID_IP,
+			RPC_C_NETWORK_IF_ID_DGRAM,
+			NULL
+		}
+	};
+	static rpc_tower_prot_ids_t prot_ids[2] = {
+		{ RPC_C_PROTSEQ_ID_NCADG_IP_UDP,   3, 
+			{ {0x0A,   { 0, 0, 0, 0, 0, {0} }},
+				{0x08,   { 0, 0, 0, 0, 0, {0} }},
+				{0x09,   { 0, 0, 0, 0, 0, {0} }},
+				{0x00,   { 0, 0, 0, 0, 0, {0} }}
+			} 
+		},
+
+		{ RPC_C_PROTSEQ_ID_NCACN_IP_TCP,   3, 
+			{ {0x0B,   { 0, 0, 0, 0, 0, {0} }},
+				{0x07,   { 0, 0, 0, 0, 0, {0} }},
+				{0x09,   { 0, 0, 0, 0, 0, {0} }},
+				{0x00,   { 0, 0, 0, 0, 0, {0} }}
+			}
+		}
+	};
+	static rpc_protseq_id_elt_t seq_ids[2] = {
+    {                                   /* Connection-RPC / IP / TCP */
+        0,
+        RPC_C_PROTSEQ_ID_NCACN_IP_TCP,
+        RPC_C_PROTOCOL_ID_NCACN,
+        RPC_C_NAF_ID_IP,
+        RPC_C_NETWORK_PROTOCOL_ID_TCP,
+        RPC_C_NETWORK_IF_ID_STREAM,
+        RPC_PROTSEQ_NCACN_IP_TCP,
+        (rpc_port_restriction_list_p_t) NULL
+    },
+    {                                   /* Datagram-RPC / IP / UDP */
+        0,
+        RPC_C_PROTSEQ_ID_NCADG_IP_UDP,
+        RPC_C_PROTOCOL_ID_NCADG,
+        RPC_C_NAF_ID_IP,
+        RPC_C_NETWORK_PROTOCOL_ID_UDP,
+        RPC_C_NETWORK_IF_ID_DGRAM,
+        RPC_PROTSEQ_NCADG_IP_UDP,
+        (rpc_port_restriction_list_p_t) NULL
+    }
+
+	};
+	rpc__register_protseq(seq_ids, 2);
+	rpc__register_tower_prot_id(prot_ids, 2);
+	rpc__register_naf_id(naf, 1);
+}
 #endif
 
 PRIVATE void  rpc__ip_init 

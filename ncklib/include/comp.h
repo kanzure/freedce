@@ -128,6 +128,38 @@ typedef struct
  */
 EXTERNAL rpc_protocol_id_elt_t   rpc_g_protocol_id[];
 
+/*
+ * Protocol Sequence ID Table
+ * 
+ * This table contains the valid combination of protocol ids
+ * for upper floor 3 and the lower tower floors.
+ * This table maps each combination to the appropriate 
+ * RPC protocol id sequence.  
+ *
+ * The field num_floors provides for the number of significant
+ * floors comprising the RPC protocol sequence.
+ * This table is used only by comtwrref.c to validate towers, but we need
+ * it accessible by the dynamic loading code so that new modules can register
+ * with the runtime.
+ * We allocate extra space, since there may be mulitple entries: eg
+ * RPC_C_PROTSEQ_ID_NCACN_OSI_DNA
+ * */
+typedef struct
+{
+    unsigned8               prefix;
+    uuid_t                  uuid;
+} rpc_flr_prot_id_t, *rpc_flr_prot_id_p_t;
+
+typedef struct
+{
+    rpc_protseq_id_t        rpc_protseq_id;
+    unsigned8               num_floors;
+    rpc_flr_prot_id_t       floor_prot_ids[RPC_C_MAX_NUM_NETWORK_FLOORS + 1];
+} rpc_tower_prot_ids_t, *rpc_tower_prot_ids_p_t;
+EXTERNAL rpc_tower_prot_ids_t rpc_g_tower_prot_ids[RPC_C_PROTSEQ_ID_MAX*2];
+EXTERNAL unsigned32 rpc_g_tower_prot_id_number;	/* number of elts in rpc_g_tower_prot_ids */
+
+
 
 /***********************************************************************/
 /*
@@ -178,7 +210,7 @@ typedef struct
  * "i".  While redundant, this is useful so that you can pass pointers
  * to individual table elements.
  */
-EXTERNAL rpc_naf_id_elt_t   rpc_g_naf_id[];
+EXTERNAL rpc_naf_id_elt_t   rpc_g_naf_id[RPC_C_NAF_ID_MAX];
 
 /***********************************************************************/
 /*
@@ -233,7 +265,7 @@ typedef struct
  * is always "i".  While redundant, this is useful so that you can pass
  * pointers to individual table elements.
  */
-EXTERNAL rpc_authn_protocol_id_elt_t  rpc_g_authn_protocol_id[];
+EXTERNAL rpc_authn_protocol_id_elt_t  rpc_g_authn_protocol_id[RPC_C_AUTHN_PROTOCOL_ID_MAX];
 
 /*
  * Accessor macros for the Auth Protocol ID table.
@@ -360,6 +392,8 @@ PRIVATE void rpc__if_inq_endpoint _DCE_PROTOTYPE_ ((
         unsigned_char_t         ** /*endpoint*/,
         unsigned32              * /*status*/
     ));
+
+#include <comimage.h>
 
 #ifdef __cplusplus
 }

@@ -869,6 +869,7 @@ unsigned32              *status;
      */
     for (i = 0; i < psvp->count; i++)
     {
+
         pseq_id = rpc__network_pseq_id_from_pseq (psvp->protseq[i], status);
 
         if (*status != rpc_s_ok)
@@ -1825,7 +1826,6 @@ unsigned32              *status;
             psv->count++;
         }
     }
-
     /*
      * Figure the total amount of memory required for the return vector.
      */
@@ -2189,8 +2189,10 @@ unsigned32              *status;
 
     /*
      * If we got this far the protocol sequence given is not valid.
-     */
     *status = rpc_s_invalid_rpc_protseq;
+     */
+	 /* not supported or invalid; it's doesn't really matter, does it? */
+	 *status = rpc_s_protseq_not_supported;
     return (RPC_C_INVALID_PROTSEQ_ID);
 }
 
@@ -2485,10 +2487,11 @@ unsigned32              *status;
     rpc_addr_p_t            rpc_addr;
     unsigned_char_p_t       endpoint_copy;
     unsigned32              count;
-
+	
     CODING_ERROR (status);
     RPC_VERIFY_INIT ();
 
+	 
     /*
      * Until both protocol services fully implement this argument, we'll
      * ignore the value provided and use the default instead.

@@ -380,7 +380,7 @@ typedef struct
  * is always "i".  While redundant, this is useful so that you can pass
  * pointers to individual table elements.
  */
-EXTERNAL rpc_protseq_id_elt_t   rpc_g_protseq_id[];
+EXTERNAL rpc_protseq_id_elt_t   rpc_g_protseq_id[RPC_C_PROTSEQ_ID_MAX];
 
 /***********************************************************************/
 /*

@@ -1684,8 +1684,9 @@ unsigned32                  *status;
             *status = rpc_s_ok;
             continue;
         }
-        if (*status != rpc_s_ok)
+        if (*status != rpc_s_ok)	{
             return;
+		  }
 
         if (pseq_id == protseq_id)
         {
@@ -1724,7 +1725,6 @@ unsigned32                  *status;
             return;
         }
     }
-
     *status = rpc_s_endpoint_not_found;
 }
 

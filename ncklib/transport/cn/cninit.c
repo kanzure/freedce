@@ -105,6 +105,20 @@ INTERNAL rpc_prot_network_epv_t cn_network_epv =
 /***********************************************************************/
 
 
+#include <comp.h>
+void rpc__module_init_func(void)
+{
+	static rpc_protocol_id_elt_t prot[1] = {
+		{
+			rpc__ncacn_init,                /* Connection-RPC */
+			NULL,
+			RPC_C_PROTOCOL_ID_NCACN,
+			NULL, NULL, NULL, NULL 
+		}
+	};
+	rpc__register_protocol_id(prot, 1);
+}
+
 /*
 **++
 **

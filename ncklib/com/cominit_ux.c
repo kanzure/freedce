@@ -45,6 +45,29 @@
 
 #if HAVE_DLFCN_H
 #include <dirent.h>
+/* load protocols before naf, then auth */
+static int sort_modules(const void* a, const void* b)
+{
+	int pri_a, pri_b;
+
+	switch((*(const struct dirent**)a)->d_name[3])	{
+		case 'p': pri_a = 1; break;
+		case 'n': pri_a = 2; break;
+		case 'a': pri_a = 3; break;
+		default: pri_a = 4;
+	}
+	switch((*(const struct dirent**)b)->d_name[3])	{
+		case 'p': pri_b = 1; break;
+		case 'n': pri_b = 2; break;
+		case 'a': pri_b = 3; break;
+		default: pri_b = 4;
+	}
+	if (pri_a == pri_b)
+		return 0;
+	if (pri_a < pri_b)
+		return -1;
+	return 1;
+}
 static int select_module(const struct dirent * dirent)
 {
 	int len = strlen(dirent->d_name);
@@ -63,53 +86,103 @@ static int select_module(const struct dirent * dirent)
 }
 #endif
 
+/* register an auth protocol */
+PRIVATE void rpc__register_authn_protocol(rpc_authn_protocol_id_elt_p_t auth, int number)
+{
+	int i;
+	for (i=0; i<number; i++)	{
+		memcpy(&rpc_g_authn_protocol_id[auth[i].authn_protocol_id],
+				&auth[i],
+				sizeof(rpc_authn_protocol_id_elt_t)
+				);
+	}
+}
+
+/* register a protocol sequence with the runtime */
+PRIVATE void rpc__register_protseq(rpc_protseq_id_elt_p_t elt, int number)
+{
+	int i;
+	for (i=0; i<number; i++)	{
+/*		printf("%s: %s\n", __FUNCTION__, elt[i].rpc_protseq); */
+		memcpy(&rpc_g_protseq_id[elt[i].rpc_protseq_id],
+				&elt[i],
+				sizeof(rpc_protseq_id_elt_t));
+	}
+}
+
+/* register a tower protocol id */
+PRIVATE void rpc__register_tower_prot_id(rpc_tower_prot_ids_p_t tower_prot, int number)
+{
+	int i;
+	for (i=0; i<number; i++) {
+		rpc_tower_prot_ids_p_t tower = &tower_prot[i];
+
+		memcpy(&rpc_g_tower_prot_ids[rpc_g_tower_prot_id_number],
+				tower, sizeof(rpc_tower_prot_ids_t));
+
+		rpc_g_tower_prot_id_number++;
+	}
+}
+
+PRIVATE void rpc__register_protocol_id(rpc_protocol_id_elt_p_t prot, int number)
+{
+	int i;
+	for (i=0; i<number; i++)	{
+		memcpy(&rpc_g_protocol_id[prot[i].rpc_protocol_id],
+				&prot[i],
+				sizeof(rpc_protocol_id_elt_t));
+	}
+}
+
+PRIVATE void rpc__register_naf_id(rpc_naf_id_elt_p_t naf, int number)
+{
+	int i;
+	for (i=0; i < number; i++)	{
+		memcpy(&rpc_g_naf_id[naf[i].naf_id],
+				&naf[i],
+				sizeof(rpc_naf_id_elt_t));
+	}
+}
 PRIVATE void rpc__load_modules(void)
 {
 #if HAVE_DLFCN_H
 #include <dlfcn.h>
 #include <comnafimage.h>
 #include <comauthimage.h>
+#include <comprotimage.h>
+
 	struct dirent ** namelist;
 	int i, n;
 	void * image;
 	char buf[PATH_MAX];
 
-	n = scandir(IMAGE_DIR, &namelist, select_module, alphasort);
+	memset(rpc_g_protseq_id, 0, sizeof(rpc_g_protseq_id));
+	memset(rpc_g_naf_id, 0, sizeof(rpc_g_naf_id));
+	memset(rpc_g_authn_protocol_id, 0, sizeof(rpc_g_authn_protocol_id));
+
+	n = scandir(IMAGE_DIR, &namelist, select_module, sort_modules);
 	for(i = 0; i < n; i++)	{
+		
 		sprintf(buf, "%s/%s", IMAGE_DIR, namelist[i]->d_name);
+#if 0
+		printf("Loading module %s\n", buf);
+#endif
 		image = dlopen(buf, RTLD_LAZY);
 		if (image)	{
-			rpc_module_naf_strap_func naf_func;
-			rpc_module_auth_strap_func auth_func;
+			void (*func)(void);
 			
-			naf_func = dlsym(image, "rpc__module_init_naf_func");
-			if (naf_func)	{
-				rpc_naf_id_t naf_id;
-				rpc_naf_init_fn_t naf_init;
-				rpc_network_if_id_t if_id;
-
-				(*naf_func)(&naf_id, &naf_init, &if_id);
-				rpc_g_naf_id[naf_id].naf_id = naf_id;
-				rpc_g_naf_id[naf_id].naf_init = naf_init;
-				rpc_g_naf_id[naf_id].network_if_id = if_id;
-			}
-
-			auth_func = dlsym(image, "rpc__module_init_auth_func");
-			if (auth_func)	{
-				rpc_authn_protocol_id_t			authn_id;
-				rpc_auth_init_fn_t 				auth_init;
-				dce_rpc_authn_protocol_id_t	dce_authn_id;
-				
-				(*auth_func)(&authn_id, &auth_init, &dce_authn_id);
-
-				rpc_g_authn_protocol_id[authn_id].authn_protocol_id = authn_id;
-				rpc_g_authn_protocol_id[authn_id].auth_init = auth_init;
-				rpc_g_authn_protocol_id[authn_id].dce_rpc_authn_protocol_id = dce_authn_id;
-			}
+			func = dlsym(image, "rpc__module_init_func");
+			if (func)	
+				(*func)();
+			else			
+				dlclose(image);
 		}
+#if 0
 		else
 			printf("failed to load module %s %s\n", buf, dlerror());
+#endif
 	}
+	free(namelist);
 #endif
 }
 

@@ -152,7 +152,21 @@ poison:
     *stp = st;
     return;
 }    
-   
+ 
+#include <comp.h>
+void rpc__module_init_func(void)
+{
+	static rpc_authn_protocol_id_elt_t auth[1] =	{
+		{                               /* 0 */
+        NULL, 
+        rpc_c_authn_none,	/* FIXME: probably incorrect */ 
+        dce_c_rpc_authn_protocol_none, 
+        NULL,
+		  NULL
+    }	
+	};
+	rpc__register_authn_protocol(auth, 1);
+}
 
 /*
  * R P C _ _ N O A U T H _ I N I T

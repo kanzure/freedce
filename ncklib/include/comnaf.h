@@ -311,5 +311,4 @@ PRIVATE void rpc__naf_get_next_restricted_port  _DCE_PROTOTYPE_ ((
     unsigned32 *
 ));
 
-
 #endif /* _COMNAF_H */

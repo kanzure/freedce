@@ -51,29 +51,6 @@
  */
 
 /*
- * Protocol Sequence ID Table
- * 
- * This table contains the valid combination of protocol ids
- * for upper floor 3 and the lower tower floors.
- * This table maps each combination to the appropriate 
- * RPC protocol id sequence.  
- * The field num_floors provides for the number of significant
- * floors comprising the RPC protocol sequence.
- */
-typedef struct
-{
-    unsigned8               prefix;
-    uuid_t                  uuid;
-} rpc_flr_prot_id_t, *rpc_flr_prot_id_p_t;
-
-typedef struct
-{
-    rpc_protseq_id_t        rpc_protseq_id;
-    unsigned8               num_floors;
-    rpc_flr_prot_id_t       floor_prot_ids[RPC_C_MAX_NUM_NETWORK_FLOORS + 1];
-} rpc_tower_prot_ids_t, *rpc_tower_prot_ids_p_t;
-
-/*
  * Prototypes
  */
 

@@ -222,7 +222,7 @@ get_client_rpc_binding(binding_handle, hostname, interface_spec, protocol)
    */
 
 
-  if (strcmp(protocol, "udp"))
+  if (strcmp(protocol, "udp")==0)
     protocol_family = "ncadg_ip_udp";
   else
     protocol_family = "ncacn_ip_tcp";
