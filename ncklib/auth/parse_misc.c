@@ -674,8 +674,12 @@ BOOL smb_io_unistr2(const char *desc, UNISTR2 *uni2, uint32 buffer,
 	else
 	{
 		prs_debug(ps, depth, desc, "smb_io_unistr2 - NULL");
-		depth++;
-		ZERO_STRUCTP(uni2);
+		if (UNMARSHALLING(ps))
+		{
+			uni2->uni_max_len = 0;
+			uni2->undoc = 0;
+			uni2->uni_str_len = 0;
+		}
 	}
 
 	return True;

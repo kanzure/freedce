@@ -32,10 +32,12 @@
 #endif /* strcat */
 #define strcat(dest,src) __ERROR__XX__NEVER_USE_STRCAT___;
 
+#if 0 /* oops. */
 #ifdef sprintf
 #undef sprintf
 #endif /* sprintf */
 #define sprintf __ERROR__XX__NEVER_USE_SPRINTF__;
+#endif 
 
 #define pstrcpy(d,s) safe_strcpy((d),(s),sizeof(pstring)-1)
 #define pstrcat(d,s) safe_strcat((d),(s),sizeof(pstring)-1)

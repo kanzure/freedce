@@ -88,9 +88,9 @@ int ntlmssp_sign_seal(ntlmssp_sec_state_p_t sec_info,
 
 	uint32 crc32 = 0;
 
-	auth_verify = IS_BITS_SET_ALL(sec_info->ntlmssp_chal.neg_flags,
+	auth_verify = IS_BITS_SET_ALL(sec_info->neg_flags,
 					   NTLMSSP_NEGOTIATE_SIGN);
-	auth_seal = IS_BITS_SET_ALL(sec_info->ntlmssp_chal.neg_flags,
+	auth_seal = IS_BITS_SET_ALL(sec_info->neg_flags,
 					 NTLMSSP_NEGOTIATE_SEAL);
 
 	RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 5, ("srv_ntlmssp_sign_seal: sign: %s seal: %s data %d\n",
@@ -219,7 +219,7 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 	dump_data_pw("chal:", sec_info->ntlmssp_chal.challenge, 8);
 
 	unicode = IS_BITS_SET_ALL
-	    (sec_info->ntlmssp_chal.neg_flags, NTLMSSP_NEGOTIATE_UNICODE);
+	    (sec_info->neg_flags, NTLMSSP_NEGOTIATE_UNICODE);
 
 	if (unicode)
 	{
@@ -252,6 +252,10 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 						  nt_owf, nt_owf_len,
 						  &blob_len, &blob) == 0x0;
 	RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 3, ("status: %d\n", auth_validated));
+	dump_data(3, blob, blob_len);
+
+	if (blob == NULL)
+		auth_validated = False;
 
 	if (auth_validated)
 	{
@@ -263,7 +267,7 @@ static int srv_ntlmssp_verify(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i
 		prs_create(&data_i, blob, blob_len, 4, UNMARSHALL);
 
 		auth_validated = net_io_user_info3("usr", &info3, &data_i, 0);
-		prs_free_data(&data_i);
+		free(blob);
 	}
 
 	if (auth_validated)
@@ -287,13 +291,17 @@ static int srv_ntlmssp(ntlmssp_sec_state_p_t sec_info, prs_struct *data_i,
 			{
 				return False;
 			}
+			/*
 			if (strlen(ntlmssp_neg.myname) == 0 ||
 			    strlen(ntlmssp_neg.domain) == 0)
 			{
 				return False;
 			}
-			RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 10, ("ntlmssp neg: myname %s domain %s\n",
-				   ntlmssp_neg.myname, ntlmssp_neg.domain));
+			*/
+			RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 10, ("ntlmssp neg: myname %s domain %s neg_flags %lx\n",
+				   ntlmssp_neg.myname, ntlmssp_neg.domain,
+				   ntlmssp_neg.neg_flgs));
+			sec_info->neg_flags = ntlmssp_neg.neg_flgs;
 			break;
 		}
 		case NTLMSSP_AUTH:
@@ -362,7 +370,7 @@ int srv_ntlmssp_auth_verify(ntlmssp_sec_state_p_t sec_info,
 	return False;
 }
 
-int ntlmssp_auth_gen(ntlmssp_sec_state_p_t sec_info,
+int ntlmssp_auth_gen(ntlmssp_sec_state_p_t sec_info, 
 			char *auth_info, size_t *auth_info_len)
 {
 	prs_struct rauth;
@@ -383,7 +391,9 @@ int ntlmssp_auth_gen(ntlmssp_sec_state_p_t sec_info,
 
 	/* NTLMSSP challenge ** */
 
-	make_rpc_auth_ntlmssp_chal(&sec_info->ntlmssp_chal, 0x000082b1, challenge);
+	sec_info->neg_flags &= 0x000082b1;
+
+	make_rpc_auth_ntlmssp_chal(&sec_info->ntlmssp_chal, sec_info->neg_flags, challenge);
 	smb_io_rpc_auth_ntlmssp_chal("", &sec_info->ntlmssp_chal, &rauth, 0);
 
 	*auth_info_len = rauth.offset;
@@ -401,9 +411,9 @@ int ntlmssp_unsign_unseal(ntlmssp_sec_state_p_t sec_info,
 	int auth_verify;
 	int auth_seal  ;
 
-	auth_verify = IS_BITS_SET_ALL(sec_info->ntlmssp_chal.neg_flags,
+	auth_verify = IS_BITS_SET_ALL(sec_info->neg_flags,
 	                              NTLMSSP_NEGOTIATE_SIGN);
-	auth_seal   = IS_BITS_SET_ALL(sec_info->ntlmssp_chal.neg_flags,
+	auth_seal   = IS_BITS_SET_ALL(sec_info->neg_flags,
 	                              NTLMSSP_NEGOTIATE_SEAL);
 
 	RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, 5,("decode_ntlmssp_pdu: len: %d auth_len: %d verify %s seal %s\n",
@@ -511,6 +521,7 @@ int ntlmssp_decode_bind_resp(ntlmssp_sec_state_p_t sec_info,
 	if (valid_ack)
 	{
 		smb_io_rpc_auth_ntlmssp_chal("", &sec_info->ntlmssp_chal, &rdata, 0);
+		sec_info->neg_flags = sec_info->ntlmssp_chal.neg_flags;
 		if (rdata.offset == 0)
 			valid_ack = False;
 	}
@@ -584,7 +595,7 @@ int ntlmssp_create_bind_cont(ntlmssp_sec_state_p_t sec_info,
 
 	create_ntlmssp_rpc_bind_resp(&usr->pwd, usr->domain,
 			     usr->user_name, server_princ_name,
-			     sec_info->ntlmssp_chal.neg_flags,
+			     sec_info->neg_flags,
 			     &auth_resp);
 			    
 	pwd_get_lm_nt_owf(&usr->pwd, lm_owf, NULL, NULL);

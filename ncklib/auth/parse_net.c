@@ -72,7 +72,7 @@ RPC_IO_DECLARE(smb_io_dom_sid, DOM_SID, sid)
 	for (i = 0; i < 6; i++)
 	{
 		fstring tmp;
-		slprintf(tmp, sizeof(tmp) - 1, "id_auth[%d] ", i);
+		sprintf(tmp, "id_auth[%d] ", i);
 		prs_uint8 (tmp, ps, depth, &(sid->id_auth[i]));
 	}
 

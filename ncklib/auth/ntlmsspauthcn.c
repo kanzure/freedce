@@ -863,6 +863,10 @@ unsigned32                      *auth_value_len;
 
     assert (verify_st == rpc_s_ok);
 
+    RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
+                    ("(rpc__ntlmsspauth_cn_fmt_srvr_resp) neg_flags %08lx\n",
+		     ntlmssp->neg_flags));
+
     ntlmssp_auth_gen(ntlmssp, auth_value, (size_t*)auth_value_len);
 }
 
@@ -1681,6 +1685,9 @@ unsigned32		        old_client;
 unsigned32                      *st;
 #endif
 {
+    rpc_ntlmsspauth_info_p_t ntlmsspauth_info;
+    ntlmssp_sec_state_p_t ntlmssp;
+
     CODING_ERROR (st);
     RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_ROUTINE_TRACE,
                     ("(rpc__ntlmsspauth_cn_vfy_client_req)\n"));
@@ -1709,12 +1716,16 @@ unsigned32                      *st;
     }
 #endif
 
-	/*if (srv_ntlmssp_auth_verify(sec->sec_info, auth_value, auth_value_len))*/
-		*st = rpc_s_ok;
-		/*
-	else
-        *st = RPC_S_CN_DBG_AUTH_FAILURE;
-		*/
+    ntlmsspauth_info = (rpc_ntlmsspauth_info_p_t) (sec->sec_info);
+    ntlmssp = &(ntlmsspauth_info->ntlmssp);
+    if (srv_ntlmssp_auth_verify(ntlmssp, auth_value, auth_value_len))
+	*st = rpc_s_ok;
+    else
+	*st = RPC_S_CN_DBG_AUTH_FAILURE;
+
+    RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_PKT,
+                    ("(rpc__ntlmsspauth_cn_vfy_client_req) status->%lx neg_flgs->%lx\n",
+		     	*st, ntlmssp->neg_flags));
 }
 
 /*****************************************************************************/

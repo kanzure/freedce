@@ -77,6 +77,9 @@ BOOL smb_io_rpc_auth_ntlmssp_neg(char *desc, RPC_AUTH_NTLMSSP_NEG * neg,
 	prs_debug(ps, depth, desc, "smb_io_rpc_auth_ntlmssp_neg");
 	depth++;
 
+	if (ps->io)
+		ZERO_STRUCTP(neg);
+
 	prs_uint32("neg_flgs ", ps, depth, &(neg->neg_flgs));
 
 	if (ps->io)
@@ -84,8 +87,6 @@ BOOL smb_io_rpc_auth_ntlmssp_neg(char *desc, RPC_AUTH_NTLMSSP_NEG * neg,
 		uint32 old_offset;
 
 		/* reading */
-
-		ZERO_STRUCTP(neg);
 
 		smb_io_strhdr("hdr_domain", &(neg->hdr_domain), ps, depth);
 		smb_io_strhdr("hdr_myname", &(neg->hdr_myname), ps, depth);

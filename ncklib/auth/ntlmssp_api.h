@@ -21,16 +21,20 @@ typedef struct _ntlmssp_sec_state
 
 	unsigned char ntlmssp_hash[258];
 	uint32 ntlmssp_seq_num;
+	uint32 neg_flags;
 
 } *ntlmssp_sec_state_p_t, ntlmssp_sec_state_t;
 
 /* server-side */
 
-int ntlmssp_auth_gen(ntlmssp_sec_state_p_t l,
+int ntlmssp_auth_gen(ntlmssp_sec_state_p_t l, 
 			char *auth_info, size_t *auth_info_len);
 
 int ntlmssp_bind_auth_resp(ntlmssp_sec_state_p_t l,
 				char *data, size_t data_len);
+
+int srv_ntlmssp_auth_verify(ntlmssp_sec_state_p_t sec_info,
+		                char *data, size_t data_len);
 
 /* client _and_ server-side */
 
