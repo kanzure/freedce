@@ -103,7 +103,8 @@ INTERNAL rpc_cn_pkt_info_t packet_info_table[] =
     { ASSOC_CLASS_PKT, RPC_C_ASSOC_AUTH3_IND },         /* 16 - auth3 */
     { ASSOC_CLASS_PKT, RPC_C_ASSOC_SHUTDOWN_IND },      /* 17 - shutdown */
     { CALL_CLASS_PKT,  RPC_C_CALL_REMOTE_ALERT_IND },   /* 18 - remote alert */
-    { CALL_CLASS_PKT,  RPC_C_CALL_ORPHANED }            /* 19 - orphaned */
+    { CALL_CLASS_PKT,  RPC_C_CALL_ORPHANED },           /* 19 - orphaned */
+    { ASSOC_CLASS_PKT, RPC_C_ASSOC_INHERIT_CONTEXT }    /* 20 - inherited context */
 };
 
 

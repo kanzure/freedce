@@ -181,7 +181,8 @@
 #define RPC_C_CN_PKT_SHUTDOWN             17    /* server -> client */
 #define RPC_C_CN_PKT_REMOTE_ALERT         18    /* client -> server */
 #define RPC_C_CN_PKT_ORPHANED             19    /* client -> server */
-#define RPC_C_CN_PKT_MAX_TYPE             19
+#define RPC_C_CN_PKT_INTERITED_AUTH       20    /* client -> server */
+#define RPC_C_CN_PKT_MAX_TYPE             20
 #define RPC_C_CN_PKT_INVALID              0xff 
 
 /*
@@ -867,6 +868,34 @@ typedef union
  */
 
 #define RPC_CN_PKT_SIZEOF_FAULT_HDR     (RPC_CN_PKT_SIZEOF_COMMON_HDR + 4 + 2 + 1 + 1 + 4 + 4)
+
+/*
+ *****************************************************************************
+ *
+ * R P C _ C N _ I N H E R I T _ C T X _ H D R _ T
+ *
+ * This is the rpc_inherit_context packet header template.
+ */
+typedef union
+{
+    double force_alignment;            /* Get highest alignment possible */
+    struct
+    {
+        rpc_cn_common_hdr_t common_hdr;/* 00:16 common to all packets */
+        unsigned16 version;      /* 16:02 version of auth context */
+        unsigned16 command;      /* 18:02 anonymous, authenticated */
+        
+    } hdr;
+
+    /* string for pipe name */
+    /* string for host name */
+    /* pointer for vuser_struct */
+    /* optional vuser_struct */
+
+} rpc_cn_inherit_ctx_hdr_t, *rpc_cn_inherit_ctx_hdr_p_t;
+
+#define RPC_CN_PKT_SIZEOF_INHERIT_CTX_HDR      (RPC_CN_PKT_SIZEOF_COMMON_HDR + 2 + 2 )
+
 
 
 /*
@@ -938,6 +967,7 @@ typedef union
     rpc_cn_request_hdr_t        request;
     rpc_cn_response_hdr_t       response;
     rpc_cn_fault_hdr_t          fault;
+    rpc_cn_inherit_ctx_hdr_t	inherited_ctx;
 
     /*
      * These are based on the fundamental packet types.
@@ -955,6 +985,7 @@ typedef union
 #define RPC_CN_HDR_RQST(pkt_p)  ((pkt_p)->request)
 #define RPC_CN_HDR_RESP(pkt_p)  ((pkt_p)->response)
 #define RPC_CN_HDR_FAULT(pkt_p) ((pkt_p)->fault)
+#define RPC_CN_HDR_INHCTX(pkt_p) ((pkt_p)->inherited_ctx)
 
 /* common part of packet header */
 
@@ -966,6 +997,11 @@ typedef union
 #define RPC_CN_PKT_FRAG_LEN(pkt_p)        (RPC_CN_HDR_BIND(pkt_p).hdr.common_hdr.frag_len)
 #define RPC_CN_PKT_AUTH_LEN(pkt_p)        (RPC_CN_HDR_BIND(pkt_p).hdr.common_hdr.auth_len)
 #define RPC_CN_PKT_CALL_ID(pkt_p)         (RPC_CN_HDR_BIND(pkt_p).hdr.common_hdr.call_id)
+
+/* inherited security context */
+
+#define RPC_CN_PKT_INHCTX_VER(pkt_p)         (RPC_CN_HDR_INHCTX(pkt_p).hdr.version)
+#define RPC_CN_PKT_INHCTX_CMD(pkt_p)         (RPC_CN_HDR_INHCTX(pkt_p).hdr.command)
 
 /* bind and bind_ack */
 

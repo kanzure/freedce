@@ -76,7 +76,8 @@ GLOBAL char     *rpc_g_cn_assoc_server_events [] =
     "SHUTDOWN_REQ",
     "LOCAL_ERROR",
     "ACC_RESP",
-    "ASSOC_COMPLETE"
+    "ASSOC_COMPLETE",
+    "INHERITED_AUTH",
 };
 
 GLOBAL char     *rpc_g_cn_assoc_server_states [] =
@@ -86,7 +87,8 @@ GLOBAL char     *rpc_g_cn_assoc_server_states [] =
     "AUTH3_WAIT",
     "AUTH3",
     "OPEN",
-    "ASSOC_WAIT"
+    "ASSOC_WAIT",
+    "INIT_WAIT"
 };
 
 
@@ -189,6 +191,7 @@ INTERNAL unsigned8 lastbindfrag_pred_rtn _DCE_PROTOTYPE_ ((
 #define PROTOCOL_ERROR          21
 #define DO_ASSOC_WAIT		22 
 #define DO_ASSOC		23 
+#define DO_INHERIT_AUTH		24 
 
 /*  
  * The action routine prototypes.
@@ -308,6 +311,11 @@ INTERNAL unsigned32     do_assoc_action_rtn _DCE_PROTOTYPE_ ((
     pointer_t  /*event_param*/,
     pointer_t  /*sm*/));
 
+INTERNAL unsigned32     do_assoc_inherit_ctx_rtn _DCE_PROTOTYPE_ ((
+    pointer_t  /*spc_struct*/, 
+    pointer_t  /*event_param*/,
+    pointer_t  /*sm*/));
+
 /*  
  * The action table itself.
  */
@@ -336,7 +344,8 @@ GLOBAL rpc_cn_sm_action_fn_t  rpc_g_cn_server_assoc_act_tbl [] =
     rem_mark_abort_can_action_rtn,
     rpc__cn_assoc_sm_protocol_error,
     do_assoc_wait_action_rtn,
-    do_assoc_action_rtn
+    do_assoc_action_rtn,
+    do_assoc_inherit_ctx_rtn,
 };
 
 
@@ -394,7 +403,10 @@ INTERNAL rpc_cn_sm_state_tbl_entry_t closed_state =
 	{RPC_C_CLIENT_ASSOC_CLOSED},
 
     /* event 14 - assoc_complete_resp */
-    ILLEGAL_TRANSITION 
+    ILLEGAL_TRANSITION,
+
+    /* event 15 - assoc_inherit_context */
+	{DO_INHERIT_AUTH},
 };
 
 
@@ -449,6 +461,9 @@ INTERNAL rpc_cn_sm_state_tbl_entry_t requested_state =
 	 {ACCEPT_ADD},
 
     /* event 14 - assoc_complete_resp */
+    ILLEGAL_TRANSITION,
+
+    /* event 15 - assoc_inherit_context */
     ILLEGAL_TRANSITION 
 };
 
@@ -504,6 +519,9 @@ INTERNAL rpc_cn_sm_state_tbl_entry_t auth3_wait_state =
     ILLEGAL_TRANSITION,
 
     /* event 14 - assoc_complete_resp */
+    ILLEGAL_TRANSITION,
+
+    /* event 15 - assoc_inherit_context */
     ILLEGAL_TRANSITION 
 };
 
@@ -559,6 +577,9 @@ INTERNAL rpc_cn_sm_state_tbl_entry_t auth3_state =
     ILLEGAL_TRANSITION,
 
     /* event 14 - assoc_complete_resp */
+    ILLEGAL_TRANSITION,
+
+    /* event 15 - assoc_inherit_context */
     ILLEGAL_TRANSITION 
 };
 
@@ -614,6 +635,9 @@ INTERNAL rpc_cn_sm_state_tbl_entry_t open_state =
     ILLEGAL_TRANSITION,
     
     /* event 14 - assoc_complete_resp */
+    ILLEGAL_TRANSITION,
+
+    /* event 15 - assoc_inherit_context */
     ILLEGAL_TRANSITION 
 };
 
@@ -669,7 +693,73 @@ INTERNAL rpc_cn_sm_state_tbl_entry_t assoc_wait_state =
 	 {ACCEPT_ADD},
 
     /* event 14 - assoc_complete_resp */
-	 {DO_ASSOC_REQ} 
+	 {DO_ASSOC_REQ},
+
+    /* event 15 - assoc_inherit_context */
+    ILLEGAL_TRANSITION 
+};
+
+
+/***********************************************************************/
+/*
+ * S E R V E R   A S S O C   S T A T E   T A B L E
+ *
+ *
+ * I N I T W A I T _ S T A T E
+ *
+ * state 6 - after an "inherit sec context" state - identical
+ * to "closed" except we are not expecting another INHERIT_SEC PDU.
+ *
+ */
+INTERNAL rpc_cn_sm_state_tbl_entry_t init_wait_state =
+{
+    /* event 0 - ind */
+	{DO_ASSOC},
+    
+    /* event 1 - abort_req */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 2 - reject_resp */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 3 - alter_context_ind */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 4 - no_conn_ind */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 5 - alter_context_resp */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 6 - auth3_ind */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 7 - auth3_ack */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 8 - auth3_nack */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 9 - allocate_req */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 10 - deallocate_req */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+    
+    /* event 11 - shutdown_req */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+
+    /* event 12 - local_error */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+
+    /* event 13 - accept_resp */
+	{RPC_C_CLIENT_ASSOC_CLOSED},
+
+    /* event 14 - assoc_complete_resp */
+    ILLEGAL_TRANSITION,
+
+    /* event 15 - assoc_inherit_context */
+	ILLEGAL_TRANSITION
 };
 
 
@@ -684,7 +774,8 @@ GLOBAL rpc_cn_sm_state_entry_p_t rpc_g_cn_server_assoc_sm [] =
     auth3_wait_state,           /* state 2 - auth3_wait */
     auth3_state,                /* state 3 - auth3 */
     open_state,                 /* state 4 - open */
-    assoc_wait_state            /* state 5 - assoc_wait */
+    assoc_wait_state,           /* state 5 - assoc_wait */
+    init_wait_state             /* state 6 - init_wait */
 };
 
 
@@ -4285,5 +4376,150 @@ rpc_cn_packet_p_t	header;
 
     return;
 }
+
+
+/*
+**++
+**
+**  ROUTINE NAME:       do_assoc_inherit_ctx_rtn
+**
+**  SCOPE:              INTERNAL - declared locally
+**
+**  DESCRIPTION:
+**      
+**  Action routine vectors to process an "inherited" security context
+**  suitable for transferring a security context associated with
+**  such transports as NT's "Named Pipes"
+**
+**  INPUTS:
+**
+**      spc_struct      The association.  Note that this is passed in as
+**                      the special structure which is passed to the
+**                      state machine event evaluation routine.
+**
+**      event_param     The fragbuf containing the rpc_inherit_context PDU. 
+**                      This is passed in as the special event related 
+**                      parameter which was passed to the state machine 
+**                      evaluation routine.
+**
+**  INPUTS/OUTPUTS:     
+**
+**   	sm 		The control block from the event evaluation
+**                      routine.  Input is the current state and
+**                      event for the control block.  Output is the
+**                      next state or updated current state, for the
+**                      control block.
+**
+**  OUTPUTS:            none
+**
+**  IMPLICIT INPUTS:    none
+**
+**  IMPLICIT OUTPUTS:   none
+**
+**  FUNCTION VALUE:     completion status, one of:
+**                      rpc_s_ok
+**
+**  SIDE EFFECTS:       none
+**
+**--
+**/
+
+INTERNAL unsigned32     do_assoc_inherit_ctx_rtn
+#ifdef _DCE_PROTO_
+(
+  pointer_t       spc_struct,
+  pointer_t       event_param,
+  pointer_t       sm 
+)
+#else
+(spc_struct, event_param, sm)
+pointer_t       spc_struct;
+pointer_t       event_param;
+pointer_t       sm;
+#endif
+{
+    rpc_cn_assoc_t                      *assoc;
+    rpc_cn_sm_event_entry_t             event __attribute__((__unused__));
+    rpc_cn_sm_ctlblk_t 			*sm_p __attribute__((__unused__));
+    rpc_cn_packet_t                     *req_header;
+	char *pipe_name;
+	char *host_name;
+	void *vuser_info;
+	unsigned32 ptr_vuser;
+	rpc_np_sec_context_p_t npsec;
+	size_t pkt_len;
+
+    RPC_CN_DBG_RTN_PRINTF(SERVER do_assoc_inherit_ctx_rtn);
+
+    /*
+     * The special structure is a pointer to the association.
+     */
+    assoc = (rpc_cn_assoc_t *) spc_struct;
+    sm_p = (rpc_cn_sm_ctlblk_t *)sm;
+
+	npsec = &assoc->security.np_sec;
+
+    /*
+     * The event parameter is a pointer to the fragbuf containing
+     * the rpc_inherit_ctx PDU.
+     */
+    req_header = (rpc_cn_packet_t *) ((rpc_cn_fragbuf_t *)event_param)->data_p;
+	pkt_len = RPC_CN_PKT_FRAG_LEN(req_header);
+
+	RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_BIG_PAC,
+             ("(do_assoc_inherit_ctx_rtn) pktlen: 0x%x ver: 0x%x cmd: 0x%x\n",
+			  pkt_len,
+              RPC_CN_PKT_INHCTX_VER(req_header),
+			  RPC_CN_PKT_INHCTX_CMD(req_header)));
+
+	if (RPC_CN_PKT_INHCTX_VER(req_header) != 0x0)
+		return rpc_s_class_version_mismatch;
+
+	if (RPC_CN_PKT_INHCTX_CMD(req_header) != 0x0)
+		return rpc_s_class_version_mismatch;
+
+	pipe_name = (char *)(((unsigned)req_header) + RPC_CN_PKT_SIZEOF_INHERIT_CTX_HDR);
+	host_name = (char *)(pipe_name + strlen(pipe_name) + 1);
+	vuser_info = (void *)(host_name + strlen(host_name) + 1);
+
+	RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_BIG_PAC,
+		 ("(do_assoc_inherit_ctx_rtn) pkt: %p pname: %p hostname: %p vuser_info: %p\n",
+			  req_header, pipe_name, host_name, vuser_info));
+
+	strcpy(npsec->pipe_name, pipe_name);
+	strcpy(npsec->host_name, host_name);
+
+	ptr_vuser = (unsigned32)(*(unsigned32*)vuser_info);
+
+	if (ptr_vuser)
+	{
+		/* oh, man, here we go.  do i decode the vuser struct, or
+		 * just store it?  nuts to it - just store it.
+		 */
+		vuser_info = (void*)(((unsigned)vuser_info)+sizeof(unsigned32));
+		npsec->Length = pkt_len - ((unsigned)vuser_info - (unsigned)req_header);
+
+        RPC_MEM_ALLOC(npsec->blob, void *, 
+                      npsec->Length,
+                      RPC_C_MEM_INHERIT_CTX_INFO,
+                      RPC_C_MEM_WAITOK);
+
+		memcpy(npsec->blob, vuser_info, npsec->Length);
+	}
+	else
+	{
+		npsec->Length = 0;
+		npsec->blob = NULL;
+	}
+
+	RPC_DBG_PRINTF (rpc_e_dbg_auth, RPC_C_CN_DBG_AUTH_BIG_PAC,
+             ("(do_assoc_inherit_ctx_rtn) blob received on pipe %s host %s of len: 0x%x\n",
+              npsec->pipe_name, npsec->host_name, npsec->Length));
+
+    RPC_CN_ASSOC_CHECK_ST (assoc, &(assoc->assoc_status));
+    sm_p->cur_state = RPC_C_SERVER_ASSOC_INIT_WAIT; 
+ 	return (assoc->assoc_status);
+}
+
 /* vim:sw=4 ts=4
  * */

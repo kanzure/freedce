@@ -262,6 +262,7 @@
 #define RPC_C_ASSOC_AUTH3_NACK          108  /* user         */
 #define RPC_C_ASSOC_ACCEPT_RESP         113   /* user         */
 #define RPC_C_ASSOC_ASSOC_COMPLETE_RESP 114   /* user	      */
+#define RPC_C_ASSOC_INHERIT_CONTEXT     115  /* network      */
 
 
 /***********************************************************************/
@@ -298,7 +299,8 @@ EXTERNAL char   *rpc_g_cn_assoc_client_states [];
 #define RPC_C_SERVER_ASSOC_AUTH3                103 
 #define RPC_C_SERVER_ASSOC_OPEN                 104 
 #define RPC_C_SERVER_ASSOC_WAIT			105 
-#define RPC_C_SERVER_ASSOC_STATES               106 
+#define RPC_C_SERVER_ASSOC_INIT_WAIT            106 
+#define RPC_C_SERVER_ASSOC_STATES               107 
 
 /***********************************************************************/
 /*

@@ -34,22 +34,13 @@ typedef struct ntuser_creds
 
 } ntuser_creds_t, *ntuser_creds_p_t;
 
-/*
- *  ncalrpc funnel: shunt data between SAMBA and FreeDCE
- *  Copyright (C) 2001-2004 PADL Software Pty Ltd. All rights reserved.
- *
+/* this blob contains the information for an nt security context
  */
 typedef struct rpc_np_sec_context_t {
+    char pipe_name[128];
+    char host_name[128];
     unsigned32 Length;
-    unsigned32 Version;
-    unsigned32 UserNameLength;
-    char *UserName;
-    unsigned32 DomainNameLength;
-    char *DomainName;
-    unsigned32 WorkstationLength;
-    char *Workstation;
-    unsigned32 SessionKeyLength;
-    char *SessionKey;
+    void *blob;
 } rpc_np_sec_context_t, *rpc_np_sec_context_p_t;
 
 #endif

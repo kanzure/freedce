@@ -179,6 +179,7 @@
 #define RPC_C_MEM_GSSAUTH_INFO	94			/* rpc_gssauth_info_t */
 #define RPC_C_MEM_GSSAUTH_CN_INFO	95		/* rpc_gssauth_cn_info_t */
 #define RPC_C_MEM_NS_INFO 96                /* name services info err...    */
+#define RPC_C_MEM_INHERIT_CTX_INFO	97	/* inherited context buffer */
 
 /* can only use up to "rpc_c_mem_maxtypes - 1" without upping it */
 #define RPC_C_MEM_MAX_TYPES        100       /* i.e. 0 : (max_types - 1)     */

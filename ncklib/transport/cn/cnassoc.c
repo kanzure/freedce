@@ -3205,7 +3205,7 @@ unsigned32              *st;
     /*
      *  Here is another one of those marvelous chances for the rpc_addr to
      *  become a dangling reference.  We make sure that this association
-     *  has it's own rpc_addr memory.
+     *  has its own rpc_addr memory.
     */
     {
         rpc_addr_p_t    rpc_addr1;
@@ -4398,6 +4398,15 @@ rpc_cn_assoc_p_t   assoc;
             sec_context = next_sec_context;
         }
         RPC_LIST_INIT (assoc->security.context_list);
+
+	/*
+	* free the nt security blob
+	*/
+	if (assoc->security.np_sec.blob != NULL)
+	{
+	RPC_MEM_FREE(assoc->security.np_sec.blob, RPC_C_MEM_INHERIT_CTX_INFO);
+	}
+
         memset (&assoc->security, 0, sizeof (rpc_cn_assoc_sec_context_t));
 
         /*
