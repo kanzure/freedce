@@ -1,4 +1,5 @@
 Makefile
+Makefile.in
 *.lo
 *.la
 .libs
@@ -12,3 +13,20 @@ dce_error.h
 marshall.h
 dce.h
 dce_utils.h
+codesets.h
+mgmt.h
+convc.h
+rpcpvt.h
+rpc.h
+ncastat.h
+uuid.h
+nbase.h
+rpcbase.h
+conv.h
+ndrold.h
+rpctypes.h
+lbase.h
+ep.h
+twr.h
+iovector.h
+rpcsts.h

@@ -1,4 +1,12 @@
+Makefile.in
 Makefile
+nidl_l.c
+acf_y.c
+acf_l.c
+nidl_y.h
+nidl_y.c
+idl
+acf_y.h
 *.lo
 *.la
 .libs
