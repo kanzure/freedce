@@ -21,6 +21,10 @@ echo_server_LDADD=echo_sstub.o $(libs)
 echo_client_LDADD=echo_cstub.o $(libs)
 
 echo_server.c: echo.h
+
+# XXX ooo, baad.  major hack.  _must_ write a cross-dceidl for mingw32.
 echo.h echo_sstub.o echo_cstub.o: echo.idl
-	$(IDL) $(IDL_FLAGS) $(top_srcdir)/demos/echo_server/echo.idl
+	$(IDL)                 -cc_cmd "$(CC) -D_BSD $(IDL_CFLAGS) -c" \
+	                -I/opt/dce-win32/include/ \
+		$(top_srcdir)/demos/echo_server/echo.idl
 

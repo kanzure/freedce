@@ -19,18 +19,24 @@
 #else
 #include "uuid.h"
 #endif
+#ifndef HAVE_OS_WIN32
 #include <net/if.h>
 #include <sys/ioctl.h>          
+#endif
 #include <stdlib.h>
 
 //
 // Invalid Host MAC Addresses
 //
 
+#ifndef HAVE_OS_WIN32
 static  char null_802_hwaddr[6] = {0, 0, 0, 0, 0, 0};
+#endif
 /*static  char broadcast_802_hwaddr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; */
 
+#ifndef HAVE_OS_WIN32
 static void linux_get_802_addr(dce_802_addr_t *, error_status_t *);
+#endif
 static void file_get_802_addr(dce_802_addr_t *, error_status_t *);
 
 void
@@ -41,7 +47,7 @@ dce_get_802_addr (
 {
 
   // Try to get a MAC address from one of our Ethernet interfaces
-
+#ifndef HAVE_OS_WIN32
   linux_get_802_addr(addr, st);
 
   // If there are no Ethernet-style interfaces, fall-back and try to
@@ -51,8 +57,12 @@ dce_get_802_addr (
     {
       file_get_802_addr(addr, st);
     }  
+#else
+      file_get_802_addr(addr, st);
+#endif
 }
 
+#ifndef HAVE_OS_WIN32
 //
 // Fetch a valid MAC address from one of the hosts Ethernet interfaces
 //
@@ -178,6 +188,7 @@ linux_get_802_addr(
 
 }
 
+#endif
 
 //
 // Fetch a dummy MAC address from the file /etc/ieee_802_addr

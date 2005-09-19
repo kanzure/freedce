@@ -54,7 +54,9 @@
 #if defined(unix) || defined(__unix) || defined(__unix__)
 #include <netinet/in.h>
 #else
+#ifndef HAVE_OS_WIN32
 #include <in.h>
+#endif
 #endif
 
 /*

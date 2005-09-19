@@ -4,6 +4,12 @@ AC_OUTPUT(idl/sysdep.h)
 
 dnl IDL needs to set these flags when it compiles stuff
 IDL_CFLAGS="-D_GNU_SOURCE -D_REENTRANT"
+
+dnl idl compiler needs to know about win32!
+if test "x$have_win32" = "x1" ; then
+	IDL_CFLAGS="-DHAVE_OS_WIN32 -D_GNU_SOURCE -D_REENTRANT"
+fi
+
 AC_SUBST(IDL_CFLAGS)
 
 dnl For DCOM, default to C++ compiler for now

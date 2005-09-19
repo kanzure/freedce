@@ -1143,7 +1143,9 @@ error_status_t *st;
 
     if (lseek(dsh->fd,p->loc,L_SET) < 0             /* point at the record on disk */
     ||  write(dsh->fd,p,PREHEADER) != PREHEADER     /* write the header */
+#ifndef HAVE_OS_WIN32
     ||  fsync(dsh->fd) < 0                          /* commit that */
+#endif
     ) (*st) = dsm_err_file_io_error;              /* error if any fail */
 } /* write_header */
 
@@ -1167,7 +1169,9 @@ error_status_t *st;
 
     if (lseek(dsh->fd,p->loc,L_SET) < 0     /* point at the record on disk */
     ||  (unsigned32)write(dsh->fd,p,size) != size       /* write the header */
+#ifndef HAVE_OS_WIN32
     ||  fsync(dsh->fd) < 0                  /* commit that */
+#endif
     ) (*st) = dsm_err_file_io_error;      /* error if any fail */
 } /* write_block */
 
@@ -1204,7 +1208,10 @@ error_status_t *st;
     */
     if (lseek(dsh->fd,0,L_SET) == -1
     ||  write(dsh->fd,&hdr,PAGE_SIZE) != PAGE_SIZE
-    ||  fsync(dsh->fd) == -1) SIGNAL(dsm_err_file_io_error);
+#ifndef HAVE_OS_WIN32
+    ||  fsync(dsh->fd) == -1
+#endif
+    ) SIGNAL(dsm_err_file_io_error);
 
     CLEAR_ST;
  

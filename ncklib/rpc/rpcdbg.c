@@ -216,10 +216,14 @@ PRIVATE int rpc__printf (char *format, ...)
         pthread_t self;
 
         self = pthread_self ();
+#ifdef HAVE_OS_WIN32
+        sprintf (s, "[thread: %08x.%08x] ", (unsigned int)self.p, self.x);
+#else
 #ifdef CMA_INCLUDE
         sprintf (s, "[thread: %08x.%08x] ", self.field1, self.field2);
 #else
         sprintf (s, "[thread: %08lx] ", self);
+#endif
 #endif
         s = &buff[strlen (buff)];
     }

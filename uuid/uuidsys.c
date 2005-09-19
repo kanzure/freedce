@@ -74,7 +74,11 @@ void uuid__get_os_time (uuid_time_t * uuid_time)
     /*
      * Get current time
      */
+#ifdef HAVE_OS_WIN32
+    if (win32_gettimeofday (&tp, (struct timezone *) 0))
+#else
     if (gettimeofday (&tp, (struct timezone *) 0))
+#endif
     {
         perror ("uuid__get_os_time");
         exit (-1);

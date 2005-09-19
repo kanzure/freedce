@@ -67,6 +67,7 @@ void rpc__module_init_func(void)
 
 
 
+extern int win32_gettimeofday(struct timeval *tp, void *unused);
 
 void rpc__ncadg_init
 #ifdef _DCE_PROTO_
@@ -147,7 +148,11 @@ unsigned32 *st;
     if (rpc_g_dg_server_boot_time == 0) {
         struct timeval tv;
 
+#ifdef HAVE_OS_WIN32
+        win32_gettimeofday(&tv, NULL);
+#else
         gettimeofday(&tv, NULL);
+#endif
         rpc_g_dg_server_boot_time = tv.tv_sec;
     }
 

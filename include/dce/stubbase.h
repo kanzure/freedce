@@ -636,7 +636,12 @@ typedef ndr_ulong_int rpc_op_t;
 
 #ifdef STUBS_USE_PTHREADS
 
+#ifdef HAVE_OS_WIN32
+#define RPC_SS_THREADS_INIT \
+	pthread_once(&dcethreads_exc_defaults_initialized, dcethreads_exc_lib_init);
+#else
 #define RPC_SS_THREADS_INIT
+#endif
 
 #define RPC_SS_THREADS_ONCE_T pthread_once_t
 
@@ -648,8 +653,13 @@ typedef ndr_ulong_int rpc_op_t;
 
 #define RPC_SS_THREADS_MUTEX_T pthread_mutex_t
 
+#ifdef HAVE_OS_WIN32
+#define RPC_SS_THREADS_MUTEX_CREATE(mutex_addr) pthread_mutex_init( \
+    mutex_addr, &pthread_mutexattr_default )
+#else
 #define RPC_SS_THREADS_MUTEX_CREATE(mutex_addr) pthread_mutex_init( \
     mutex_addr, pthread_mutexattr_default )
+#endif
 
 #define RPC_SS_THREADS_MUTEX_LOCK(mutex_addr) pthread_mutex_lock(mutex_addr)
 
@@ -661,20 +671,34 @@ typedef void *rpc_ss_threads_dest_arg_t;
 
 #define RPC_SS_THREADS_KEY_T pthread_key_t
 
+#ifdef HAVE_OS_WIN32
+#define RPC_SS_THREADS_KEY_CREATE(key_addr,destructor) pthread_key_create( \
+    (key_addr),(destructor))
+#else
 #define RPC_SS_THREADS_KEY_CREATE(key_addr,destructor) pthread_keycreate( \
     (key_addr),(destructor))
+#endif
 
 #define RPC_SS_THREADS_KEY_SET_CONTEXT(key,value) pthread_setspecific( \
     (key),(pthread_addr_t)(value))
 
+#ifdef HAVE_OS_WIN32
+#define RPC_SS_THREADS_KEY_GET_CONTEXT(key,value_addr) \
+	(*value_addr) = (void*)pthread_getspecific( key)
+#else
 #define RPC_SS_THREADS_KEY_GET_CONTEXT(key,value_addr) pthread_getspecific( \
     key,(pthread_addr_t*)(value_addr))
+#endif
 
 #define RPC_SS_THREADS_CONDITION_T pthread_cond_t
 
+#ifdef HAVE_OS_WIN32
+#define RPC_SS_THREADS_CONDITION_CREATE(condition_addr) pthread_cond_init( \
+    condition_addr,&pthread_condattr_default)
+#else
 #define RPC_SS_THREADS_CONDITION_CREATE(condition_addr) pthread_cond_init( \
     condition_addr,pthread_condattr_default)
-
+#endif
 #define RPC_SS_THREADS_CONDITION_SIGNAL(condition_addr) pthread_cond_signal( \
     condition_addr)
 
@@ -688,9 +712,15 @@ typedef void *rpc_ss_threads_dest_arg_t;
 
 #define RPC_SS_THREADS_CANCEL_STATE_T int
 
-#define RPC_SS_THREADS_DISABLE_ASYNC(state) state=pthread_setasynccancel(CANCEL_OFF)
+#ifdef HAVE_OS_WIN32
+#define RPC_SS_THREADS_DISABLE_ASYNC(state) 
 
+#define RPC_SS_THREADS_RESTORE_ASYNC(state)
+#else
+#define RPC_SS_THREADS_DISABLE_ASYNC(state) state=pthread_setasynccancel(CANCEL_OFF)
 #define RPC_SS_THREADS_RESTORE_ASYNC(state) pthread_setasynccancel(state)
+
+#endif
 
 #define RPC_SS_THREADS_ENABLE_GENERAL(state) state=pthread_setcancel(CANCEL_ON)
 

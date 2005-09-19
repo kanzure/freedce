@@ -113,6 +113,11 @@ rpc_clock_unix_t time;
     return( rpc_g_clock_unix_curr >= time );
 }
 
+#ifdef HAVE_OS_WIN32
+struct timeval;
+extern int win32_gettimeofday(struct timeval *tp, void *unused);
+#endif
+
 /*
  * R P C _ _ C L O C K _ U P D A T E 
  *
@@ -132,7 +137,11 @@ PRIVATE void rpc__clock_update(void)
      */                             
     if (start_time.tv_sec == 0)
     {
+#ifdef HAVE_OS_WIN32
+        win32_gettimeofday( &start_time, (struct timezone *) 0 );
+#else
         gettimeofday( &start_time, (struct timezone *) 0 );
+#endif
         rpc_g_clock_unix_curr = start_time.tv_sec;
         start_time.tv_usec -= (1000000L/RPC_C_CLOCK_HZ);
         if (start_time.tv_usec < 0)
@@ -149,7 +158,11 @@ PRIVATE void rpc__clock_update(void)
          * tick count format we're using (RPC_C_CLOCK_HZ ticks per second).
          * For now, just use 1 second accuracy.
          */
+#ifdef HAVE_OS_WIN32
+        win32_gettimeofday(&tp, (struct timezone *) 0 );
+#else
         gettimeofday(&tp, (struct timezone *) 0 );
+#endif
         rpc_g_clock_unix_curr = tp.tv_sec;      
 
         ticks = (tp.tv_sec - start_time.tv_sec) * RPC_C_CLOCK_HZ +

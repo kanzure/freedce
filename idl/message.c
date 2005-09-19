@@ -78,7 +78,9 @@
 #   define MSG_OPTS       0xF      /* %FACIL-S-IDENT, Text */
 #else
 #   define MAX_FMT_TEXT   512      /* Max size of formatted output string */
+#ifndef HAVE_OS_WIN32
 #   include <nl_types.h>
+#endif
 #   ifdef __STDC__
 #       include <stdarg.h>  /* New! Improved! Method */
 #       define VA_START(L, A, T) va_start(L, A)
@@ -94,6 +96,7 @@
 #endif
 
 
+#ifndef HAVE_OS_WIN32
     static nl_catd cat_handle;
 /*
 ** Declare an array to hold the default messages.  The text of the messages is
@@ -107,6 +110,7 @@ static long max_message_number		/* Compute number of messages. */
 	= (long)(sizeof(default_messages)/sizeof(char *) - 1);
 #   define def_message(id) \
 	default_messages[(id<0||id>max_message_number)?0:id]
+#endif
 #endif
 
 #include <message.h>
@@ -164,6 +168,7 @@ void message_open
 #else
                     /* m e s s a g e _ o p e n  (non-VMS) */
 {
+#ifndef HAVE_OS_WIN32
     char cat_name[PATH_MAX] = CATALOG_DIR "idl.cat";
 
     strcpy(msg_prefix, "idl: ");
@@ -191,6 +196,7 @@ void message_open
           }
     }
     return;
+#endif
 }
 #endif
 
@@ -218,7 +224,9 @@ void message_close
 #else
                     /* m e s s a g e _ c l o s e  (non-VMS) */
 {
+#ifndef HAVE_OS_WIN32
     if (cat_handle != (nl_catd)-1) catclose(cat_handle);
+#endif
     return;
 }
 
@@ -299,8 +307,16 @@ void message_print
             strcpy(format, msg_prefix);
     }
 
+#ifdef HAVE_OS_WIN32
+    {
+	    char buf[80];
+	    sprintf(buf, "<error id %ld>\n", msgid);
+	    strcat(format, buf);
+    }
+#else
     strcat(format,catgets(cat_handle, CAT_SET, msgid, def_message(msgid)));
     strcat(format,"\n");
+#endif
     NL_VFPRINTF(stderr, format, arglist);
     va_end(arglist);
 }
@@ -377,9 +393,14 @@ void message_sprint
 #else
                    /* m e s s a g e _ s p r i n t  (non-VMS) */
 {
+#ifdef HAVE_OS_WIN32
+    char msg_text[80];
+    sprintf(msg_text, "<error id %ld>\n", msgid);
+#else
     char *msg_text;     /* Ptr to message text (storage owned by catgets) */
 
     msg_text = catgets(cat_handle, CAT_SET, msgid, def_message(msgid));
+#endif
 
     /*
      * Output message prefix on all errors that identify the input file
@@ -474,9 +495,14 @@ void message_fprint
                    /* m e s s a g e _ f p r i n t  (non-VMS) */
 {
     char            str[MAX_FMT_TEXT];     /* Formatted message text */
+#ifdef HAVE_OS_WIN32
+    char msg_text[80];
+    sprintf(msg_text, "<error id %ld>\n", msgid);
+#else
     char *msg_text;     /* Ptr to message text (storage owned by catgets) */
 
     msg_text = catgets(cat_handle, CAT_SET, msgid, def_message(msgid));
+#endif
 
     NL_SPRINTF(str, msg_text, arg1, arg2, arg3, arg4, arg5);
     fprintf(fid, "%s\n", str);

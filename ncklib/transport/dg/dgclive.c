@@ -184,9 +184,15 @@ unsigned32 *st;
     if (! maintain_thread_running)
     {     
         maintain_thread_running = true;
+#ifdef HAVE_OS_WIN32
+        pthread_create(&maintain_task, &pthread_attr_default, 
+            (void*)network_maintain_liveness, 
+            NULL);  
+#else
         pthread_create(&maintain_task, pthread_attr_default, 
             (void*)network_maintain_liveness, 
             NULL);  
+#endif
     }
 
     RPC_MAINT_UNLOCK();
@@ -301,17 +307,21 @@ INTERNAL void * network_maintain_liveness(void * unused __attribute__((__unused_
              * Nothing left to do, so terminate the thread.
              */
 			  /* FIXME: MNE */
-			  TRY	{
-            pthread_detach(&maintain_task);
-			  }
-			  CATCH(pthread_badparam_e) {
-			  }
-			  CATCH_ALL	{
-				  fprintf(stderr, "XXX MIREK: %s: %s: %d: caught exception from detach\n",
-						  __FILE__, __PRETTY_FUNCTION__, __LINE__);
-				  RERAISE;
-			  }
-			  ENDTRY;
+	  TRY	{
+#ifdef HAVE_OS_WIN32
+		pthread_detach(maintain_task);
+#else
+		pthread_detach(&maintain_task);
+#endif
+	  }
+		  CATCH(pthread_badparam_e) {
+	  }
+	  CATCH_ALL	{
+		  fprintf(stderr, "XXX MIREK: %s: %s: %d: caught exception from detach\n",
+				  __FILE__, __PRETTY_FUNCTION__, __LINE__);
+		  RERAISE;
+	  }
+	  ENDTRY;
             maintain_thread_running = false;
             break;
         }

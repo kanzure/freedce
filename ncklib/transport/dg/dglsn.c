@@ -57,7 +57,9 @@
 
 #include <assert.h>
 
+#ifndef HAVE_OS_WIN32
 #include <netinet/in.h>
+#endif
 
 
 /* ========================================================================= */
@@ -456,9 +458,15 @@ INTERNAL void convq_start(void)
     if (! convq_running)
     {
         convq_running = true;
+#ifdef HAVE_OS_WIN32
+        pthread_create(&conv_thread, &pthread_attr_default,
+                       (pthread_startroutine_t)convq_loop, 
+                       NULL);  
+#else
         pthread_create(&conv_thread, pthread_attr_default,
                        (pthread_startroutine_t)convq_loop, 
                        NULL);  
+#endif
     }
     RPC_MUTEX_UNLOCK(convq.m);
 }
@@ -1590,7 +1598,7 @@ rpc_dg_recvq_elt_p_t rqe;
          cc != 0 && tmp != NULL;
          tmp = tmp->more_data, num_rqes++)
     { 
-        if (cc <= iov[num_rqes].iov_len)
+        if (cc <= (unsigned32)iov[num_rqes].iov_len)
         { 
             tmp->pkt_len = cc;
             cc = 0;

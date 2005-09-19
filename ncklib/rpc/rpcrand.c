@@ -54,7 +54,11 @@ PRIVATE void rpc__random_init
 unsigned32 seed;
 #endif
 {
+#ifdef HAVE_OS_WIN32
+    srand((int) seed);
+#else
     srandom ((int) seed);
+#endif
 }
 
 /* 
@@ -73,5 +77,9 @@ unsigned32 lower;
 unsigned32 upper;
 #endif
 {
+#ifdef HAVE_OS_WIN32
+    return (rand ());
+#else
     return (random ());
+#endif
 }

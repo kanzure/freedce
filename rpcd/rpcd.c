@@ -41,6 +41,9 @@
 **
 */
 
+#ifdef HAVE_OS_WIN32
+typedef int pid_t;
+#endif
 #include <commonp.h>
 #include <com.h>
 
@@ -563,7 +566,9 @@ error_status_t          *status;
 int main(int argc, char *argv[])
 {
     error_status_t  status;
+#if defined(UNIX) || defined(unix)
     int uid ;
+#endif
 
     /* begin */
 

@@ -211,8 +211,10 @@ static void rpc_ss_destroy_thread_ctx
         /* Free the indirection storage */
         free( thread_indirection_ptr );
 
+#ifndef HAVE_OS_WIN32
         /* And destroy the context - this is required for Kernel RPC */
         RPC_SS_THREADS_KEY_SET_CONTEXT( rpc_ss_thread_supp_key, NULL );
+#endif
     }
 }
 

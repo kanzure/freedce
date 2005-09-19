@@ -20,13 +20,13 @@
  */
 /*
  */
-#ifndef _COMSOC_BSD_H
-#define _COMSOC_BSD_H	1
+#ifndef _COMSOC_WIN32_H
+#define _COMSOC_WIN32_H	1
 /*
 **
 **  NAME:
 **
-**      comsoc_bsd.h
+**      comsoc_win32.h
 **
 **  FACILITY:
 **
@@ -70,8 +70,6 @@ typedef int rpc_socket_t;                       /* a UNIX socket handle */
 
 typedef int rpc_socket_error_t;                 /* a UNIX errno */
 
-#define socket_error errno
-
 #include <comnaf.h>
 #include <ipnaf.h>
 
@@ -93,26 +91,26 @@ typedef int rpc_socket_error_t;                 /* a UNIX errno */
  */
 
 #define RPC_C_SOCKET_OK           0             /* a successful error value */
-#define RPC_C_SOCKET_EWOULDBLOCK  EWOULDBLOCK   /* operation would block */
-#define RPC_C_SOCKET_EINTR        EINTR         /* operation was interrupted */
+#define RPC_C_SOCKET_EWOULDBLOCK  WSAEWOULDBLOCK   /* operation would block */
+#define RPC_C_SOCKET_EINTR        WSAEINTR         /* operation was interrupted */
 #define RPC_C_SOCKET_EIO          EIO           /* I/O error */
-#define RPC_C_SOCKET_EADDRINUSE   EADDRINUSE    /* address was in use (see bind) */
-#define RPC_C_SOCKET_ECONNRESET   ECONNRESET    /* connection reset by peer */
-#define RPC_C_SOCKET_ETIMEDOUT    ETIMEDOUT     /* connection request timed out*/
-#define RPC_C_SOCKET_ECONNREFUSED ECONNREFUSED  /* connection request refused */
-#define RPC_C_SOCKET_ENOTSOCK     ENOTSOCK      /* descriptor was not a socket */
-#define RPC_C_SOCKET_ENETUNREACH  ENETUNREACH   /* network is unreachable*/
+#define RPC_C_SOCKET_EADDRINUSE   WSAEADDRINUSE    /* address was in use (see bind) */
+#define RPC_C_SOCKET_ECONNRESET   WSAECONNRESET    /* connection reset by peer */
+#define RPC_C_SOCKET_ETIMEDOUT    WSAETIMEDOUT     /* connection request timed out*/
+#define RPC_C_SOCKET_ECONNREFUSED WSAECONNREFUSED  /* connection request refused */
+#define RPC_C_SOCKET_ENOTSOCK     WSAENOTSOCK      /* descriptor was not a socket */
+#define RPC_C_SOCKET_ENETUNREACH  WSAENETUNREACH   /* network is unreachable*/
 #define RPC_C_SOCKET_ENOSPC       ENOSPC        /* no local or remote resources */
-#define RPC_C_SOCKET_ENETDOWN     ENETDOWN      /* network is down */
-#define RPC_C_SOCKET_ETOOMANYREFS ETOOMANYREFS  /* too many remote connections */
+#define RPC_C_SOCKET_ENETDOWN     WSAENETDOWN      /* network is down */
+#define RPC_C_SOCKET_ETOOMANYREFS WSAETOOMANYREFS  /* too many remote connections */
 #define RPC_C_SOCKET_ESRCH        ESRCH         /* remote endpoint not found */
-#define RPC_C_SOCKET_EHOSTDOWN    EHOSTDOWN     /* remote host is down */
-#define RPC_C_SOCKET_EHOSTUNREACH EHOSTUNREACH  /* remote host is unreachable */
-#define RPC_C_SOCKET_ECONNABORTED ECONNABORTED  /* local host aborted connect */
-#define RPC_C_SOCKET_ECONNRESET   ECONNRESET    /* remote host reset connection */
-#define RPC_C_SOCKET_ENETRESET    ENETRESET     /* remote host crashed */
+#define RPC_C_SOCKET_EHOSTDOWN    WSAEHOSTDOWN     /* remote host is down */
+#define RPC_C_SOCKET_EHOSTUNREACH WSAEHOSTUNREACH  /* remote host is unreachable */
+#define RPC_C_SOCKET_ECONNABORTED WSAECONNABORTED  /* local host aborted connect */
+#define RPC_C_SOCKET_ECONNRESET   WSAECONNRESET    /* remote host reset connection */
+#define RPC_C_SOCKET_ENETRESET    WSAENETRESET     /* remote host crashed */
 #define RPC_C_SOCKET_ENOEXEC      ENOEXEC       /* invalid endpoint format for remote */
-#define RPC_C_SOCKET_EACCESS      EACCES        /* access control information */
+#define RPC_C_SOCKET_EACCESS      WSAEACCES        /* access control information */
                                                 /* invalid at remote node */
 #define RPC_C_SOCKET_EPIPE        EPIPE         /* a write on a pipe */
                                                 /* or socket for which there */
@@ -123,9 +121,9 @@ typedef int rpc_socket_error_t;                 /* a UNIX errno */
                                                 /* in progress */
 #define RPC_C_SOCKET_EDEADLK      EDEADLK       /* resource deadlock */
                                                 /* would occur */
-#define RPC_C_SOCKET_EINPROGRESS  EINPROGRESS   /* operation now in */
+#define RPC_C_SOCKET_EINPROGRESS  WSAEINPROGRESS   /* operation now in */
                                                 /* progress */
-#define RPC_C_SOCKET_EISCONN      EISCONN       /* socket is already */
+#define RPC_C_SOCKET_EISCONN      WSAEISCONN       /* socket is already */
                                                 /* connected */
 
 /*
@@ -178,21 +176,10 @@ typedef int rpc_socket_error_t;                 /* a UNIX errno */
 	
 #ifdef _SOCKADDR_LEN
 
-     /*
-      * FreeBSD dont have no 'struct osockaddr' 
-      */
-
-#if defined(__FreeBSD__)
-#define RPC_SOCKET_FIX_ADDRLEN(addrp) ( \
-    ((struct sockaddr *) &(addrp)->sa)->sa_family = \
-            ((struct sockaddr *) &(addrp)->sa)->sa_family \
-)
-#else
   #define RPC_SOCKET_FIX_ADDRLEN(addrp) ( \
-      ((struct osockaddr *) &(addrp)->sa)->sa_family = \
+      ((struct sockaddr *) &(addrp)->sa)->sa_family = \
               ((struct sockaddr *) &(addrp)->sa)->sa_family \
   )
-#endif /* FreeBSD */
 
 #define RPC_SOCKET_INIT_MSGHDR(msgp) ( \
     (msgp)->msg_control         = NULL, \
@@ -214,7 +201,6 @@ typedef int rpc_socket_error_t;                 /* a UNIX errno */
 /*
  * Macros for performance critical operations.
  */
-
 inline static void RPC_SOCKET_SENDMSG(
 	rpc_socket_t sock,
 	rpc_socket_iovec_p_t iovp,
@@ -224,61 +210,43 @@ inline static void RPC_SOCKET_SENDMSG(
   	volatile rpc_socket_error_t *serrp
 		)
 {
-	struct msghdr msg; 
+	struct sockaddr *ad = NULL;
+	size_t ad_len = 0;
+	char *data;
+	char *data_ptr;
+	int data_len = 0;
+	int i;
+
+	for (i = 0; i < iovlen; i++)
+		data_len += iovp[i].iov_len;
+
+	data = rpc__mem_alloc(data_len, RPC_C_MEM_AVAIL, 0);
+
+	/* flatten the data before sending as a single block */
+	data_ptr = data;
+	for (i = 0; i < iovlen; i++)
+	{
+		memcpy(data_ptr, iovp[i].iov_base, iovp[i].iov_len);
+		data_ptr = (char*)(((long)data_ptr) + iovp[i].iov_len);
+	}
+
 sendmsg_again:
-	memset(&msg, 0, sizeof(msg));
 	RPC_LOG_SOCKET_SENDMSG_NTR;
-	RPC_SOCKET_INIT_MSGHDR(&msg);
 	if ((addrp) != NULL)
 	{
-		RPC_SOCKET_FIX_ADDRLEN(addrp);
-		msg.msg_name = (caddr_t) &(addrp)->sa;
-		msg.msg_namelen = (addrp)->len;
+		/*RPC_SOCKET_FIX_ADDRLEN(addrp);*/
+		ad = ((struct sockaddr *) &(addrp)->sa);
+		ad_len = (addrp)->len;
 	}
-	else
-	{
-		msg.msg_name = (caddr_t) NULL;
-	}
-	msg.msg_iov = (struct iovec *) iovp;
-	msg.msg_iovlen = iovlen;
-	*(ccp) = sendmsg ((int) sock, (struct msghdr *) &msg, 0);
-	*(serrp) = (*(ccp) == -1) ? errno : RPC_C_SOCKET_OK;
+	*(ccp) = win32_sendto ((int) sock, data, data_len, 0, ad, ad_len);
+	*(serrp) = (*(ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
 	RPC_LOG_SOCKET_SENDMSG_XIT;
 	if (*(serrp) == EINTR)
 	{
 		goto sendmsg_again;
 	}
+	rpc__mem_free(data, RPC_C_MEM_AVAIL);
 }
-
-#if 0
-#define RPC_SOCKET_SENDMSG(sock, iovp, iovlen, addrp, ccp, serrp) \
-    { \
-        struct msghdr msg; \
-sendmsg_again:\
-			memset(&msg, 0, sizeof(msg));	\
-        RPC_LOG_SOCKET_SENDMSG_NTR; \
-        RPC_SOCKET_INIT_MSGHDR(&msg); \
-        if ((addrp) != NULL)\
-        {\
-            RPC_SOCKET_FIX_ADDRLEN(addrp); \
-            msg.msg_name = (caddr_t) &(addrp)->sa; \
-            msg.msg_namelen = (addrp)->len; \
-        }\
-        else\
-        {\
-            msg.msg_name = (caddr_t) NULL;\
-        }\
-        msg.msg_iov = (struct iovec *) iovp; \
-        msg.msg_iovlen = iovlen; \
-        *(ccp) = sendmsg ((int) sock, (struct msghdr *) &msg, 0); \
-        *(serrp) = (*(ccp) == -1) ? errno : RPC_C_SOCKET_OK; \
-        RPC_LOG_SOCKET_SENDMSG_XIT; \
-        if (*(serrp) == EINTR)\
-        {\
-            goto sendmsg_again;\
-        }\
-    }
-#endif
 
 inline static void RPC_SOCKET_RECVFROM
 (
@@ -291,13 +259,13 @@ inline static void RPC_SOCKET_RECVFROM
 )
 {
 recvfrom_again:
-	if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);
+	/*if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);*/
 	RPC_LOG_SOCKET_RECVFROM_NTR;
-	*(ccp) = recvfrom ((int) sock, (char *) buf, (int) buflen, (int) 0,
+	*(ccp) = win32_recvfrom ((int) sock, (char *) buf, (int) buflen, (int) 0,
 			(struct sockaddr *) (&(from)->sa), (unsigned int *) (&(from)->len));
-	*(serrp) = (*(ccp) == -1) ? errno : RPC_C_SOCKET_OK;
+	*(serrp) = (*(ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
 	RPC_LOG_SOCKET_RECVFROM_XIT;
-	RPC_SOCKET_FIX_ADDRLEN(from);
+	/*RPC_SOCKET_FIX_ADDRLEN(from);*/
 	if (*(serrp) == EINTR)
 	{
 		goto recvfrom_again;
@@ -305,24 +273,12 @@ recvfrom_again:
 
 }
 
-#if 0
-#define RPC_SOCKET_RECVFROM(sock, buf, buflen, from, ccp, serrp) \
-    { \
-recvfrom_again:\
-        if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from); \
-        RPC_LOG_SOCKET_RECVFROM_NTR; \
-        *(ccp) = recvfrom ((int) sock, (char *) buf, (int) buflen, (int) 0, \
-            (struct sockaddr *) (&(from)->sa), (int *) (&(from)->len)); \
-        *(serrp) = (*(ccp) == -1) ? errno : RPC_C_SOCKET_OK; \
-        RPC_LOG_SOCKET_RECVFROM_XIT; \
-        RPC_SOCKET_FIX_ADDRLEN(from); \
-        if (*(serrp) == EINTR)\
-        {\
-            goto recvfrom_again;\
-        }\
-    }
-#endif
-
+/* damn windows doesn't have recvmsg.
+ * receive the message, then unpack the data into the iovec.
+ * i don't care how much data was _actually_ received.
+ * am happy to copy garbage.  just want something working.
+ * nice is for wimps.
+ */
 inline static void RPC_SOCKET_RECVMSG
 (
     rpc_socket_t        sock,
@@ -333,67 +289,28 @@ inline static void RPC_SOCKET_RECVMSG
 	 volatile rpc_socket_error_t *serrp
 )
 {
-	struct msghdr msg;
-recvmsg_again:
-	memset(&msg, 0,sizeof(msg));
-	RPC_LOG_SOCKET_RECVMSG_NTR;
-	RPC_SOCKET_INIT_MSGHDR(&msg);
-	if ((addrp) != NULL)
-	{
-		RPC_SOCKET_FIX_ADDRLEN(addrp);
-		msg.msg_name = (caddr_t) &(addrp)->sa;
-		msg.msg_namelen = (addrp)->len;
-	}
-	else
-	{
-		msg.msg_name = (caddr_t) NULL;
-	}
-	msg.msg_iov = (struct iovec *) iovp;
-	msg.msg_iovlen = iovlen;
-	*(ccp) = recvmsg ((int) sock, (struct msghdr *) &msg, 0);
-	if ((addrp) != NULL)
-	{
-		(addrp)->len = msg.msg_namelen;
-	}
-	*(serrp) = (*(ccp) == -1) ? errno : RPC_C_SOCKET_OK;
-	RPC_LOG_SOCKET_RECVMSG_XIT;
-	if (*(serrp) == EINTR)
-	{
-		goto recvmsg_again;
-	}
-}
-#if 0
-#define RPC_SOCKET_RECVMSG(sock, iovp, iovlen, addrp, ccp, serrp) \
-    { \
-        struct msghdr msg; \
-         \
-recvmsg_again:\
-        RPC_LOG_SOCKET_RECVMSG_NTR; \
-        RPC_SOCKET_INIT_MSGHDR(&msg); \
-        if ((addrp) != NULL)\
-        {\
-            RPC_SOCKET_FIX_ADDRLEN(addrp); \
-            msg.msg_name = (caddr_t) &(addrp)->sa; \
-            msg.msg_namelen = (addrp)->len; \
-        }\
-        else\
-        {\
-            msg.msg_name = (caddr_t) NULL;\
-        }\
-        msg.msg_iov = (struct iovec *) iovp; \
-        msg.msg_iovlen = iovlen; \
-        *(ccp) = recvmsg ((int) sock, (struct msghdr *) &msg, 0); \
-        if ((addrp) != NULL)\
-        {\
-            (addrp)->len = msg.msg_namelen; \
-        }\
-        *(serrp) = (*(ccp) == -1) ? errno : RPC_C_SOCKET_OK; \
-        RPC_LOG_SOCKET_RECVMSG_XIT; \
-        if (*(serrp) == EINTR)\
-        {\
-            goto recvmsg_again;\
-        }\
-    }
-#endif
+	int data_len = 0;
+	char *data;
+	char *data_ptr;
+	int i;
 
-#endif /* _COMSOC_BSD_H */
+	for (i = 0; i < iovlen; i++)
+		data_len += iovp[i].iov_len;
+
+	data = rpc__mem_alloc(data_len, RPC_C_MEM_AVAIL, 0);
+	RPC_SOCKET_RECVFROM(sock, data, data_len, addrp, ccp, serrp);
+
+	if ((*(serrp)) != RPC_C_SOCKET_OK)
+		return;
+
+	data_ptr = data;
+	for (i = 0; i < iovlen; i++)
+	{
+		memcpy(iovp[i].iov_base, data_ptr, iovp[i].iov_len);
+		data_ptr = (char*)(((long)data_ptr) + iovp[i].iov_len);
+	}
+
+	rpc__mem_free(data, RPC_C_MEM_AVAIL);
+}
+
+#endif /* _COMSOC_WIN32_H */

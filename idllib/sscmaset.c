@@ -880,7 +880,11 @@ static void rpc_ss_raise_arch_exception
 #ifdef IDL_PROTOTYPES
 (
     ndr_ulong_int fault_code,
+#ifdef HAVE_OS_WIN32
+    RPC_SS_THREADS_CANCEL_STATE_T async_cancel_state __attribute__((__unused__))
+#else
     RPC_SS_THREADS_CANCEL_STATE_T async_cancel_state
+#endif
 )
 #else
 (fault_code,async_cancel_state)
@@ -1031,7 +1035,11 @@ static void rpc_ss_raise_impl_exception
 #ifdef IDL_PROTOTYPES
 (
     ndr_ulong_int result_code,
+#ifdef HAVE_OS_WIN32
+    RPC_SS_THREADS_CANCEL_STATE_T async_cancel_state __attribute__((__unused__))
+#else
     RPC_SS_THREADS_CANCEL_STATE_T async_cancel_state
+#endif
 )
 #else
 (result_code,async_cancel_state)

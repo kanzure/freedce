@@ -37,7 +37,9 @@
 **
 */
 
+#ifndef HAVE_OS_WIN32
 #include  <dce/pthread_exc.h>
+#endif
 #include  <dsm.h>
 #include  <assert.h>
 #include  <stddef.h>
@@ -97,7 +99,9 @@
 #define GROW_PAGES  5                   /* growth unit */
 #define HDR_COOKIE  0xA5                /* magic cookie in preheaders */
 #define DSM_COOKIE  0xADEADBEEU          /* magic cookie in dsh */
+#ifndef MAX_PATH
 #define MAX_PATH    1024                /* maximum pathname length */
+#endif
 
 #define MAGIC_MARKER (unsigned32)dsm_magic_marker  /* "magic", invalid marker */
 

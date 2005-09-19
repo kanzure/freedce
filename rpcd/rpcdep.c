@@ -37,6 +37,10 @@
 **
 */
 
+#ifdef HAVE_OS_WIN32
+typedef int pid_t;
+#endif
+
 #include <commonp.h>
 #include <com.h>
 #include <dce/ep.h>

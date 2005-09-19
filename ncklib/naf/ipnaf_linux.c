@@ -50,8 +50,14 @@
 #include <comsoc.h>
 #include <ipnaf.h>
 
+#ifdef HAVE_OS_WIN32
+#define getsockname win32_getsockname
+#endif
+
+#ifndef HAVE_OS_WIN32
 #include <net/if.h>
 #include <sys/ioctl.h>
+#endif
 
 
 /***********************************************************************
@@ -59,6 +65,7 @@
  *  Internal prototypes and typedefs.
  */
 
+#ifndef HAVE_OS_WIN32
 typedef boolean (*enumerate_fn_p_t) _DCE_PROTOTYPE_ ((
         int                     /* in  */  /*desc*/,
         struct ifreq            /* in  */ * /*ifr*/,
@@ -94,6 +101,7 @@ INTERNAL boolean get_broadcast_addr _DCE_PROTOTYPE_ ((
         rpc_ip_addr_p_t          /*ip_addr*/,
         rpc_ip_addr_p_t          /*netmask_addr*/
     ));
+#endif
 
 #ifndef NO_SPRINTF
 #  define RPC__IP_NETWORK_SPRINTF   sprintf
@@ -112,6 +120,7 @@ typedef struct
 } rpc_ip_s_addr_vector_t, *rpc_ip_s_addr_vector_p_t;
 
 INTERNAL rpc_ip_s_addr_vector_p_t local_ip_addr_vec = NULL;
+#ifndef HAVE_OS_WIN32
 
 /*
 **++
@@ -162,7 +171,6 @@ INTERNAL rpc_ip_s_addr_vector_p_t local_ip_addr_vec = NULL;
 **
 **--
 **/
-
 INTERNAL void enumerate_interfaces 
 #ifdef _DCE_PROTO_
 (
@@ -565,6 +573,7 @@ rpc_ip_addr_p_t         netmask_addr;
         return (true);
     }
 }
+#endif /* HAVE_OS_WIN32 */
 
 /*
 **++
@@ -635,7 +644,6 @@ unsigned32              *status;
 {
     rpc_ip_addr_p_t         ip_addr;
     rpc_ip_addr_t           loc_ip_addr;
-    unsigned16              i;
 
 
     CODING_ERROR (status);
@@ -660,8 +668,10 @@ unsigned32              *status;
 
     RPC_SOCKET_FIX_ADDRLEN(&loc_ip_addr);
 
+#ifndef HAVE_OS_WIN32
     if (loc_ip_addr.sa.sin_addr.s_addr == 0)
     {
+	unsigned16              i;
         enumerate_interfaces
             (protseq_id, desc, get_addr, rpc_addr_vec, NULL, status);
 
@@ -675,6 +685,7 @@ unsigned32              *status;
         }
     }
     else
+#endif
     {
         RPC_MEM_ALLOC (
             ip_addr,
@@ -754,7 +765,7 @@ unsigned32              *status;
 **
 **--
 **/
-
+#ifndef HAVE_OS_WIN32
 INTERNAL boolean get_broadcast_addr 
 #ifdef _DCE_PROTO_
 (
@@ -816,6 +827,7 @@ rpc_ip_addr_p_t         netmask_addr;
     RPC_SOCKET_FIX_ADDRLEN(ip_addr);
     return (true);
 }
+#endif
 
 /*
 **++
@@ -861,8 +873,13 @@ PRIVATE void rpc__ip_get_broadcast
 #ifdef _DCE_PROTO_
 (
     rpc_naf_id_t            naf_id __attribute__((__unused__)),
+#ifdef HAVE_OS_WIN32
+    rpc_protseq_id_t        protseq_id __attribute__((__unused__)),
+    rpc_addr_vector_p_t     *rpc_addr_vec __attribute__((__unused__)),
+#else
     rpc_protseq_id_t        protseq_id,
     rpc_addr_vector_p_t     *rpc_addr_vec,
+#endif
     unsigned32              *status 
 )
 #else
@@ -873,10 +890,16 @@ rpc_addr_vector_p_t     *rpc_addr_vec;
 unsigned32              *status; 
 #endif
 {
+#ifdef HAVE_OS_WIN32
+    CODING_ERROR (status);
+    *status = -7;   /* !!! */
+    return;
+#else
     int                     desc;
 
 
     CODING_ERROR (status);
+
 
     /*
      * Open a socket to pass to "enumerate_interface".
@@ -892,6 +915,7 @@ unsigned32              *status;
     enumerate_interfaces
         (protseq_id, desc, get_broadcast_addr, rpc_addr_vec, NULL, status);
     close(desc);
+#endif
 }
 
 /*
@@ -937,6 +961,11 @@ PRIVATE void rpc__ip_init_local_addr_vec
 unsigned32 *status; 
 #endif
 {
+#ifdef HAVE_OS_WIN32
+	/* don't know what to do right now */
+        *status = rpc_s_cant_create_socket;   /* !!! */
+        return;
+#else
     int                     desc;
     unsigned32              i;
     rpc_addr_vector_p_t     rpc_addr_vec = NULL;
@@ -1049,7 +1078,7 @@ free_rpc_addrs:
         }
         RPC_MEM_FREE (netmask_addr_vec, RPC_C_MEM_RPC_ADDR_VEC);
     }
-    return;
+#endif
 }
 
 /*

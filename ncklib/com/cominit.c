@@ -311,8 +311,13 @@ INTERNAL void init_once(void)
 	/*
 	 * create the per-thread context key
 	 */
+#ifdef HAVE_OS_WIN32
+	pthread_key_create (&rpc_g_thread_context_key, 
+			(void (*) _DCE_PROTOTYPE_((pointer_t))) thread_context_destructor);
+#else
 	pthread_keycreate (&rpc_g_thread_context_key, 
 			(void (*) _DCE_PROTOTYPE_((pointer_t))) thread_context_destructor);
+#endif
 
 	/*
 	 * Initialize the timer service.
@@ -840,15 +845,15 @@ rpc_naf_id_elt_p_t      naf;
 #endif
 {
     rpc_socket_t            socket;
-    rpc_socket_error_t      socket_error;
+    rpc_socket_error_t      sock_error;
     
     if (naf->naf_id == 0)
         return (false);
     
-    socket_error = rpc__socket_open_basic
+    sock_error = rpc__socket_open_basic
         (naf->naf_id, naf->network_if_id, 0, &socket);
 
-    if (! RPC_SOCKET_IS_ERR (socket_error))
+    if (! RPC_SOCKET_IS_ERR (sock_error))
     {
         rpc__socket_close (socket);
         return (true);
@@ -911,12 +916,12 @@ rpc_network_protocol_id_t network_protocol;
 #endif
 {
     rpc_socket_t            socket;
-    rpc_socket_error_t      socket_error;
+    rpc_socket_error_t      sock_error;
 
-    socket_error = rpc__socket_open_basic
+    sock_error = rpc__socket_open_basic
         (naf, network_if, network_protocol, &socket);
 
-    if (! RPC_SOCKET_IS_ERR (socket_error))
+    if (! RPC_SOCKET_IS_ERR (sock_error))
     {
         (void) rpc__socket_close (socket);
         return (true);

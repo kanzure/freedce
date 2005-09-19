@@ -24,6 +24,19 @@ if test "x$target_os" = "xlinux"; then
 	target_os="linux-gnu";
 fi
 
+case "$target_os" in
+    cygwin* | mingw*)
+            have_win32=1
+	    ;;
+esac
+
+if test "x$have_win32" = "x1"; then
+	AC_DEFINE(HAVE_OS_WIN32, 1, [Define, if target is win32])
+	LIBS="$LIBS -lntdll -lws2_32";
+	WIN32_PROG_PREFIX=".exe"
+	AC_SUBST(WIN32_PROG_PREFIX)
+fi
+
 # show the user what we do
 echo "########################################"
 echo "# configuring for target: $target"
@@ -57,8 +70,13 @@ AC_SUBST(SED)
 AC_OBJEXT
 AC_C_INLINE
 
+dnl AC_CHECK_HEADERS(windows.h)
 dnl Checks for libraries.
+if test "x$have_win32" = "x1"; then
+AC_CHECK_LIB(pthreadGC2, pthread_create)
+else
 AC_CHECK_LIB(pthread, pthread_create)
+fi
 AC_CHECK_LIB(dl, dlopen)
 
 SAMBA_TNG_DIRS="/usr/local/samba"
@@ -69,8 +87,14 @@ THREADS_DIRS="/opt/dce"
 AC_ARG_WITH(dcethreads-dir, [  --with-dcethreads-dir   Specify where you have installed dcethreads],
 [THREADS_DIRS="$withval $THREADS_DIRS"])
 
+
+if test "x$have_win32" != "x1"; then
 RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, $THREADS_DIRS,,
 AC_MSG_ERROR([freedce requires libdcethreads!]))
+else
+RPC_CHECK_LIBDIR(dcethreads_exc_lib_init, dcethreads, $THREADS_DIRS,,
+AC_MSG_ERROR([freedce requires libdcethreads!]))
+fi
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(features.h sys/cdefs.h dlfcn.h)

@@ -56,9 +56,13 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #else
+#ifdef HAVE_OS_WIN32
+#include <mini_win32_net.h>
+#else
 #include <in.h>
 #include <tcp.h>
 #include <inet.h>
+#endif
 #endif
 
 /***********************************************************************

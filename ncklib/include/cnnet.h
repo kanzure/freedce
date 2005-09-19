@@ -78,7 +78,7 @@
 \
     for (_bytes_to_adjust = (cc), _num_elts = 0;; _num_elts++, iovp++) \
     { \
-        if ((iovp)->iov_len > _bytes_to_adjust) \
+        if (((unsigned32)(iovp)->iov_len) > _bytes_to_adjust) \
         { \
             (iovp)->iov_len -= _bytes_to_adjust; \
             (iovp)->iov_base += _bytes_to_adjust; \

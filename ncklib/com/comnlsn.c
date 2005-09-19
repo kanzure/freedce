@@ -182,7 +182,11 @@ unsigned32              *status;
             TRY {
                 pthread_create (
                     &listener_thread,                   /* new thread    */
+#ifdef HAVE_OS_WIN32
+                    &rpc_g_default_pthread_attr,         /* attributes    */
+#else
                     rpc_g_default_pthread_attr,         /* attributes    */
+#endif
                     (pthread_startroutine_t)lthread,   /* start routine */
                     lstate);           /* arguments     */
                 successful = true;
@@ -329,7 +333,11 @@ rpc_listener_state_p_t  lstate;
         if (lsock->busy)
         {
             listener_state_copy.socks[listener_state_copy.num_desc++] = *lsock;
+#ifdef HAVE_OS_WIN32
+            FD_SET ((SOCKET)lsock->desc, &listener_readfds);
+#else
             FD_SET (lsock->desc, &listener_readfds);
+#endif
             if (lsock->desc + 1 > listener_nfds)
             {
                 listener_nfds = lsock->desc + 1;
@@ -447,8 +455,13 @@ INTERNAL void lthread_loop (void)
 	    	  pthread_testcancel();
 #endif
             RPC_LOG_SELECT_PRE;
+#ifdef HAVE_OS_WIN32
+            n_found = win32_select (
+			      listener_nfds, &readfds_copy, NULL, NULL, NULL);
+#else
             n_found = select (
 			      listener_nfds, &readfds_copy, NULL, NULL, NULL);
+#endif
             RPC_LOG_SELECT_POST;
 
 #ifdef NON_CANCELLABLE_IO_SELECT

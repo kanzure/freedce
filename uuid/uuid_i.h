@@ -249,4 +249,7 @@ typedef struct
         unsigned32              * /*st*/
     ));
 
+struct timeval;
+extern int win32_gettimeofday(struct timeval *tp, void *unused);
+
 #endif /* _UUIDP_H */

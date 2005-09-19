@@ -37,6 +37,11 @@
 **
 */
 
+#ifdef HAVE_OS_WIN32
+typedef int pid_t;
+#endif
+
+#include <stdlib.h>
 #include <commonp.h>
 #include <com.h>
 
@@ -181,6 +186,9 @@ error_status_t  *status;
     SET_STATUS_OK(status);
 }
 
+struct timeval;
+extern int win32_gettimeofday(struct timeval *tp, void *unused);
+
 
 /*  Sleep until starttime + nsecs
  */
@@ -190,11 +198,18 @@ unsigned32      nsecs;
 {
     unsigned32      waketime; 
     struct timeval  now;
+#ifndef HAVE_OS_WIN32
     struct timezone tz;
+#endif
     unsigned32      sleep_secs;
 
     waketime = starttime->tv_sec + nsecs;
+#ifdef HAVE_OS_WIN32
+    win32_gettimeofday(&now, NULL);
+#else
     gettimeofday(&now, &tz);
+#endif
+
     if (waketime > (unsigned32)now.tv_sec)
     {
         sleep_secs = waketime - now.tv_sec;
@@ -208,10 +223,14 @@ unsigned32      nsecs;
 PRIVATE void ru_sleep(nsecs)
 unsigned32      nsecs;
 {
+#ifdef HAVE_OS_WIN32
+	_sleep(nsecs / 1000);
+#else
     struct timespec  sleeptime;
 	extern int pthd4_delay_np(struct timespec *);
     sleeptime.tv_sec = nsecs;
     sleeptime.tv_nsec = 0;
     pthd4_delay_np(&sleeptime);
+#endif
 }
 

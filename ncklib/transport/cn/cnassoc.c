@@ -4543,7 +4543,11 @@ rpc_cn_assoc_p_t        assoc;
     while(!successful) {
         TRY {
             pthread_create (&(assoc->cn_ctlblk.cn_rcvr_thread_id),
+#ifdef HAVE_OS_WIN32
+                            &rpc_g_default_pthread_attr,
+#else
                             rpc_g_default_pthread_attr,
+#endif
                             (pthread_startroutine_t) rpc__cn_network_receiver,
                             (pthread_addr_t) assoc);
             successful = true;
@@ -4726,7 +4730,11 @@ rpc_cn_assoc_p_t        assoc;
         RPC_COND_DELETE (assoc->assoc_msg_cond, rpc_g_global_mutex);
     }
 	 TRY	{
+#ifdef HAVE_OS_WIN32
+		 pthread_detach (ccb->cn_rcvr_thread_id);
+#else
 		 pthread_detach (&ccb->cn_rcvr_thread_id);
+#endif
 	 }
 	 CATCH(pthread_use_error_e)	{
 	 }

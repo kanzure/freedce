@@ -42,6 +42,10 @@
 **
 */
 
+#ifdef HAVE_OS_WIN32
+typedef int pid_t;
+#endif
+
 #include <commonp.h>
 #include <com.h>
 
@@ -98,6 +102,15 @@ PRIVATE void sliv_init(h, status)
 struct db       *h;
 error_status_t  *status;
 {
+#ifdef HAVE_OS_WIN32
+    pthread_cond_init(&h->sliv_task2_cv, &pthread_condattr_default);
+
+    pthread_create(&h->sliv_task1_h, &pthread_attr_default, 
+            (void*) sliv_task1, (void *) h);
+
+    pthread_create(&h->sliv_task2_h, &pthread_attr_default, 
+            (void*) sliv_task2, (void *) h);
+#else
     pthread_cond_init(&h->sliv_task2_cv, pthread_condattr_default);
 
     pthread_create(&h->sliv_task1_h, pthread_attr_default, 
@@ -105,7 +118,7 @@ error_status_t  *status;
 
     pthread_create(&h->sliv_task2_h, pthread_attr_default, 
             (void*) sliv_task2, (void *) h);
-
+#endif
     *status = error_status_ok;
 }
 
@@ -119,6 +132,9 @@ error_status_t  *status;
  *  slive_c_max_server_not_listening consecutive tries.
  */
 
+struct timeval;
+extern int win32_gettimeofday(struct timeval *tp, void *unused);
+
 INTERNAL void sliv_task1(arg)
 void    *arg;
 {
@@ -126,7 +142,9 @@ void    *arg;
 
     struct db       *h;
     struct timeval  now;
+#ifndef HAVE_OS_WIN32
     struct timezone tz;
+#endif
     unsigned32      ndeletes;
     db_lists_t      *lp,
                     *lp_next;
@@ -136,13 +154,21 @@ void    *arg;
 
     h = (struct db *) arg;
 
+#ifdef HAVE_OS_WIN32
+    win32_gettimeofday(&now, NULL);
+#else
     gettimeofday(&now, &tz);
+#endif
 
     while (true)
     {    
         ru_sleep_until(&now, slive_c_long_wait);
 
+#ifdef HAVE_OS_WIN32
+	win32_gettimeofday(&now, NULL);
+#else
         gettimeofday(&now, &tz);
+#endif
 
         db_lock(h);
                     
@@ -217,7 +243,9 @@ void    *arg;
 {
     struct db       *h;
     struct timeval  now;
+#ifndef HAVE_OS_WIN32
     struct timezone tz;
+#endif
     struct timespec waketime;
     unsigned32      waitsecs;
     boolean32       have_db_lock;
@@ -234,7 +262,11 @@ void    *arg;
     /*  let other init stuff get done */
     ru_sleep(180);      
 
+#ifdef HAVE_OS_WIN32
+    win32_gettimeofday(&now, NULL);
+#else
     gettimeofday(&now, &tz);
+#endif
     waitsecs = slive_c_long_wait;
 
     db_lock(h);
@@ -258,7 +290,11 @@ void    *arg;
             /*  have lock now
              */
     
+#ifdef HAVE_OS_WIN32
+	    win32_gettimeofday(&now, NULL);
+#else
             gettimeofday(&now, &tz);
+#endif
             waitsecs = slive_c_long_wait;   /* so far no bad servers */
     
             for (lp = db_list_first(&h->lists_mgmt, db_c_entry_list, NULL);

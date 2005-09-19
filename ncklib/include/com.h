@@ -1000,6 +1000,39 @@ typedef struct
  * key has been initialized (in rpc__init) and will fail if it hasn't
  * been.
  */
+#ifdef HAVE_OS_WIN32
+#define RPC_GET_THREAD_CONTEXT(thread_context, status) \
+{ \
+    *status = rpc_s_ok; \
+\
+    thread_context = (pthread_addr_t) \
+	pthread_getspecific (rpc_g_thread_context_key); \
+\
+    if (thread_context == NULL) \
+    { \
+        RPC_MEM_ALLOC ( \
+            thread_context, \
+            rpc_thread_context_p_t, \
+            sizeof (rpc_thread_context_t), \
+            RPC_C_MEM_THREAD_CONTEXT, \
+            RPC_C_MEM_WAITOK); \
+\
+        if (thread_context != NULL) \
+        { \
+            (thread_context)->cancel_timeout = rpc_c_cancel_infinite_timeout; \
+            (thread_context)->ns_authn_state = true; \
+            pthread_setspecific (rpc_g_thread_context_key, \
+                (pthread_addr_t)thread_context); \
+        } \
+        else \
+        { \
+            *status = rpc_s_no_memory; \
+        } \
+    } \
+}
+
+#else
+
 #define RPC_GET_THREAD_CONTEXT(thread_context, status) \
 { \
     *status = rpc_s_ok; \
@@ -1030,6 +1063,7 @@ typedef struct
     } \
 }
 
+#endif /* HAVE_OS_WIN32 */
 
 #define RPC_SET_CANCEL_TIMEOUT(value, status) \
 { \

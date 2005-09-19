@@ -41,7 +41,7 @@
 #include <ndrp.h>
 #include <ndrglob.h>
 
-GLOBAL u_char ndr_g_local_drep_packed[4] = {
+GLOBAL unsigned char ndr_g_local_drep_packed[4] = {
     (NDR_LOCAL_INT_REP << 4) | NDR_LOCAL_CHAR_REP,
     NDR_LOCAL_FLOAT_REP,
     0,

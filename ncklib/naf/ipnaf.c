@@ -47,6 +47,13 @@
 #include <comnaf.h>
 #include <ipnaf.h>
 
+#ifdef HAVE_OS_WIN32
+#define inet_addr win32_inet_addr
+#define htons win32_htons
+#define ntohs win32_ntohs
+#define setsockopt win32_setsockopt
+#define DO_NOT_ALLOW_HOSTNAMES
+#endif
 #ifndef DO_NOT_ALLOW_HOSTNAMES
 #  include <netdb.h>
 #endif
@@ -967,12 +974,12 @@ unsigned32              *status;
     boolean             numeric;
 #ifndef DO_NOT_ALLOW_HOSTNAMES
     struct hostent      he;
-#endif
 
     size_t buflen;
     char *buf = NULL;
     struct hostent *result = NULL;
     int herr = 0;
+#endif
 
     CODING_ERROR (status);  
 

@@ -48,7 +48,7 @@
      * packet headers.
      */
 
-EXTERNAL u_char ndr_g_local_drep_packed[4];
+EXTERNAL unsigned char ndr_g_local_drep_packed[4];
 
 EXTERNAL ndr_format_t ndr_g_local_drep;
 

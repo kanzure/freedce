@@ -44,7 +44,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#ifndef HAVE_OS_WIN32
 #include <nl_types.h>       /* public types for NLS (I18N) routines */
+#endif
 
 
 #define FACILITY_CODE_MASK          0xF0000000
@@ -126,13 +128,19 @@ int                     *status;
     unsigned short  facility_code;
     unsigned short  component_code;
     unsigned short  status_code;
+#ifndef HAVE_OS_WIN32
     nl_catd     catd;
+#endif
     char        component_name[4];
     char        *facility_name;
     char        filename_prefix[7];
     char        nls_filename[11];
+#ifdef HAVE_OS_WIN32
+    char	message[50];
+#else
     char        alt_filename[80];
     char        *message;
+#endif
     static char alphabet[] = "abcdefghijklmnopqrstuvwxyz_0123456789-+@";
     static char *facility_names[] = {
         "dce",
@@ -206,6 +214,7 @@ int                     *status;
     /*
      * Open the message file
      */
+#ifndef HAVE_OS_WIN32
     catd = (nl_catd) catopen (nls_filename, 0);
 
     if (catd == (nl_catd) -1)
@@ -231,7 +240,9 @@ int                     *status;
      * try to get the specified message from the file
      */
     message = (char *) catgets (catd, 1, status_code, NO_MESSAGE);
-
+#else
+    sprintf(message, "status %08lx", status_to_convert);
+#endif
 
     /*
      * if everything went well, return the resulting message
@@ -249,7 +260,9 @@ int                     *status;
         sprintf ((char *) error_text, "status %08lx", status_to_convert);
     }
 
+#ifndef HAVE_OS_WIN32
     catclose (catd);
+#endif
 }        
 void dce_error_inq_text (
 unsigned long           status_to_convert,

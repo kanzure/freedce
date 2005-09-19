@@ -255,19 +255,26 @@ void
 wait_for_signals()
 {
 
+#if defined(__linux__)
 sigset_t default_signal_mask;
 sigset_t old_signal_mask;
 
-#if defined(__linux__)
   sigemptyset(&default_signal_mask);
   pthread_sigmask(SIG_BLOCK,  &default_signal_mask, &old_signal_mask);
 #endif
 
 #ifndef _AIX
+#ifdef HAVE_OS_WIN32
+  pthread_create(&sig_handler_thread, 
+		 &pthread_attr_default,
+		 (void*)signal_handler,
+		 NULL);
+#else
   pthread_create(&sig_handler_thread, 
 		 pthread_attr_default,
 		 (void*)signal_handler,
 		 NULL);
+#endif
 #endif
 
 #ifdef _AIX
@@ -282,12 +289,13 @@ static void
 signal_handler(void * arg __attribute__((__unused__)))
 {
 
-  sigset_t catch_signal_mask;
-  sigset_t old_signal_mask;
-  int which_signal;
   unsigned32 status;
 
 #if defined(__linux__)
+  int which_signal;
+  sigset_t catch_signal_mask;
+  sigset_t old_signal_mask;
+
   sigemptyset(&catch_signal_mask);
   sigaddset(&catch_signal_mask, SIGINT);
 
@@ -297,6 +305,7 @@ signal_handler(void * arg __attribute__((__unused__)))
   while (1) 
     {
       
+#ifndef HAVE_OS_WIN32
 #ifndef _AIX
       /* Wait for a signal to arrive */
       sigwait(&catch_signal_mask, &which_signal);
@@ -304,8 +313,9 @@ signal_handler(void * arg __attribute__((__unused__)))
       if ((which_signal == SIGINT) || (which_signal == SIGQUIT))
 	rpc_mgmt_stop_server_listening(NULL, &status);
 #endif
+#endif
 
-#ifdef _AIX
+#if defined(_AIX) || defined(HAVE_OS_WIN32)
 	rpc_mgmt_stop_server_listening(NULL, &status);
 #endif
 

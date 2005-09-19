@@ -45,6 +45,22 @@
 #include <comp.h>
 #include <fcntl.h>
 /*#include <dce/cma_ux_wrappers.h>*/
+
+#ifdef HAVE_OS_WIN32
+#define socket_error win32_socket_err()
+#define bind win32_bind
+#define accept win32_accept
+#define listen win32_listen
+#define connect win32_connect
+#define setsockopt win32_setsockopt
+#define getsockopt win32_getsockopt
+#define getsockname win32_getsockname
+#define getpeername win32_getpeername
+#define select win32_select
+#else
+#define socket_error errno
+#endif
+
 
 /* ======================================================================== */
 
@@ -100,13 +116,20 @@ rpc_socket_t        *sock;
 {
     RPC_LOG_SOCKET_OPEN_NTR;
 
+#ifdef HAVE_OS_WIN32
+    *sock = win32_socket(
+        (int) RPC_PROTSEQ_INQ_NAF_ID(pseq_id),
+        (int) RPC_PROTSEQ_INQ_NET_IF_ID(pseq_id),
+        (int) RPC_PROTSEQ_INQ_NET_PROT_ID(pseq_id));
+#else
     *sock = socket(
         (int) RPC_PROTSEQ_INQ_NAF_ID(pseq_id),
         (int) RPC_PROTSEQ_INQ_NET_IF_ID(pseq_id),
         (int) RPC_PROTSEQ_INQ_NET_PROT_ID(pseq_id));
+#endif
 
     RPC_LOG_SOCKET_OPEN_XIT;
-    return ((*sock == -1) ? errno : RPC_C_SOCKET_OK);
+    return ((*sock == -1) ? socket_error : RPC_C_SOCKET_OK);
 }
 
 /*
@@ -133,9 +156,13 @@ rpc_network_protocol_id_t net_prot;
 rpc_socket_t        *sock;
 #endif
 {
+#ifdef HAVE_OS_WIN32
+    *sock = win32_socket((int) naf, (int) net_if, (int) net_prot);
+#else
     *sock = socket((int) naf, (int) net_if, (int) net_prot);
+#endif
 
-    return ((*sock == -1) ? errno : RPC_C_SOCKET_OK);
+    return ((*sock == -1) ? socket_error : RPC_C_SOCKET_OK);
 }
 
 /*
@@ -159,7 +186,7 @@ rpc_socket_t        sock;
     rpc_socket_error_t  serr;
 
     RPC_LOG_SOCKET_CLOSE_NTR;
-    serr = (close(sock) == -1) ? errno : RPC_C_SOCKET_OK;
+    serr = (close(sock) == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_LOG_SOCKET_CLOSE_XIT;
     return (serr);
 }
@@ -221,7 +248,7 @@ rpc_addr_p_t        addr;
     {
         serr = 
             (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1) ? 
-		errno : RPC_C_SOCKET_OK;
+		socket_error : RPC_C_SOCKET_OK;
 #if defined(SOL_SOCKET) && defined(SO_REUSEADDR)
         if (serr == RPC_C_SOCKET_EADDRINUSE && has_endpoint)
         {
@@ -229,7 +256,7 @@ rpc_addr_p_t        addr;
                            &setsock_val, sizeof(setsock_val)) != -1)
             {
                 serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)
-                    ? errno : RPC_C_SOCKET_OK;
+                    ? socket_error : RPC_C_SOCKET_OK;
             }
         }
 #endif
@@ -245,7 +272,7 @@ rpc_addr_p_t        addr;
         if (has_endpoint)
         {
             serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)?
-                errno : RPC_C_SOCKET_OK;
+                socket_error : RPC_C_SOCKET_OK;
 #if defined(SOL_SOCKET) && defined(SO_REUSEADDR)
             if (serr == RPC_C_SOCKET_EADDRINUSE)
             {
@@ -253,7 +280,7 @@ rpc_addr_p_t        addr;
                                &setsock_val, sizeof(setsock_val)) != -1)
                 {
                     serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)
-                        ? errno : RPC_C_SOCKET_OK;
+                        ? socket_error : RPC_C_SOCKET_OK;
                 }
             }
 #endif
@@ -272,7 +299,7 @@ rpc_addr_p_t        addr;
 	    if (c != '\0')       /* test for null string */
 	    {
 	        serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)?
-		    errno : RPC_C_SOCKET_OK;
+		    socket_error : RPC_C_SOCKET_OK;
 	    }                               /* well-known endpoint */
 
 	    else
@@ -378,7 +405,7 @@ connect_again:
                      (int) sock,
                      (struct sockaddr *) (&addr->sa),
                      (int) (addr->len))
-            == -1) ? errno : RPC_C_SOCKET_OK;
+            == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_LOG_SOCKET_CONNECT_XIT;
     if (serr == EINTR)
     {
@@ -433,7 +460,7 @@ accept_again:
             ((int) sock, (struct sockaddr *) (&addr->sa), (int *) (&addr->len));
         RPC_SOCKET_FIX_ADDRLEN(addr);
     }
-    serr = (*newsock == -1) ? errno : RPC_C_SOCKET_OK;
+    serr = (*newsock == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_LOG_SOCKET_ACCEPT_XIT;
     if (serr == EINTR)
     {
@@ -466,7 +493,7 @@ int                 backlog;
     rpc_socket_error_t  serr;
     
     RPC_LOG_SOCKET_LISTEN_NTR;
-    serr = (listen(sock, backlog) == -1) ? errno : RPC_C_SOCKET_OK;
+    serr = (listen(sock, backlog) == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_LOG_SOCKET_LISTEN_XIT;
     return (serr);
 }
@@ -612,7 +639,7 @@ rpc_addr_p_t        addr;
 
     RPC_LOG_SOCKET_INQ_EP_NTR;
     RPC_SOCKET_FIX_ADDRLEN(addr);
-    serr = (getsockname(sock, (void*)&addr->sa, (int*)&addr->len) == -1) ? errno : RPC_C_SOCKET_OK;
+    serr = (getsockname(sock, (void*)&addr->sa, (int*)&addr->len) == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_SOCKET_FIX_ADDRLEN(addr);
     RPC_LOG_SOCKET_INQ_EP_XIT;
     return (serr);
@@ -639,12 +666,17 @@ rpc_socket_t        sock;
     int setsock_val = 1;
     int i;
 
+#ifdef HAVE_OS_WIN32
+    i = win32_setsockopt(sock, SOL_SOCKET, SO_BROADCAST, 
+            &setsock_val, sizeof(setsock_val));
+#else
     i = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, 
             &setsock_val, sizeof(setsock_val));
+#endif
     if (i < 0) 
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_set_broadcast) error=%d\n", errno));
-        return (errno);
+        RPC_DBG_GPRINTF(("(rpc__socket_set_broadcast) error=%d\n", socket_error));
+        return (socket_error);
     }
 
     return(RPC_C_SOCKET_OK);
@@ -706,19 +738,23 @@ unsigned32          *nrxsize;
         {
             RPC_DBG_GPRINTF
 (("(rpc__socket_set_bufs) WARNING: set sndbuf (%d) failed - error = %d\n", 
-                txsize, errno));
+                txsize, socket_error));
         }
     }
 
     rxsize = MIN(rxsize, RPC_C_SOCKET_MAX_RCVBUF);
     if (rxsize != 0)
     {
+#ifdef HAVE_OS_WIN32
+        e = win32_setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &rxsize, sizeof(rxsize));
+#else
         e = setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &rxsize, sizeof(rxsize));
+#endif
         if (e == -1)
         {
             RPC_DBG_GPRINTF
 (("(rpc__socket_set_bufs) WARNING: set rcvbuf (%d) failed - error = %d\n", 
-                rxsize, errno));
+                rxsize, socket_error));
         }
     }
 
@@ -731,7 +767,7 @@ unsigned32          *nrxsize;
     if (e == -1)
     {
         RPC_DBG_GPRINTF
-(("(rpc__socket_set_bufs) WARNING: get sndbuf failed - error = %d\n", errno));
+(("(rpc__socket_set_bufs) WARNING: get sndbuf failed - error = %d\n", socket_error));
         *ntxsize = RPC_C_SOCKET_GUESSED_SNDBUF;
     }
 
@@ -741,7 +777,7 @@ unsigned32          *nrxsize;
     if (e == -1)
     {
         RPC_DBG_GPRINTF
-(("(rpc__socket_set_bufs) WARNING: get rcvbuf failed - error = %d\n", errno));
+(("(rpc__socket_set_bufs) WARNING: get rcvbuf failed - error = %d\n", socket_error));
         *nrxsize = RPC_C_SOCKET_GUESSED_RCVBUF;
     }
 
@@ -790,6 +826,11 @@ PRIVATE rpc_socket_error_t rpc__socket_set_nbio
 rpc_socket_t        sock;
 #endif
 {
+#ifdef HAVE_OS_WIN32
+    unsigned long flag = true;
+    win32_ioctlsocket(sock, FIONBIO, &flag);
+    return (RPC_C_SOCKET_OK);
+#else
 #ifndef vms
 
     int i;
@@ -797,8 +838,8 @@ rpc_socket_t        sock;
     i = fcntl(sock, F_SETFL, O_NDELAY);
     if (i == -1)
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_set_nbio) error=%d\n", errno));
-        return (errno);
+        RPC_DBG_GPRINTF(("(rpc__socket_set_nbio) error=%d\n", socket_error));
+        return (socket_error);
     }
 
     return (RPC_C_SOCKET_OK);
@@ -818,6 +859,7 @@ rpc_socket_t        sock;
     return (RPC_C_SOCKET_OK);
 
 #endif
+#endif
 }
 
 /*
@@ -833,7 +875,11 @@ rpc_socket_t        sock;
 PRIVATE rpc_socket_error_t rpc__socket_set_close_on_exec
 #ifdef _DCE_PROTO_
 (
+#ifdef HAVE_OS_WIN32
+    rpc_socket_t        sock  __attribute__((__unused__))
+#else
     rpc_socket_t        sock
+#endif
 )
 #else
 (sock)
@@ -841,14 +887,16 @@ rpc_socket_t        sock;
 #endif
 {
 #ifndef vms
+#ifndef HAVE_OS_WIN32
     int i;
 
     i = fcntl(sock, F_SETFD, 1);
     if (i == -1)
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_set_close_on_exec) error=%d\n", errno));
-        return (errno);
+        RPC_DBG_GPRINTF(("(rpc__socket_set_close_on_exec) error=%d\n", socket_error));
+        return (socket_error);
     }
+#endif
 #endif
 
     return (RPC_C_SOCKET_OK);
@@ -878,7 +926,7 @@ rpc_addr_p_t addr;
     rpc_socket_error_t serr;
 
     RPC_SOCKET_FIX_ADDRLEN(addr);
-    serr = (getpeername(sock, (void*)&addr->sa, (int*)&addr->len) == -1) ? errno : RPC_C_SOCKET_OK;
+    serr = (getpeername(sock, (void*)&addr->sa, (int*)&addr->len) == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_SOCKET_FIX_ADDRLEN(addr);
 
     return (serr);
@@ -912,7 +960,7 @@ rpc_network_if_id_t *network_if_id;
                         SOL_SOCKET,
                         SO_TYPE,
                         network_if_id,
-                        &optlen) == -1  ? errno : RPC_C_SOCKET_OK);
+                        &optlen) == -1  ? socket_error : RPC_C_SOCKET_OK);
 }
 
 /*
@@ -945,8 +993,8 @@ rpc_socket_t        sock;
             &setsock_val, sizeof(setsock_val));
     if (i < 0) 
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_set_keepalive) error=%d\n", errno));
-        return (errno);
+        RPC_DBG_GPRINTF(("(rpc__socket_set_keepalive) error=%d\n", socket_error));
+        return (socket_error);
     }
 
     return(RPC_C_SOCKET_OK);
@@ -982,7 +1030,7 @@ struct timeval *tmo;
     int     cs;
 
     FD_ZERO (&write_fds);
-    FD_SET (sock, &write_fds);
+    FD_SET ((unsigned int)sock, &write_fds);
     nfds = sock + 1;
                   
 	 pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
@@ -993,8 +1041,8 @@ struct timeval *tmo;
 
     if (num_found < 0)
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_nowriteblock_wait) error=%d\n", errno));
-        return errno;
+        RPC_DBG_GPRINTF(("(rpc__socket_nowriteblock_wait) error=%d\n", socket_error));
+        return socket_error;
     }
 
     if (num_found == 0)

@@ -100,6 +100,7 @@ void
 ** an error in the compiler.  The print_errors routine, which we call is coded
 ** such that we cannot get into an infinite loop.
 */
+#ifndef HAVE_OS_WIN32
 static long attempt_to_print_errors()
 {
 #if !defined(vms)
@@ -117,7 +118,7 @@ static long attempt_to_print_errors()
     print_errors();
     return 0;
 }
-
+#endif
 
 /*
 **  o p e n _ f e _ f i l e s
@@ -540,12 +541,14 @@ boolean DRIVER_main
 #ifdef vms
     VAXC$ESTABLISH(attempt_to_print_errors);
 #else
+#ifndef HAVE_OS_WIN32
 #ifndef _MSDOS
     signal(SIGBUS, (void (*)())attempt_to_print_errors);
 #endif
     signal(SIGSEGV, (void (*)())attempt_to_print_errors);
     signal(SIGFPE, (void (*)())attempt_to_print_errors);
     signal(SIGILL, (void (*)())attempt_to_print_errors);
+#endif
 #endif
 
 

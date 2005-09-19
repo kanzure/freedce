@@ -7,7 +7,8 @@ INCLUDES=$(dce_includes)
 
 SUFFIXES=.idl
 
-IDL=$(top_builddir)/idl/dceidl
+#IDL=$(top_builddir)/idl/dceidl$(WIN32_PROG_PREFIX)
+IDL=/opt/dce/bin/dceidl
 IDL_INCLUDE_DIR=$(top_srcdir)/include/dce
 
 IDLFLAGS=$(IDL_CFLAGS) -cepv -client none -server none -I$(IDL_INCLUDE_DIR)/..

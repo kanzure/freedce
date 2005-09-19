@@ -26,7 +26,7 @@
 #include <string.h>
 
 #include <stream.h>
-#include <iostream.h>
+#include <iostream>
 
 #include "uuid.hpp"
 

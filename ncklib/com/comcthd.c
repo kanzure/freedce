@@ -423,14 +423,22 @@ unsigned32              *status;
      */
     TRY {
         pthread_create (&cthread->thread_id,
+#ifdef HAVE_OS_WIN32
+                    &rpc_g_server_pthread_attr,
+#else
                     rpc_g_server_pthread_attr,
+#endif
                     (pthread_startroutine_t)cthread_call_executor,
                     (pthread_addr_t)cthread);
 
         cthread->thread_state = RPC_C_IDLE_CTHREAD;
 
         handle_copy = cthread->thread_id;
+#ifdef HAVE_OS_WIN32
+        pthread_detach(handle_copy);
+#else
         pthread_detach(&handle_copy);
+#endif
 
         *status = rpc_s_ok;
     } CATCH_ALL {

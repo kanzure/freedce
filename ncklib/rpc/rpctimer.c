@@ -190,7 +190,11 @@ PRIVATE void rpc__timer_init(void)
         TRY {
             pthread_create (
                 &timer_task,                            /* new thread    */
+#ifdef HAVE_OS_WIN32
+                &pthread_attr_default,                   /* attributes    */
+#else
                 pthread_attr_default,                   /* attributes    */
+#endif
                 (pthread_startroutine_t)timer_loop,    /* start routine */
                 NULL);                 /* arguments     */
             successful = true;

@@ -57,9 +57,17 @@
  *  Returns 0 if successful, -1 if error occurred.
  */
 public int dsm__flush_file (fd)
+#ifdef HAVE_OS_WIN32
+int fd __attribute__((__unused__));
+#else
 int fd;
+#endif
 {
+#ifdef HAVE_OS_WIN32
+    return 0;
+#else
     return (fsync(fd));
+#endif
 } 
 
 /*
@@ -71,9 +79,16 @@ int fd;
  */
 
 public void dsm__lock_file (fd, st)
+#ifdef HAVE_OS_WIN32
+int fd __attribute__((__unused__));
+#else
 int fd;
+#endif
 error_status_t *st;
 {
+#ifdef HAVE_OS_WIN32
+    (*st) = status_ok;
+#else
     int result;
 
 #ifdef BSD
@@ -96,5 +111,6 @@ error_status_t *st;
             (*st) = dsm_err_file_io_error;
     }
     else (*st) = status_ok;
+#endif
 } 
 

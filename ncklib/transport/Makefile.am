@@ -8,5 +8,5 @@ SUBDIRS=cn dg
 
 noinst_LTLIBRARIES=libtrans.la
 
-libtrans_la_SOURCES=comsoc_bsd.c
+libtrans_la_SOURCES=comsoc_bsd.c comsoc_win32.c
 

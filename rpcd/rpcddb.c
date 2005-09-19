@@ -42,6 +42,9 @@
 #include <dce/ep.h>
 #include <dsm.h>
 
+#ifdef HAVE_OS_WIN32
+typedef int pid_t;
+#endif
 #include <commonp.h>
 #include <com.h>
 
@@ -664,7 +667,11 @@ struct db *h;
 PRIVATE void db_init_lock(h)
 struct db *h;
 {
+#ifdef HAVE_OS_WIN32
+    pthread_mutex_init(&h->lock, &pthread_mutexattr_default);
+#else
     pthread_mutex_init(&h->lock, pthread_mutexattr_default);
+#endif
 }
 
 
