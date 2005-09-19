@@ -177,16 +177,16 @@ Porting Message:  You must provide definitions for the symbols
 ** Default suffixes for IDL-generated files.
 */
 #ifdef UNIX
-# if ENABLE_DCOM
-#  define CSTUB_SUFFIX	"_cstub.cxx"
-#  define SSTUB_SUFFIX 	"_sstub.cxx"
-#  define SAUX_SUFFIX    "_saux.cxx"
-#  define CAUX_SUFFIX    "_caux.cxx"
-# else
+# ifndef ENABLE_DCOM
 #  define CSTUB_SUFFIX   	"_cstub.c"
 #  define SSTUB_SUFFIX   	"_sstub.c"
 #  define CAUX_SUFFIX    	"_caux.c"
 #  define SAUX_SUFFIX    	"_saux.c"
+# else
+#  define CSTUB_SUFFIX	"_cstub.cxx"
+#  define SSTUB_SUFFIX 	"_sstub.cxx"
+#  define SAUX_SUFFIX    "_saux.cxx"
+#  define CAUX_SUFFIX    "_caux.cxx"
 # endif
 # define HEADER_SUFFIX  	".h"
 #endif
