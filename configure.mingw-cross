@@ -1,0 +1,22 @@
+#!/bin/sh
+
+for i in i586-mingw32msvc-g++ mingw32-g++ false
+do
+	if which $i >/dev/null; then
+		CXX=$i
+		break;
+	fi
+done
+
+for i in i586-mingw32msvc-cc mingw32-gcc false
+do
+	if which $i >/dev/null; then
+		CC=$i
+		break;
+	fi
+done
+
+./configure \
+  --enable-shared=no --enable-static=yes --disable-afuxd \
+  --host i586-mingw32msvc --build i686-pc-linux-gnu \
+  CC=$CC CXX=$CXX CFLAGS="-g" "$@"
