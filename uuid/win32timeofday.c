@@ -18,7 +18,7 @@ int win32_gettimeofday(struct timeval *tp, void *unused) {
   tlocal = mktime (&tmlocal); /* convert to UTC */
   tp->tv_sec = tlocal;
   tp->tv_usec = syst.wMilliseconds * 1000;
-  return 1;
+  return 0;
 }
 #else
 int win32_gettimeofday(struct timeval *tp, void *unused) {
