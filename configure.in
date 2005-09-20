@@ -58,6 +58,8 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_AWK
+AC_LIBTOOL_WIN32_DLL
+AC_LIBTOOL_SETUP
 AM_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -128,6 +130,7 @@ RPC_ARG_DEFINE(debug, DEBUG, yes,Compile with debugging support)
 RPC_ARG_DEFINE(dcom, ENABLE_DCOM, no,Enable experimental DCOM support)
 AM_CONDITIONAL(ENABLE_DCOM, test x$rpc_arg_dcom = yes)
 AM_CONDITIONAL(TARGET_OS_LINUX, test x$target_os = xlinux-gnu)
+AM_CONDITIONAL(TARGET_OS_WIN32, test x$have_win32 = x1)
 
 dnl ============= include subdirs here
 sinclude(uuid/config.m4)

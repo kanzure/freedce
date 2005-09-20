@@ -48,6 +48,7 @@
 #include <ipnaf.h>
 
 #ifdef HAVE_OS_WIN32
+
 #define inet_addr win32_inet_addr
 #define htons win32_htons
 #define ntohs win32_ntohs
@@ -279,7 +280,11 @@ INTERNAL void inq_max_frag_size _DCE_PROTOTYPE_ ((
 
 #if !NAF_IP_STATIC
 #include <comp.h>
-PRIVATE void rpc__module_init_func(void)
+#ifndef HAVE_OS_WIN32
+PRIVATE __declspec (dllexport) void __cdecl rpc__module_init_func(void)
+#else
+PRIVATE void rpc__ipnaf_module_init_func(void)
+#endif
 {
 	static rpc_naf_id_elt_t naf[1] = {
 		{
@@ -386,6 +391,11 @@ unsigned32              *status;
 
     rpc__ip_init_local_addr_vec (&lstatus);
 
+#ifdef HAVE_OS_WIN32
+    /* dang windows to heck, as they say in "the last hero" (terry pratchett)
+     */
+    win32_socksys_init();
+#endif
     /*
      * place the address of EPV into Network Address Family Table
      */

@@ -159,6 +159,11 @@ PRIVATE void rpc__register_naf_id(rpc_naf_id_elt_p_t naf, int number)
 				sizeof(rpc_naf_id_elt_t));
 	}
 }
+
+#ifdef HAVE_OS_WIN32
+extern void rpc__ipnaf_module_init_func(void);
+#endif
+
 PRIVATE void rpc__load_modules(void)
 {
 #if HAVE_DLFCN_H
@@ -172,6 +177,11 @@ PRIVATE void rpc__load_modules(void)
 	memset(rpc_g_protseq_id, 0, sizeof(rpc_g_protseq_id));
 	memset(rpc_g_naf_id, 0, sizeof(rpc_g_naf_id));
 	memset(rpc_g_authn_protocol_id, 0, sizeof(rpc_g_authn_protocol_id));
+
+#ifdef HAVE_OS_WIN32
+	/* Fake loading ipnaf module */
+	rpc__ipnaf_module_init_func();
+#endif
 
 	/* Fake loading no auth */
 	rpc_g_authn_protocol_id[rpc_c_authn_none].authn_protocol_id = rpc_c_authn_none;
