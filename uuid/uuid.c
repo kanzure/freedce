@@ -264,9 +264,11 @@ static unsigned32     saved_st;
 /*
  * declarations used in UTC time calculations
  */
+#ifndef HAVE_OS_WIN32
 static uuid_time_t      time_now;     /* utc time as of last query        */
-static uuid_time_t      time_last;    /* 'saved' value of time_now        */
 static unsigned16       time_adjust;  /* 'adjustment' to ensure uniqness  */
+#endif
+static uuid_time_t      time_last;    /* 'saved' value of time_now        */
 static unsigned16       clock_seq;    /* 'adjustment' for backwards clocks*/
 
 /*
@@ -323,7 +325,9 @@ static unsigned16 true_random _DCE_PROTOTYPE_ ((void));
  *       I've put it in here as 16-bits since there isn't a
  *       14-bit unsigned integer type (yet)
  */ 
+#ifndef HAVE_OS_WIN32
 static void new_clock_seq _DCE_PROTOTYPE_(( unsigned16 * /*clock_seq*/));
+#endif
 
 /*
  * S T R U C T U R E _ I S _ K N O W N
@@ -337,11 +341,12 @@ boolean structure_is_known _DCE_PROTOTYPE_(( uuid_p_t /*uuid*/));
  *
  * Compares two UUID times (64-bit DEC UID UTC values)
  */
+#ifndef HAVE_OS_WIN32
 static uuid_compval_t time_cmp _DCE_PROTOTYPE_ ((
         uuid_time_p_t        /*time1*/,
         uuid_time_p_t        /*time2*/
     ));
-
+#endif
 /*
  * U U I D _ G E T _ A D D R E S S
  *
@@ -540,6 +545,7 @@ unsigned32              *status;
 **
 **--
 **/
+unsigned int win32_uuid_create(uuid_t *uuid);
 
 void uuid_create 
 #ifdef _DCE_PROTO_
@@ -553,6 +559,9 @@ uuid_t                  *uuid;
 unsigned32              *status;
 #endif
 {
+#ifdef HAVE_OS_WIN32
+    *status = win32_uuid_create(uuid);
+#else
     uuid_address_t          eaddr;      /* our IEEE 802 hardware address */
     boolean32               got_no_time = FALSE;
 
@@ -642,6 +651,7 @@ unsigned32              *status;
     memcpy (uuid->node, &eaddr, sizeof (uuid_address_t));
 
     *status = uuid_s_ok;
+#endif
 }
 
 /*
@@ -1460,7 +1470,7 @@ unsigned32              *status;
 **
 ** Compares two UUID times (64-bit UTC values)
 **/
-
+#ifndef HAVE_OS_WIN32
 static uuid_compval_t time_cmp 
 #ifdef _DCE_PROTO_
 (
@@ -1487,6 +1497,7 @@ uuid_time_p_t           time2;
 
     return (uuid_e_equal_to);
 }
+#endif
 
 /*
 **  U U I D _ _ U E M U L
@@ -1673,7 +1684,7 @@ static unsigned16 true_random (void)
 **       I've put it in here as 16-bits since there isn't a
 **       14-bit unsigned integer type (yet)
 **/
-
+#ifndef HAVE_OS_WIN32
 static void new_clock_seq 
 #ifdef _DCE_PROTO_
 (
@@ -1713,6 +1724,7 @@ unsigned16              *clkseq;
     uuid_write_clock (clkseq);
 #endif
 }
+#endif
 
 /*
 **++

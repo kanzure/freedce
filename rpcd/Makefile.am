@@ -5,6 +5,7 @@ include $(top_srcdir)/include.mk
 C_FLAGS=-DNCK -D_POSIX_SOURCE=1 -I$(top_srcdir)/ncklib/include -I$(top_srcdir)/ncklib/include/$(target_os)
 CFLAGS+=$(C_FLAGS)
 CXXFLAGS+=$(C_FLAGS)
+LIBS+= -lrpcrt4
 
 IDLFLAGS+=-keep c_source -v -no_mepv -cepv -client none -server none -I. -I$(IDL_INCLUDE_DIR)/.. $(DCETHREADINCLUDES)
 
@@ -17,7 +18,11 @@ noinst_HEADERS=dsm_p.h rpcddb.h rpcdepdb.h rpcdepdbp.h rpcdp.h rpcdutil.h dsm.id
 
 # removing objex due to problems with include/objex.idl - this
 # should be a configure option [--enable-dcom]
+if TARGET_OS_WIN32
+rpcd_LDADD=ep_sstub.o objex_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la ../ncklib/naf/libnaf_ip.la
+else
 rpcd_LDADD=ep_sstub.o objex_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la
+endif
 #rpcd_LDADD=ep_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la
 rpcd_LDFLAGS=-lstdc++ -lntdll 
 

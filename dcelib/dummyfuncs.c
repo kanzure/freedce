@@ -12,50 +12,48 @@
 
 #include <ctype.h>
 
-
-static void print_asc(int level, unsigned char  const *buf, int len)
+static void print_asc(unsigned char  const *buf, int len)
 {
 	int i;
 	for (i = 0; i < len; i++)
 	{
-		RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level,
-				("%c", isprint(buf[i]) ? buf[i] : '.'));
+		printf ("%c", isprint(buf[i]) ? buf[i] : '.');
 	}
 }
 
-static void dump_data(int level, const char *buf1, int len)
+void print_data(const char *buf1, int len)
 {
 	unsigned char const *buf = (unsigned char const *)buf1;
 	int i = 0;
 
 	if (buf == NULL)
 	{
-		RPC_DBG_PRINTF(rpc_e_dbg_general, level, ("dump_data: NULL, len=%d\n", len));
+		printf ("dump_data: NULL, len=%d\n", len);
 		return;
 	}
 	if (len < 0)
 		return;
 	if (len == 0)
 	{
-		RPC_DBG_PRINTF(rpc_e_dbg_general, level, ("\n"));
+		printf ("\n");
 		return;
 	}
 
-	RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, ("[%03X] ", i));
+	printf ("[%03X] ", i);
 	for (i = 0; i < len;)
 	{
-		RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, ("%02X ", (int)buf[i]));
+		printf ("%02X ", (int)buf[i]);
 		i++;
 		if (i % 8 == 0)
-			RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, (" "));
+			printf (" ");
 		if (i % 16 == 0)
 		{
-			print_asc(level, &buf[i - 16], 8);
-			RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, (" "));
-			print_asc(level, &buf[i - 8], 8);
-			RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, ("\n"));
+			print_asc(&buf[i - 16], 8);
+			printf (" ");
+			print_asc(&buf[i - 8], 8);
+			printf ("\n");
 			if (i < len)
-				RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, ("[%03X] ", i));
+				printf ("[%03X] ", i);
 		}
 	}
 
@@ -64,19 +62,86 @@ static void dump_data(int level, const char *buf1, int len)
 		int n;
 
 		n = 16 - (i % 16);
-		RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, (" "));
+		printf (" ");
 		if (n > 8)
-			RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, (" "));
+			printf (" ");
 		while (n--)
-			RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, ("   "));
+			printf ("   ");
 
 		n = MIN(8, i % 16);
-		print_asc(level, &buf[i - (i % 16)], n);
-		RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, (" "));
+		print_asc(&buf[i - (i % 16)], n);
+		printf (" ");
 		n = (i % 16) - n;
 		if (n > 0)
-			print_asc(level, &buf[i - n], n);
-		RPC_DBG_ADD_PRINTF(rpc_e_dbg_general, level, ("\n"));
+			print_asc(&buf[i - n], n);
+		printf ("\n");
+	}
+}
+
+static void dump_asc(int level, unsigned char  const *buf, int len)
+{
+	int i;
+	for (i = 0; i < len; i++)
+	{
+		RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level,
+				("%c", isprint(buf[i]) ? buf[i] : '.'));
+	}
+}
+
+void dump_data(int level, const char *buf1, int len)
+{
+	unsigned char const *buf = (unsigned char const *)buf1;
+	int i = 0;
+
+	if (buf == NULL)
+	{
+		RPC_DBG_PRINTF(rpc_e_dbg_auth, level, ("dump_data: NULL, len=%d\n", len));
+		return;
+	}
+	if (len < 0)
+		return;
+	if (len == 0)
+	{
+		RPC_DBG_PRINTF(rpc_e_dbg_auth, level, ("\n"));
+		return;
+	}
+
+	RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, ("[%03X] ", i));
+	for (i = 0; i < len;)
+	{
+		RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, ("%02X ", (int)buf[i]));
+		i++;
+		if (i % 8 == 0)
+			RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, (" "));
+		if (i % 16 == 0)
+		{
+			dump_asc(level, &buf[i - 16], 8);
+			RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, (" "));
+			dump_asc(level, &buf[i - 8], 8);
+			RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, ("\n"));
+			if (i < len)
+				RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, ("[%03X] ", i));
+		}
+	}
+
+	if (i % 16 != 0)	/* finish off a non-16-char-length row */
+	{
+		int n;
+
+		n = 16 - (i % 16);
+		RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, (" "));
+		if (n > 8)
+			RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, (" "));
+		while (n--)
+			RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, ("   "));
+
+		n = MIN(8, i % 16);
+		dump_asc(level, &buf[i - (i % 16)], n);
+		RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, (" "));
+		n = (i % 16) - n;
+		if (n > 0)
+			dump_asc(level, &buf[i - n], n);
+		RPC_DBG_ADD_PRINTF(rpc_e_dbg_auth, level, ("\n"));
 	}
 }
 

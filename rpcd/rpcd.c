@@ -430,6 +430,8 @@ error_status_t  *status;
     }
 }
 
+extern void print_data(const char *buf1, int len);
+
 /*
  * Do some server database, ... initialization
  */
@@ -475,10 +477,18 @@ error_status_t  *status;
 #endif
 
     epdb_inq_object(h, &epdb_obj, status);
+#ifdef HACK_DEBUG
+    print_data((void*)&epdb_obj, sizeof(epdb_obj));
+#endif
     if (check_st_bad("Can't get ept object uuid", status))	{
 		 /* do nothing */;
 	 }
+
     ept_if_rep = (rpc_if_rep_p_t) ept_v3_0_s_ifspec;
+#ifdef HACK_DEBUG
+    print_data((void*)ept_if_rep, sizeof(*ept_if_rep));
+#endif
+
     rpc_object_set_type(&epdb_obj, &ept_if_rep->id, status);
     if (check_st_bad("Can't set ept object type", status))	{
 		 /* do nothing */;
@@ -629,7 +639,11 @@ int main(int argc, char *argv[])
             {
                 sprintf((char *) fname, "%s%s%s", rpcd_c_database_name_prefix1,
                         rpcd_c_database_name_prefix2, rpcd_c_logfile_name);
-                if ((fd = open(fname, O_WRONLY|O_CREAT|O_TRUNC,
+                if ((fd = open(fname, O_WRONLY|O_CREAT|O_TRUNC
+#ifdef HAVE_OS_WIN32
+						|O_BINARY
+#endif
+						,
                                S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) != -1)
                 {
                     (void)dup2(fd,2);

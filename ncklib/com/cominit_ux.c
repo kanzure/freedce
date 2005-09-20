@@ -164,16 +164,22 @@ PRIVATE void rpc__register_naf_id(rpc_naf_id_elt_p_t naf, int number)
 extern void rpc__ipnaf_module_init_func(void);
 #endif
 
+#if HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif
+
 PRIVATE void rpc__load_modules(void)
 {
 #if HAVE_DLFCN_H
-#include <dlfcn.h>
-
 	struct dirent ** namelist;
 	int i, n;
 	void * image;
 	char buf[PATH_MAX];
+#endif
 
+#ifdef HACK_DEBUG
+	printf("in rpc__load_modules\n");
+#endif
 	memset(rpc_g_protseq_id, 0, sizeof(rpc_g_protseq_id));
 	memset(rpc_g_naf_id, 0, sizeof(rpc_g_naf_id));
 	memset(rpc_g_authn_protocol_id, 0, sizeof(rpc_g_authn_protocol_id));
@@ -187,6 +193,7 @@ PRIVATE void rpc__load_modules(void)
 	rpc_g_authn_protocol_id[rpc_c_authn_none].authn_protocol_id = rpc_c_authn_none;
 	rpc_g_authn_protocol_id[rpc_c_authn_none].dce_rpc_authn_protocol_id = dce_c_rpc_authn_protocol_none;
 	
+#if HAVE_DLFCN_H
 	n = scandir(IMAGE_DIR, &namelist, select_module, sort_modules);
 	for(i = 0; i < n; i++)	{
 		

@@ -167,4 +167,15 @@ calling the module initialisation.  the function which loads
 TCP and UDP support (IP network address family) is called
 rpc__ipnaf_module_init_func().
 
+uuid_create
+-----------
+
+i cannot be arsed to rewrite uuid_create, so instead i've hacked in
+a win32 shim call to UuidCreate.  ironically, this requires linking
+with -lrpcrt4 - rpcrt4.dll - which is the exact same code that MS
+ported (DCE 1.1 reference implementation) back in the early 1990s
+and is now being reimplemented in Wine.
+
+if the linking with rpcrt4 becomes a problem i will simply hack in
+the reactos code from uuid.c instead!!
 

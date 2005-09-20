@@ -203,7 +203,11 @@ error_status_t *st;         /* (output) status */
     }
 
     if (fname != NULL && ustrlen(fname) != 0) {
-        fd = open((char *)fname,O_RDWR);        /* try to open the file */
+        fd = open((char *)fname,O_RDWR
+#ifdef HAVE_OS_WIN32
+			|O_BINARY
+#endif
+			);        /* try to open the file */
         if (fd == -1) SIGNAL(dsm_err_open_failed);  /* signal error if fails */
         dsm__lock_file(fd, st);         /* lock the file for exclusive access */
         PROP_BAD_ST;
@@ -1250,7 +1254,11 @@ unsigned char  *fname;
     if (status.all != status_ok) return -1;    /* check status */
     else return (int)id;                        /* else stream id (== fd) of created obj */
 #else
-    return open((char *) fname, O_CREAT | O_RDWR, 0666);
+    return open((char *) fname, O_CREAT | O_RDWR
+#ifdef HAVE_OS_WIN32
+		    | O_BINARY
+#endif
+		    , 0666);
 #endif
 } /* create_file */
 
