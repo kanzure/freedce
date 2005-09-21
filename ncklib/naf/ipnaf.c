@@ -334,6 +334,11 @@ PRIVATE void rpc__ipnaf_module_init_func(void)
     }
 
 	};
+#ifdef HAVE_OS_WIN32
+    /* dang windows to heck, as they say in "the last hero" (terry pratchett)
+     */
+    win32_socksys_init();
+#endif
 	rpc__register_protseq(seq_ids, 2);
 	rpc__register_tower_prot_id(prot_ids, 2);
 	rpc__register_naf_id(naf, 1);
@@ -391,11 +396,6 @@ unsigned32              *status;
 
     rpc__ip_init_local_addr_vec (&lstatus);
 
-#ifdef HAVE_OS_WIN32
-    /* dang windows to heck, as they say in "the last hero" (terry pratchett)
-     */
-    win32_socksys_init();
-#endif
     /*
      * place the address of EPV into Network Address Family Table
      */

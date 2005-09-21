@@ -51,9 +51,12 @@
 #include <comauth.h>    /* Externals for Auth. Services sub-component   */
 #include <cncall.h>     /* NCA connection call service */
 #include <cnassoc.h>    
+#include <stdlib.h>    
 
 
+#ifndef HAVE_OS_WIN32
 int pthd4_delay_np(struct timespec *delay);
+#endif
 
 
 /******************************************************************************/
@@ -803,7 +806,11 @@ unsigned32              *st;
             retry_op = true;
             TRY
             {
+#ifdef HAVE_OS_WIN32
+		_sleep(timespec.tv_sec);
+#else
                 pthd4_delay_np (&timespec);
+#endif
             }
             CATCH (pthread_cancel_e)
             {

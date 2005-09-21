@@ -106,7 +106,11 @@ INTERNAL rpc_prot_network_epv_t cn_network_epv =
 
 
 #include <comp.h>
+#ifdef HAVE_OS_WIN32
+void rpc__cn_module_init_func(void)
+#else
 void rpc__module_init_func(void)
+#endif
 {
 	static rpc_protocol_id_elt_t prot[1] = {
 		{

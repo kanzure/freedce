@@ -115,6 +115,7 @@ does under linux.
 so i'm not particularly bothered by that, right now: i'm just glad it
 works at all.
 
+
 enumerating interfaces
 ----------------------
 
@@ -125,6 +126,18 @@ bit of windows programming since 1993 and it's _so_ not MSVC++ :)
 
 GetIpAddrTable() is the closest win32 function that looks
 promising, which i will explore some day real soon now.
+
+20sep2005/18:00 - yes, it's a problem.  rpc_server_inq_bindings()
+is calling the naf_desc_inq_addr vector-table-function, which is
+calling rpc__ip_desc_inq_addr(), which is of course returning
+bugger-all.  oops.  tomorrow's task, methinks.
+
+21sep2005/03:00 - mostly sorted.  at least the code's there, it
+appears to be doing the correct job.  i need to add evaluation
+stuff that checks that the interface is up, and whether it's a
+local interface or not.  actually, you know what: i can't be
+bothered, and i don't believe it matters.  
+
 
 gettimeofday
 ------------
@@ -160,12 +173,15 @@ the vector tables, just call one function to initialise them.
 i'm running into difficulties with libtool, and have been unable
 to create a shared library (dll) for LoadLibrary to pick out
 the "rpc__module_init_func" from, in order to load the libnaf_ip
-module, ntlmsspauth module and gssapiauth module.
+module, ncacn, ncadg, ntlmsspauth module and gssapiauth modules.
 
 therefore i've hacked in static library linking, and manually
 calling the module initialisation.  the function which loads
 TCP and UDP support (IP network address family) is called
-rpc__ipnaf_module_init_func().
+rpc__ipnaf_module_init_func();  the one for ncacn is called
+rpc__cn_module_init_func() and for ncadg, it's
+rpc__dg_module_init_func().
+
 
 uuid_create
 -----------
@@ -178,4 +194,18 @@ and is now being reimplemented in Wine.
 
 if the linking with rpcrt4 becomes a problem i will simply hack in
 the reactos code from uuid.c instead!!
+
+
+rpcd's epmapper database
+------------------------
+
+file locking, damn windows file locking.  i've disabled the
+lock stuff (return 0) pending looking up apr runtime and
+hacking in the CreateFile, LockFile etc. code in place of
+open, fcntl, flock and friends.  what an arse.  rpcd is
+multithreaded and will expect to be able to open /tmp/rpcdep.dat
+database, write to it, flush contents back etc. etc.
+
+so - it's highly likely that only one service can register at once
+without messing things up.
 

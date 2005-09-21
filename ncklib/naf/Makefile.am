@@ -9,7 +9,11 @@ endif
 
 if NAF_IP
 naf_ip=libnaf_ip.la
+if TARGET_OS_WIN32
+libnaf_ip_la_SOURCES=ipnaf.c ipnaf_win32.c twr_ip.c
+else
 libnaf_ip_la_SOURCES=ipnaf.c ipnaf_linux.c twr_ip.c
+endif
 endif
 
 lib_LTLIBRARIES=$(naf_ip) $(naf_uxd)

@@ -11,6 +11,10 @@ IDLFLAGS+=-keep c_source -v -no_mepv -cepv -client none -server none -I. -I$(IDL
 
 bin_PROGRAMS=rpcd
 
+#bin_PROGRAMS=rpcd ipaddrlist
+#ipaddrlist_SOURCES=f.c
+#ipaddrlist_LDFLAGS=-lntdll
+
 rpcd_SOURCES=dsm.c dsm_unix.c rpcd.c rpcddb.c rpcdep.c \
  rpcdepdb.c rpcdsliv.c rpcdutil.c oxids.cxx 
 
@@ -19,7 +23,7 @@ noinst_HEADERS=dsm_p.h rpcddb.h rpcdepdb.h rpcdepdbp.h rpcdp.h rpcdutil.h dsm.id
 # removing objex due to problems with include/objex.idl - this
 # should be a configure option [--enable-dcom]
 if TARGET_OS_WIN32
-rpcd_LDADD=ep_sstub.o objex_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la ../ncklib/naf/libnaf_ip.la
+rpcd_LDADD=ep_sstub.o objex_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la ../ncklib/naf/libnaf_ip.la ../ncklib/transport/dg/libprot_ncadg.la ../ncklib/transport/cn/libprot_ncacn.la ../ncklib/com/libcom.la
 else
 rpcd_LDADD=ep_sstub.o objex_sstub.o ../dcelib/libdcerpc.la ../uuid/libuuid.la
 endif

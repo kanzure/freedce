@@ -52,7 +52,11 @@
 #include <comprot.h>
 
 #include <comp.h>
+#ifdef HAVE_OS_WIN32
+void rpc__dg_module_init_func(void)
+#else
 void rpc__module_init_func(void)
+#endif
 {
 	static rpc_protocol_id_elt_t prot[1] = {
 		{

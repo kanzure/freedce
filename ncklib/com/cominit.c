@@ -712,7 +712,7 @@ INTERNAL void init_once(void)
 #endif    /* not PTHREAD_EXC */
 
 
-		rpc__network_init (&status);    
+	rpc__network_init (&status);    
 	if (status != rpc_s_ok)
 	{
 		dce_error_string_t error_text;

@@ -49,6 +49,7 @@
 #include <comfwd.h>
 #include <dgfwd.h>
 #include <dgxq.h>
+#include <stdlib.h>
 
 #include <dce/conv.h>
 #include <dce/convc.h>
@@ -602,12 +603,18 @@ INTERNAL void convq_loop(void)
 	{
 #ifdef DEBUG
 	    struct timespec i;
+#ifndef HAVE_OS_WIN32
 		 extern int pthd4_delay_np(struct timespec *ts);
+#endif
 	    i.tv_sec = rpc_g_dbg_switches[rpc_es_dbg_conv_thread] - 100;
 	    i.tv_nsec = 0;
 	    RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1,
 		("(convq_loop) sleeping for %d sec\n", i.tv_sec));
+#ifdef HAVE_OS_WIN32
+	    _sleep(i.tv_sec);
+#else
 	    pthd4_delay_np(&i);
+#endif
 #endif
 	}
 	
