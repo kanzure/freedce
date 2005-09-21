@@ -151,7 +151,10 @@ int win32_get_ifaces_hnd(void**hnd)
 		HeapFree( GetProcessHeap(), 0, pIPAddrTable );
 		if (dwSize == 0)
 			return 0;
-		pIPAddrTable = (MIB_IPADDRTABLE *) malloc ( dwSize );
+		pIPAddrTable = (MIB_IPADDRTABLE*) HeapAlloc(
+				GetProcessHeap(), 0,
+				dwSize);
+
 	}
 
 	if (pIPAddrTable == NULL)
@@ -185,7 +188,7 @@ void win32_get_iface(void* hnd, int idx,
 void win32_free_ifaces_hnd(void* hnd)
 {
 	if (hnd)
-		GlobalFree( hnd );
+		HeapFree( GetProcessHeap(), 0, hnd );
 }
 
 #endif
