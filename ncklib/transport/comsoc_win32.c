@@ -140,14 +140,15 @@ int win32_get_ifaces_hnd(void**hnd)
         PMIB_IPADDRTABLE pIPAddrTable;
         DWORD dwSize = 0;
 
-        pIPAddrTable = (MIB_IPADDRTABLE*) malloc( sizeof( MIB_IPADDRTABLE) );
+        pIPAddrTable = (MIB_IPADDRTABLE*) HeapAlloc( GetProcessHeap(), 0,
+			sizeof( MIB_IPADDRTABLE));
 
         // Make an initial call to GetIpAddrTable to get the
         // necessary size into the dwSize variable
         if (GetIpAddrTable(pIPAddrTable, &dwSize, 0) ==
 			ERROR_INSUFFICIENT_BUFFER)
 	{
-		GlobalFree( pIPAddrTable );
+		HeapFree( GetProcessHeap(), 0, pIPAddrTable );
 		if (dwSize == 0)
 			return 0;
 		pIPAddrTable = (MIB_IPADDRTABLE *) malloc ( dwSize );
@@ -158,7 +159,7 @@ int win32_get_ifaces_hnd(void**hnd)
 
 	if (GetIpAddrTable( pIPAddrTable, &dwSize, 0) != NO_ERROR)
 	{
-		GlobalFree( pIPAddrTable );
+		HeapFree( GetProcessHeap(), 0, pIPAddrTable );
 		return 0;
 	}
 
@@ -166,10 +167,14 @@ int win32_get_ifaces_hnd(void**hnd)
 	return pIPAddrTable->dwNumEntries;
 }
 
-void win32_get_iface(void* hnd, int idx, unsigned long *addr,
+void win32_get_iface(void* hnd, int idx, 
+		unsigned long *dwidx,
+		unsigned long *addr,
 		unsigned long *mask, unsigned long *bcast)
 {
         PMIB_IPADDRTABLE pIPAddrTable = (PMIB_IPADDRTABLE)hnd;
+	if (dwidx != NULL)
+		(*dwidx)  = pIPAddrTable->table[idx].dwIndex;
 	if (addr != NULL)
 		(*addr)  = pIPAddrTable->table[idx].dwAddr;
 	if (mask != NULL)
