@@ -7,8 +7,13 @@ INCLUDES=$(dce_includes)
 
 SUFFIXES=.idl
 
-#IDL=$(top_builddir)/idl/dceidl$(WIN32_PROG_PREFIX)
+if TARGET_OS_WIN32
+# assume cross-compiling for now: hardcode the damn path.  oh well.
 IDL=/opt/dce/bin/dceidl
+else
+IDL=$(top_builddir)/idl/dceidl$(WIN32_PROG_PREFIX)
+endif
+
 IDL_INCLUDE_DIR=$(top_srcdir)/include/dce
 
 IDLFLAGS=$(IDL_CFLAGS) -cepv -client none -server none -I$(IDL_INCLUDE_DIR)/..

@@ -6,18 +6,46 @@
  *
  */
 
+#ifndef EXTERNAL
+#  define EXTERNAL      extern
+#endif
+
+#ifndef GLOBAL
+#  define GLOBAL
+#endif
+
+#ifndef PUBLIC
+#  define PUBLIC
+#endif
+
+#ifndef PRIVATE
+#  define PRIVATE
+#endif
+
+#ifndef INTERNAL
+#  define INTERNAL        static
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <getopt.h>
 #include <dce/rpc.h>
 #include <dce/pthread_exc.h>
+#include <dce/dce_error.h>
+#include <rpcdbg.h>
 #include "echo.h"
 #include "misc.h"
 
 pthread_t sig_handler_thread;
 static void signal_handler(void * arg);
 static void wait_for_signals();
+
+#define STATUS_OK(s) ((s)==NULL || *(s) == rpc_s_ok)
+#define SET_STATUS(s,val) *(s) = val
+#define SET_STATUS_OK(s) SET_STATUS(s, error_status_ok)
+#define STATUS(s) *(s)
 
 /*
  *
@@ -31,8 +59,63 @@ static void wait_for_signals();
  *
  */
 
+PRIVATE void show_st(str, st)
+	char            *str;
+	error_status_t  *st;
+{
+	    dce_error_string_t estr;
+	        int             tmp_st;
+		    
+		    dce_error_inq_text(*st, estr, &tmp_st);
+		        fprintf(stderr, "(rpcd) %s: (0x%lx) %s\n", str, *st, estr);
+}
 
-int main(int ac __attribute__((__unused__)), char *av[] __attribute__((__unused__)))
+PRIVATE boolean32 check_st_bad(str, st)
+	char            *str;
+	error_status_t  *st;
+{
+	    if (STATUS_OK(st)) 
+		            return false;
+
+	        show_st(str, st);
+		    return true;
+}
+
+
+/*
+ *  Process args
+ */
+void process_args(argc, argv)
+int             argc;
+char            *argv[];
+{
+    int             c;
+    unsigned32      status;
+    extern int      optind;
+    extern char     *optarg;
+    
+
+    /*
+     * Process args.
+     */
+
+    while ((c = getopt(argc, argv, "d:")) != EOF)
+    {
+        switch (c)
+        {
+        case 'd':
+            rpc__dbg_set_switches(optarg, &status);
+            if (check_st_bad("Error setting debug switches", &status))
+                return;
+            break;
+
+        default:
+            exit(1);
+        }
+    }
+}
+
+int main(int argc, char *argv[])
 {
   unsigned32 status;
   rpc_binding_vector_p_t     server_binding;
@@ -42,6 +125,8 @@ int main(int ac __attribute__((__unused__)), char *av[] __attribute__((__unused_
   /*
    * Register the Interface with the local endpoint mapper (rpcd)
    */
+
+    process_args(argc, argv);
 
   printf ("Registering server.... \n");
   rpc_server_register_if(echo_v1_0_s_ifspec, 

@@ -60,7 +60,10 @@ main(argc, argv)
   char rpc_host[128] = "localhost";
   char * protocol;
 
+#ifndef HAVE_OS_WIN32
   char buf[MAX_LINE+1];
+  char * nl;
+#endif
 
   /*
    * stuff needed to make RPC calls
@@ -72,8 +75,6 @@ main(argc, argv)
   args * outargs;
   int ok;
   unsigned32 i;
-  
-  char * nl;
   
 
   /*
@@ -140,6 +141,11 @@ main(argc, argv)
 
   printf ("enter stuff:    ^D on an empty line when done\n\n\n");
   i = 0;
+#ifdef HAVE_OS_WIN32
+      inargs->argv[0] = (string_t)strdup("hello");      
+      inargs->argv[2] = (string_t)strdup("there");      
+      inargs->argc = 2;
+#else
   while (!feof(stdin) && i < MAX_USER_INPUT )
     {
       if (NULL==fgets(buf, MAX_LINE, stdin))
@@ -150,6 +156,7 @@ main(argc, argv)
 	i++;
     }
   inargs->argc = i;
+#endif
 	
 
   /*

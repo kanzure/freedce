@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 include $(top_srcdir)/include.mk
 
+CFLAGS+=-I$(top_srcdir)/ncklib/include
 IDL_FLAGS=-I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include $(DCETHREADINCLUDES)
 
 install-strip:	install
@@ -16,6 +17,15 @@ CLEANFILES=echo.h echo_sstub.o echo_cstub.o
 
 libs=$(top_builddir)/dcelib/libdcerpc.la \
 	$(top_builddir)/uuid/libuuid.la -lstdc++
+
+# ugh.
+if TARGET_OS_WIN32
+libs+=$(top_builddir)/ncklib/naf/libnaf_ip.la \
+	$(top_builddir)/ncklib/transport/dg/libprot_ncadg.la  \
+	$(top_builddir)/ncklib/transport/cn/libprot_ncacn.la  \
+	$(top_builddir)/ncklib/com/libcom.la -lrpcrt4
+endif
+
 
 echo_server_LDADD=echo_sstub.o $(libs)
 echo_client_LDADD=echo_cstub.o $(libs)
