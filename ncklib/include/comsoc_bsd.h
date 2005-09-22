@@ -41,6 +41,10 @@
 **
 */
 
+#ifdef HAVE_OS_WIN32
+#error no!  use comsoc_win32.h!
+#endif
+
 #ifndef _DCE_PROTOTYPE_
 #include <dce/dce.h>
 #endif

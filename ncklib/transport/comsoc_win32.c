@@ -11,7 +11,7 @@ BOOL win32_socksys_init(void)
 {
         WORD wVersionRequested;
         WSADATA wsaData;
-        wVersionRequested = MAKEWORD(1, 1);
+        wVersionRequested = MAKEWORD(2, 2);
         return WSAStartup(wVersionRequested, &wsaData);
 }
 
@@ -23,13 +23,19 @@ void win32_socksys_close(void)
 int win32_recvfrom(int sock,char*data,int len,int flags,struct sockaddr* sa,
 		int*sa_len)
 {
-	return recvfrom((SOCKET)sock, data, len, flags, sa, sa_len);
+	int ret = recvfrom((SOCKET)sock, data, len, flags, sa, sa_len);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int win32_sendto(int sock,const char* data,int len,int flags,
 		const struct sockaddr* sa,int sa_len)
 {
-	return sendto((SOCKET)sock,data,len,flags, sa,sa_len);
+	int ret = sendto((SOCKET)sock,data,len,flags, sa,sa_len);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int win32_socket_err(void)
@@ -133,6 +139,16 @@ short win32_ntohs(short a)
 short win32_htons(short a)
 {
 	return htons(a);
+}
+
+void *win32_heap_alloc(size_t sz)
+{
+        return HeapAlloc( GetProcessHeap(), 0, sz);
+}
+
+void win32_heap_free(void *mem)
+{
+        HeapFree( GetProcessHeap(), 0, mem);
 }
 
 int win32_get_ifaces_hnd(void**hnd)

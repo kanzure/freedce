@@ -170,9 +170,7 @@ typedef int rpc_socket_error_t;                 /* a UNIX errno */
  * the "struct msghdr" data type between 4.3 and 4.4.
  */
 
-#ifdef __linux__
 #define _SOCKADDR_LEN
-#endif
 	
 #ifdef _SOCKADDR_LEN
 
@@ -198,57 +196,15 @@ typedef int rpc_socket_error_t;                 /* a UNIX errno */
 
 #endif /* _SOCKADDR_LEN */
 
-/*
- * Macros for performance critical operations.
- */
-inline static void RPC_SOCKET_SENDMSG(
+extern void RPC_SOCKET_SENDMSG(
 	rpc_socket_t sock,
 	rpc_socket_iovec_p_t iovp,
 	int iovlen,
 	rpc_addr_p_t addrp,
 	volatile int *ccp,
   	volatile rpc_socket_error_t *serrp
-		)
-{
-	struct sockaddr *ad = NULL;
-	size_t ad_len = 0;
-	char *data;
-	char *data_ptr;
-	int data_len = 0;
-	int i;
-
-	for (i = 0; i < iovlen; i++)
-		data_len += iovp[i].iov_len;
-
-	data = rpc__mem_alloc(data_len, RPC_C_MEM_AVAIL, 0);
-
-	/* flatten the data before sending as a single block */
-	data_ptr = data;
-	for (i = 0; i < iovlen; i++)
-	{
-		memcpy(data_ptr, iovp[i].iov_base, iovp[i].iov_len);
-		data_ptr = (char*)(((long)data_ptr) + iovp[i].iov_len);
-	}
-
-sendmsg_again:
-	RPC_LOG_SOCKET_SENDMSG_NTR;
-	if ((addrp) != NULL)
-	{
-		/*RPC_SOCKET_FIX_ADDRLEN(addrp);*/
-		ad = ((struct sockaddr *) &(addrp)->sa);
-		ad_len = (addrp)->len;
-	}
-	*(ccp) = win32_sendto ((int) sock, data, data_len, 0, ad, ad_len);
-	*(serrp) = (*(ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
-	RPC_LOG_SOCKET_SENDMSG_XIT;
-	if (*(serrp) == EINTR)
-	{
-		goto sendmsg_again;
-	}
-	rpc__mem_free(data, RPC_C_MEM_AVAIL);
-}
-
-inline static void RPC_SOCKET_RECVFROM
+		);
+extern void RPC_SOCKET_RECVFROM
 (
     rpc_socket_t        sock,
     byte_p_t            buf,        /* buf for rcvd data */
@@ -256,30 +212,8 @@ inline static void RPC_SOCKET_RECVFROM
     rpc_addr_p_t        from,       /* addr of sender */
     volatile int                 *ccp,        /* returned number of bytes actually rcvd */
 	 volatile rpc_socket_error_t *serrp
-)
-{
-recvfrom_again:
-	/*if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);*/
-	RPC_LOG_SOCKET_RECVFROM_NTR;
-	*(ccp) = win32_recvfrom ((int) sock, (char *) buf, (int) buflen, (int) 0,
-			(struct sockaddr *) (&(from)->sa), (unsigned int *) (&(from)->len));
-	*(serrp) = (*(ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
-	RPC_LOG_SOCKET_RECVFROM_XIT;
-	/*RPC_SOCKET_FIX_ADDRLEN(from);*/
-	if (*(serrp) == EINTR)
-	{
-		goto recvfrom_again;
-	}
-
-}
-
-/* damn windows doesn't have recvmsg.
- * receive the message, then unpack the data into the iovec.
- * i don't care how much data was _actually_ received.
- * am happy to copy garbage.  just want something working.
- * nice is for wimps.
- */
-inline static void RPC_SOCKET_RECVMSG
+);
+extern void RPC_SOCKET_RECVMSG
 (
     rpc_socket_t        sock,
     rpc_socket_iovec_p_t iovp,       /* array of bufs for rcvd data */
@@ -287,30 +221,6 @@ inline static void RPC_SOCKET_RECVMSG
     rpc_addr_p_t        addrp,       /* addr of sender */
     volatile int                 *ccp,        /* returned number of bytes actually rcvd */
 	 volatile rpc_socket_error_t *serrp
-)
-{
-	int data_len = 0;
-	char *data;
-	char *data_ptr;
-	int i;
-
-	for (i = 0; i < iovlen; i++)
-		data_len += iovp[i].iov_len;
-
-	data = rpc__mem_alloc(data_len, RPC_C_MEM_AVAIL, 0);
-	RPC_SOCKET_RECVFROM(sock, data, data_len, addrp, ccp, serrp);
-
-	if ((*(serrp)) != RPC_C_SOCKET_OK)
-		return;
-
-	data_ptr = data;
-	for (i = 0; i < iovlen; i++)
-	{
-		memcpy(iovp[i].iov_base, data_ptr, iovp[i].iov_len);
-		data_ptr = (char*)(((long)data_ptr) + iovp[i].iov_len);
-	}
-
-	rpc__mem_free(data, RPC_C_MEM_AVAIL);
-}
+);
 
 #endif /* _COMSOC_WIN32_H */

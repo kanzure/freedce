@@ -38,6 +38,8 @@
 **
 */
 
+#define HACK_DEBUG
+
 #include <commonp.h>
 #include <com.h>
 #include <comprot.h>

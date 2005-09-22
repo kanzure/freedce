@@ -108,7 +108,7 @@ struct sockaddr_in {
 };
 
 struct iovec {
-	long iov_len;
+	size_t iov_len;
 	char *iov_base;
 };
 
@@ -187,7 +187,11 @@ struct sockaddr {
 
 #endif
 
+#ifdef CAUSES_PROBLEMS
 #define SOMAXCONN      0x7fffffff /* (5) in WinSock1.1 */
+#else
+#define SOMAXCONN      128
+#endif
 
 #define SOL_SOCKET      0xffff
 
