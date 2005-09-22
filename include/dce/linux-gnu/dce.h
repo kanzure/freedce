@@ -187,6 +187,10 @@ typedef struct unsigned128_s_t {
 #include <dce/dce_svc.h>
 #endif
 
+#define sys_malloc malloc
+#define sys_realloc realloc
+#define sys_free free
+
 #ifdef __cplusplus
 }
 #endif

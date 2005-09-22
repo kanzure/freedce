@@ -42,6 +42,7 @@
 
 #include <commonp.h>
 #include <com.h>
+#include <dce/dce_win32mem.h>
 
 #define HACK_DEBUG
 
@@ -80,7 +81,7 @@ void RPC_SOCKET_SENDMSG(
 	printf("%s: data len to be sent: %d\n", __FUNCTION__, data_len);
 #endif
 
-	data = win32_heap_alloc(data_len+100);
+	data = sys_malloc(data_len+100);
 
 	/* flatten the data before sending as a single block */
 	data_ptr = data;
@@ -92,7 +93,7 @@ void RPC_SOCKET_SENDMSG(
 
 #ifdef HACK_DEBUG
 	printf("%s:\n", __FUNCTION__);
-	print_data(data, data_len);
+	/*print_data(data, data_len);*/
 #endif
 
 sendmsg_again:
@@ -110,7 +111,7 @@ sendmsg_again:
 	{
 		goto sendmsg_again;
 	}
-	win32_heap_free(data);
+	sys_free(data);
 }
 
 void RPC_SOCKET_RECVFROM
@@ -142,8 +143,10 @@ recvfrom_again:
 	printf("%s: %d\n", __FUNCTION__, *serrp);
 	if ((*ccp) > buflen || (*ccp) < 0)
 		printf("%s: weird return value %d\n", __FUNCTION__, *ccp);
+	/*
 	else if ((*serrp) == RPC_C_SOCKET_OK)
 		print_data(buf, *ccp);
+		*/
 #endif
 }
 
@@ -179,7 +182,7 @@ void RPC_SOCKET_RECVMSG
 #ifdef HACK_DEBUG
 	printf("%s: data len expected %d\n", __FUNCTION__, data_len);
 #endif
-	data = win32_heap_alloc(data_len+100);
+	data = sys_malloc(data_len+100);
 	RPC_SOCKET_RECVFROM(sock, data, data_len, addrp, ccp, serrp);
 
 #ifdef HACK_DEBUG
@@ -187,7 +190,7 @@ void RPC_SOCKET_RECVMSG
 #endif
 	if ((*(serrp)) != RPC_C_SOCKET_OK)
 	{
-		win32_heap_free(data);
+		sys_free(data);
 		return;
 	}
 
@@ -198,6 +201,6 @@ void RPC_SOCKET_RECVMSG
 		data_ptr += iovp[i].iov_len;
 	}
 
-	win32_heap_free(data);
+	sys_free(data);
 }
 

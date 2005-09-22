@@ -44,6 +44,7 @@
 
 #ifdef HAVE_OS_WIN32
 typedef int pid_t;
+#include <dce/dce_win32mem.h>
 #endif
 #include <commonp.h>
 #include <com.h>
@@ -518,7 +519,7 @@ unsigned32          pass;
     }
     else
     {
-        *entry_handle = (ept_lookup_handle_t *) malloc(sizeof(db_contexth_t));
+        *entry_handle = (ept_lookup_handle_t *) sys_malloc(sizeof(db_contexth_t));
         if (*entry_handle == NULL)
             return;
         chp = (db_contexth_t *) (*entry_handle);
@@ -557,7 +558,7 @@ ept_lookup_handle_t *entry_handle;
     entp = (db_entry_t *) chp->lp;
     entp->read_nrefs--;
 
-    free(chp);
+    sys_free(chp);
 
     *entry_handle = NULL;
 }

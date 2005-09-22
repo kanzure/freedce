@@ -38,6 +38,9 @@
 */
 
 #include <commonp.h>
+#ifdef HAVE_OS_WIN32
+#include <dce/dce_win32mem.h>
+#endif
 
 PRIVATE pointer_t rpc__mem_alloc
 #ifdef _DCE_PROTO_

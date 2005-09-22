@@ -312,13 +312,13 @@ rpc__codesets_really_read_file
 		return;
 	}
 
-	if ((rpc_g_codesets_list = (entry_t *)malloc(sizeof(entry_t) * rpc_g_codesets_entry_count)) == NULL)
+	if ((rpc_g_codesets_list = (entry_t *)sys_malloc(sizeof(entry_t) * rpc_g_codesets_entry_count)) == NULL)
 	{
 		rpc_g_codesets_status = dce_cs_c_cannot_allocate_memory;
 		return;
 	}
 
-	if ((rpc_g_codesets_effective_ids = (entry_t *)malloc(sizeof(entry_t) * rpc_g_codesets_effective_count)) == NULL)
+	if ((rpc_g_codesets_effective_ids = (entry_t *)sys_malloc(sizeof(entry_t) * rpc_g_codesets_effective_count)) == NULL)
 	{
 		rpc_g_codesets_status = dce_cs_c_cannot_allocate_memory;
 		return;
@@ -342,7 +342,7 @@ rpc__codesets_really_read_file
 			return;
 		}
 
-		if ((ep->code_set_name = (char *)malloc(ep->code_name_len + 1)) == NULL)
+		if ((ep->code_set_name = (char *)sys_malloc(ep->code_name_len + 1)) == NULL)
 		{
 			rpc_g_codesets_status = dce_cs_c_cannot_allocate_memory;
 			return;
@@ -456,7 +456,7 @@ rpc__codesets_read_registry_file
 	/* 
 	** Sort the code set registry file by code set name
 	**/
-	if ((sort_name_save = (entry_t **)malloc(sizeof(entry_t *) * rpc_g_codesets_entry_count)) == NULL)
+	if ((sort_name_save = (entry_t **)sys_malloc(sizeof(entry_t *) * rpc_g_codesets_entry_count)) == NULL)
 	{
 		*status = dce_cs_c_cannot_allocate_memory;
 		return;
@@ -476,7 +476,7 @@ rpc__codesets_read_registry_file
 	/* 
 	** Sort the effective code set by priority
 	**/
-	if ((sort_priority_save = (entry_t **)malloc(sizeof(entry_t *) * rpc_g_codesets_effective_count)) == NULL)
+	if ((sort_priority_save = (entry_t **)sys_malloc(sizeof(entry_t *) * rpc_g_codesets_effective_count)) == NULL)
 	{
 		*status = dce_cs_c_cannot_allocate_memory;
 		return;
@@ -496,7 +496,7 @@ rpc__codesets_read_registry_file
 	** Allocate an array for pointers to entry_t.  Code set registry
 	** is already sorted by code set id value.
 	*/
-	if ((sort_id_save = (entry_t **)malloc(sizeof(entry_t *) * rpc_g_codesets_entry_count)) == NULL)
+	if ((sort_id_save = (entry_t **)sys_malloc(sizeof(entry_t *) * rpc_g_codesets_entry_count)) == NULL)
 	{
 		*status = dce_cs_c_cannot_allocate_memory;
 		return;
@@ -615,7 +615,7 @@ void dce_cs_loc_to_rgy
 
 	if (rgy_char_sets_value != NULL)
 	{
-		if ((char_array = (unsigned16 *)malloc(sizeof(unsigned16) * found->char_sets_num)) == NULL)
+		if ((char_array = (unsigned16 *)sys_malloc(sizeof(unsigned16) * found->char_sets_num)) == NULL)
 		{
 			*status = dce_cs_c_cannot_allocate_memory;
 			return;
@@ -742,7 +742,7 @@ void dce_cs_rgy_to_loc
 
 	if (rgy_char_sets_value != NULL)
 	{
-		if ((char_array = (unsigned16 *)malloc(sizeof(unsigned16) * found->char_sets_num)) == NULL)
+		if ((char_array = (unsigned16 *)sys_malloc(sizeof(unsigned16) * found->char_sets_num)) == NULL)
 		{
 			*status = dce_cs_c_cannot_allocate_memory;
 			return;

@@ -116,7 +116,7 @@ PRIVATE char * rpc__svc_fmt_dbg_msg (char *format, ...)
      * interfaces, since those interfaces call RPC_DBG_PRINTF.
      */
 
-    if( (bptr = malloc(RPC__SVC_DBG_MSG_SZ*sizeof(char))) == NULL )
+    if( (bptr = sys_malloc(RPC__SVC_DBG_MSG_SZ*sizeof(char))) == NULL )
     {
 	/* die horribly */
 	abort();

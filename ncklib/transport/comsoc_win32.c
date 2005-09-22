@@ -141,16 +141,6 @@ short win32_htons(short a)
 	return htons(a);
 }
 
-void *win32_heap_alloc(size_t sz)
-{
-        return HeapAlloc( GetProcessHeap(), 0, sz);
-}
-
-void win32_heap_free(void *mem)
-{
-        HeapFree( GetProcessHeap(), 0, mem);
-}
-
 int win32_get_ifaces_hnd(void**hnd)
 {
         PMIB_IPADDRTABLE pIPAddrTable;

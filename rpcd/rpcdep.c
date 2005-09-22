@@ -39,6 +39,7 @@
 
 #ifdef HAVE_OS_WIN32
 typedef int pid_t;
+#include <dce/dce_win32mem.h>
 #endif
 
 #include <commonp.h>
@@ -133,7 +134,7 @@ INTERNAL int is_remote_handle( handle_t h, error_status_t *st )
         }
 
         addr_count = bv->count;
-        local_netaddr = (unsigned_char_p_t *) malloc( 
+        local_netaddr = (unsigned_char_p_t *) sys_malloc( 
                         (size_t) (addr_count * sizeof(unsigned_char_p_t)));
         if (local_netaddr == NULL) 
         {

@@ -89,9 +89,11 @@
 
 #include <dce/dce.h>
 #include <string.h>
-#include <malloc.h>
 #include <unistd.h>
 #include <stdio.h>
+#ifdef HAVE_OS_WIN32
+#include <dce/dce_win32mem.h>
+#endif
 
 #define _I_AM_DSM_C_
 #include "dsm_p.h"  /* private include file */
@@ -147,11 +149,11 @@ error_status_t *st;         /* (output) status */
 
     dsh->fd = fd;                           /* remember fd */
     if (fname == NULL) {
-        dsh->fname = (char *) malloc(1);
+        dsh->fname = (char *) sys_malloc(1);
         dsh->fname[0] = 0;
     }
     else {
-        dsh->fname = (char *) malloc(ustrlen(fname)+1);  /* and filename */
+        dsh->fname = (char *) sys_malloc(ustrlen(fname)+1);  /* and filename */
         ustrcpy(dsh->fname,fname);
     }
     dsh->freelist = NULL;                   /* no free memory */
@@ -193,11 +195,11 @@ error_status_t *st;         /* (output) status */
         if (fd != -1) close(fd);        /* if file is open close it */
         if (dsh) {                      /* free allocated memory */
             if (dsh->map) {             /* which is nested */
-                if (dsh->map->ptr) free(dsh->map->ptr);
-                free(dsh->map);
+                if (dsh->map->ptr) sys_free(dsh->map->ptr);
+                sys_free(dsh->map);
             }
-            free(dsh->fname);
-            free(dsh);
+            sys_free(dsh->fname);
+            sys_free(dsh);
         }
         return;                         /* return with error status */
     }
@@ -221,7 +223,7 @@ error_status_t *st;         /* (output) status */
     if (dsh == NULL) SIGNAL(dsm_err_no_memory);    /* make sure we got it */
 
     dsh->fd = fd;                   /* remember fd */
-    dsh->fname = (char *) malloc(ustrlen(fname)+1);  
+    dsh->fname = (char *) sys_malloc(ustrlen(fname)+1);  
     ustrcpy(dsh->fname,fname);      /* and filename */
     dsh->freelist = NULL;           /* no free list yet */
     dsh->map = NULL;                /* no memory mapping yet */
@@ -236,7 +238,7 @@ error_status_t *st;         /* (output) status */
         dsh->map->link = NULL;                                      /* it's the last one */
         dsh->map->loc = PAGE_SIZE;                                  /* at starts at the second page */
         dsh->map->size = dsh->pages*PAGE_SIZE;                      /* it's this many bytes long */
-        dsh->map->ptr = (block_t *)malloc(dsh->map->size);          /* allocate space for it */
+        dsh->map->ptr = (block_t *)sys_malloc(dsh->map->size);          /* allocate space for it */
         if (dsh->map->ptr == NULL) SIGNAL(dsm_err_no_memory);  /* did we get it? */
     
         /* observe that the file pointer is right after the header, from header read.
@@ -277,8 +279,8 @@ error_status_t *st;     /* (output) status */
     }
     free_map((*dsh)->map);              /* free the memory map and all mapped memory */
     (*dsh)->cookie = 0;                 /* clear cookie (in case of alias pointers) */
-    free((*dsh)->fname);
-    free(*dsh);                         /* free the data store record */
+    sys_free((*dsh)->fname);
+    sys_free(*dsh);                         /* free the data store record */
 
     *dsh = NULL;                        /* invalidate the handle */
     CLEAR_ST;
@@ -1076,8 +1078,8 @@ error_status_t *st;
     long                flen;                   /* file length/offset of new chunk */
 
     CLEANUP {
-        if (p != NULL) free(p);                 /* free allocated memory if any */
-        if (map != NULL) free(map);
+        if (p != NULL) sys_free(p);                 /* free allocated memory if any */
+        if (map != NULL) sys_free(map);
         return NULL;                                 /* return w/ bad status */
     }
 
@@ -1086,7 +1088,7 @@ error_status_t *st;
 
     grow_bytes = grow_pages*PAGE_SIZE;      /* what's that in dollars? */
 
-    p = (block_t *)malloc(grow_bytes);      /* allocate the memory chunk */
+    p = (block_t *)sys_malloc(grow_bytes);      /* allocate the memory chunk */
     if (p == NULL) SIGNAL(dsm_err_no_memory);
 
     map = NEW(file_map_t);                  /* get new file map entry */
@@ -1323,8 +1325,8 @@ file_map_t *m;
     if (m == NULL) return;          /* all done for an empty list */
     if (m->link) free_map(m->link); /* first free the tail of the list if any */
 
-    free(m->ptr);                   /* free mapped memory */
-    free(m);                        /* free the map record */
+    sys_free(m->ptr);                   /* free mapped memory */
+    sys_free(m);                        /* free the map record */
 } /* free_map */
 
 /** coalesce

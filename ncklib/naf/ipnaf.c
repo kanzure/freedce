@@ -1035,7 +1035,7 @@ unsigned32              *status;
     }
 
     buflen = 1024;
-    buf = (char*)malloc(buflen);
+    buf = (char*)sys_malloc(buflen);
 
     while ( 0 != gethostbyname_r((const char *)netaddr,
                               &he, buf, buflen,
@@ -1045,7 +1045,7 @@ unsigned32              *status;
     {
         if (herr != NETDB_INTERNAL || errno != ERANGE)
 	{
-	    free(buf);
+	    sys_free(buf);
             *status = rpc_s_inval_net_addr;
             return;
 	}
@@ -1053,13 +1053,13 @@ unsigned32              *status;
         {
             /* Enlarge buffer.  */
             buflen *= 2;
-            free(buf);
-	    buf = malloc(buflen);
+            sys_free(buf);
+	    buf = sys_malloc(buflen);
         }
     }
 
     ip_addr->sa.sin_addr.s_addr = * (unsigned32 *) he.h_addr;
-    free(buf);
+    sys_free(buf);
 
     *status = rpc_s_ok;
  

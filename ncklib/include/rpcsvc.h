@@ -191,7 +191,7 @@
     {											\
         char *__mptr = rpc__svc_fmt_dbg_msg pargs ;					\
         DCE_SVC_DEBUG((RPC__SVC_HANDLE, switch, RPC__SVC_DBG_LEVEL(level), __mptr));	\
-        free(__mptr);									\
+        sys_free(__mptr);									\
     }
 
 #endif	/* DEBUG */

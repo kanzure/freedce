@@ -10,7 +10,7 @@ LIBS += -lkernel32 -lrpcrt4
 # Build the UUID shared library
 lib_LTLIBRARIES = libuuid.la
 if TARGET_OS_WIN32
-libuuid_la_SOURCES = uuid.c uuid-cpp.cpp uuidsys.c get_ether_addr.c win32timeofday.c win32uuid.c
+libuuid_la_SOURCES = uuid.c uuid-cpp.cpp uuidsys.c get_ether_addr.c win32timeofday.c win32uuid.c win32mem.c
 else
 libuuid_la_SOURCES = uuid.c uuid-cpp.cpp uuidsys.c get_ether_addr.c 
 endif

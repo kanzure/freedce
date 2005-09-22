@@ -117,7 +117,7 @@
 #define MIN(a,b)    ((a<b)?a:b)
 #endif
 
-#define NEW(type)   (type *)malloc(sizeof(type))
+#define NEW(type)   (type *)sys_malloc(sizeof(type))
 
 #define ustrcpy(a,b)    strcpy((char *)(a),(char *)(b))
 #define ustrcat(a,b)    strcat((char *)(a),(char *)(b))

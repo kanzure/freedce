@@ -40,6 +40,7 @@
 
 #ifdef HAVE_OS_WIN32
 typedef int pid_t;
+#include <dce/dce_win32mem.h>
 #endif
 
 #include <commonp.h>
@@ -317,7 +318,7 @@ error_status_t  *status;
 
     SET_STATUS_OK(status);
 
-    h = (struct db *) malloc(sizeof(struct db));
+    h = (struct db *) sys_malloc(sizeof(struct db));
     if (h == NULL) {
         SET_STATUS(status, ept_s_cant_perform_op);
         return(NULL);
@@ -1282,7 +1283,7 @@ unsigned32              *status;
     if (db_different_context(h, map_handle, status))
         return;
 
-    db_entries = (db_entry_t **) malloc(max_ents * sizeof(db_entry_p_t));
+    db_entries = (db_entry_t **) sys_malloc(max_ents * sizeof(db_entry_p_t));
 
     /* lock database before delete_context or lookup
      */
@@ -1290,7 +1291,7 @@ unsigned32              *status;
 
     if ((fwd_addrs == NULL) || (db_entries == NULL) || (max_ents == 0) || (*num_ents > max_ents))
     {
-        if (db_entries != NULL) free(db_entries);
+        if (db_entries != NULL) sys_free(db_entries);
         db_delete_context(h, map_handle);
         SET_STATUS(status, ept_s_cant_perform_op);
         db_unlock(h);
@@ -1309,7 +1310,7 @@ unsigned32              *status;
         map_handle, max_ents, num_ents, db_entries, status);
     if (! STATUS_OK(status)) 
     {
-        free(db_entries);
+        sys_free(db_entries);
         db_unlock(h);
         return;
     }
@@ -1336,7 +1337,7 @@ unsigned32              *status;
         }
     }
 
-    free(db_entries);
+    sys_free(db_entries);
 
     db_unlock(h);
 }
@@ -1400,11 +1401,11 @@ unsigned32          *status;
         return;
     } 
 
-    db_entries = (db_entry_t **) malloc(max_ents * sizeof(db_entry_p_t));
+    db_entries = (db_entry_t **) sys_malloc(max_ents * sizeof(db_entry_p_t));
 
     if ((db_entries == NULL) || (fwd_towers == NULL) || (max_ents == 0) || (*num_ents > max_ents))
     {
-        if (db_entries != NULL) free(db_entries);
+        if (db_entries != NULL) sys_free(db_entries);
         db_delete_context(h, map_handle);
         SET_STATUS(status, ept_s_cant_perform_op);
         db_unlock(h);
@@ -1423,7 +1424,7 @@ unsigned32          *status;
         tfp->protseq, map_handle, max_ents, num_ents, db_entries, status);
     if (! STATUS_OK(status)) 
     {
-        free(db_entries);
+        sys_free(db_entries);
         db_unlock(h);
         return;
     }
@@ -1450,7 +1451,7 @@ unsigned32          *status;
         }
     }
 
-    free(db_entries);
+    sys_free(db_entries);
 
     db_unlock(h);
 }

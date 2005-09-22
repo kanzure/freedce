@@ -43,6 +43,7 @@
 
 #ifdef HAVE_OS_WIN32
 typedef int pid_t;
+#include <dce/dce_win32mem.h>
 #endif
 #include <commonp.h>
 #include <com.h>
@@ -450,7 +451,7 @@ error_status_t  *status;
     if (dflag)
         printf("(rpcd) initializing database\n"); 
 
-    fname = (unsigned_char_p_t) malloc(strlen(rpcd_c_database_name_prefix1) + 
+    fname = (unsigned_char_p_t) sys_malloc(strlen(rpcd_c_database_name_prefix1) + 
                                        strlen(rpcd_c_database_name_prefix2) + 
                                        strlen(rpcd_c_ep_database_name) + 1);
     sprintf((char *) fname, "%s%s%s", rpcd_c_database_name_prefix1,
@@ -460,10 +461,10 @@ error_status_t  *status;
     if (check_st_bad("Can't initialize ept database", status))
         return;
 
-    free(fname);
+    sys_free(fname);
     
 #ifdef RPC_LLB
-    fname = (unsigned_char_p_t) malloc(strlen(rpcd_c_database_name_prefix1) + 
+    fname = (unsigned_char_p_t) sys_malloc(strlen(rpcd_c_database_name_prefix1) + 
                                        strlen(rpcd_c_database_name_prefix2) + 
                                        strlen(rpcd_c_llb_database_name) + 1);
     sprintf((char *) fname, "%s%s%s", rpcd_c_database_name_prefix1,
@@ -473,7 +474,7 @@ error_status_t  *status;
     if (check_st_bad("Can't initialize llb database", status))
         return;
 
-    free(fname);
+    sys_free(fname);
 #endif
 
     epdb_inq_object(h, &epdb_obj, status);
@@ -633,7 +634,7 @@ int main(int argc, char *argv[])
             char *fname;
             char *p;
 
-            if ((fname = malloc(strlen(rpcd_c_database_name_prefix1) + 
+            if ((fname = sys_malloc(strlen(rpcd_c_database_name_prefix1) + 
                            strlen(rpcd_c_database_name_prefix2) + 
                            strlen(rpcd_c_logfile_name) + 1)) != NULL)
             {
@@ -661,7 +662,7 @@ int main(int argc, char *argv[])
                      * Again, we don't care if chdir() failed.
                      */
                 }
-                free(fname);
+                sys_free(fname);
             }
         }
 #endif

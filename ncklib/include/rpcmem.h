@@ -283,7 +283,7 @@ EXTERNAL rpc_mem_stats_elt_t rpc_g_mem_stats[];
 #define RPC_MEM_ALLOC_IL(addr, cast, size, type, flags) \
 { \
     RPC_LOG_MEM_ALLOC_NTR; \
-    (addr) = (cast) malloc(size); \
+    (addr) = (cast) sys_malloc(size); \
     RPC_MEM_LOCK (0); \
     rpc_g_mem_stats[type].calls++; \
     if ((addr) == NULL) { \
@@ -324,7 +324,7 @@ EXTERNAL rpc_mem_stats_elt_t rpc_g_mem_stats[];
 #define RPC_MEM_REALLOC_IL(addr, cast, size, type, flags) \
 { \
     RPC_LOG_MEM_REALLOC_NTR; \
-    (addr) = (cast) realloc(addr, size); \
+    (addr) = (cast) sys_realloc(addr, size); \
     RPC_MEM_LOCK (0); \
     rpc_g_mem_stats[type].calls++; \
     if ((addr) == NULL) { \
@@ -355,7 +355,7 @@ EXTERNAL rpc_mem_stats_elt_t rpc_g_mem_stats[];
 #define RPC_MEM_FREE_IL(addr, type) \
 { \
     RPC_LOG_MEM_FREE_NTR; \
-    free(((char *) (addr))); \
+    sys_free(((char *) (addr))); \
     RPC_MEM_LOCK (0); \
     --rpc_g_mem_stats[type].inuse; \
     RPC_MEM_UNLOCK (0); \
