@@ -722,7 +722,8 @@ typedef void *rpc_ss_threads_dest_arg_t;
 
 #else
 
-#define RPC_SS_THREADS_INIT cma_init()
+#define RPC_SS_THREADS_INIT cma_init(); \
+	pthread_once(&dcethreads_exc_defaults_initialized, dcethreads_exc_lib_init);
 
 #define RPC_SS_THREADS_ONCE_T cma_t_once
 
