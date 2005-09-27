@@ -461,7 +461,7 @@ INTERNAL void convq_start(void)
     if (! convq_running)
     {
         convq_running = true;
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
         pthread_create(&conv_thread, &pthread_attr_default,
                        (pthread_startroutine_t)convq_loop, 
                        NULL);  

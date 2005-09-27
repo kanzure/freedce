@@ -423,7 +423,7 @@ unsigned32              *status;
      */
     TRY {
         pthread_create (&cthread->thread_id,
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
                     &rpc_g_server_pthread_attr,
 #else
                     rpc_g_server_pthread_attr,
@@ -434,7 +434,7 @@ unsigned32              *status;
         cthread->thread_state = RPC_C_IDLE_CTHREAD;
 
         handle_copy = cthread->thread_id;
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
         pthread_detach(handle_copy);
 #else
         pthread_detach(&handle_copy);

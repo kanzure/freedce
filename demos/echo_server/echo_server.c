@@ -349,7 +349,7 @@ sigset_t old_signal_mask;
 #endif
 
 #ifndef _AIX
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
   pthread_create(&sig_handler_thread, 
 		 &pthread_attr_default,
 		 (void*)signal_handler,

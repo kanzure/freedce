@@ -182,7 +182,7 @@ unsigned32              *status;
             TRY {
                 pthread_create (
                     &listener_thread,                   /* new thread    */
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
                     &rpc_g_default_pthread_attr,         /* attributes    */
 #else
                     rpc_g_default_pthread_attr,         /* attributes    */

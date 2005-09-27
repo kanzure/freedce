@@ -391,8 +391,8 @@ void rpc_ss_rundown_client
     callee_context_entry_t *this_context;
     rpc_client_handle_t close_client = NULL;
                                        /* NULL or client to stop monitoring */
-    rpc_ss_rundown_list_elt *rundown_list;
-    rpc_ss_rundown_list_elt *rundown_elt;
+    rpc_ss_rundown_list_elt *rundown_list = NULL;
+    rpc_ss_rundown_list_elt *rundown_elt = NULL;
 	 
 	 DO_NOT_CLOBBER(rundown_list);
 	 rundown_list = NULL;

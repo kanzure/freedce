@@ -636,7 +636,7 @@ typedef ndr_ulong_int rpc_op_t;
 
 #ifdef STUBS_USE_PTHREADS
 
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #define RPC_SS_THREADS_INIT \
 	pthread_once(&dcethreads_exc_defaults_initialized, dcethreads_exc_lib_init);
 #else
@@ -653,7 +653,7 @@ typedef ndr_ulong_int rpc_op_t;
 
 #define RPC_SS_THREADS_MUTEX_T pthread_mutex_t
 
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #define RPC_SS_THREADS_MUTEX_CREATE(mutex_addr) pthread_mutex_init( \
     mutex_addr, &pthread_mutexattr_default )
 #else
@@ -671,7 +671,7 @@ typedef void *rpc_ss_threads_dest_arg_t;
 
 #define RPC_SS_THREADS_KEY_T pthread_key_t
 
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #define RPC_SS_THREADS_KEY_CREATE(key_addr,destructor) pthread_key_create( \
     (key_addr),(destructor))
 #else
@@ -682,7 +682,7 @@ typedef void *rpc_ss_threads_dest_arg_t;
 #define RPC_SS_THREADS_KEY_SET_CONTEXT(key,value) pthread_setspecific( \
     (key),(pthread_addr_t)(value))
 
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #define RPC_SS_THREADS_KEY_GET_CONTEXT(key,value_addr) \
 	(*value_addr) = (void*)pthread_getspecific( key)
 #else
@@ -692,7 +692,7 @@ typedef void *rpc_ss_threads_dest_arg_t;
 
 #define RPC_SS_THREADS_CONDITION_T pthread_cond_t
 
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #define RPC_SS_THREADS_CONDITION_CREATE(condition_addr) pthread_cond_init( \
     condition_addr,&pthread_condattr_default)
 #else

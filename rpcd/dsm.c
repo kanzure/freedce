@@ -93,6 +93,8 @@
 #include <stdio.h>
 #ifdef HAVE_OS_WIN32
 #include <dce/dce_win32mem.h>
+#else
+#include <stdlib.h>
 #endif
 
 #define _I_AM_DSM_C_

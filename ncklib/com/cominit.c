@@ -311,7 +311,7 @@ INTERNAL void init_once(void)
 	/*
 	 * create the per-thread context key
 	 */
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 	pthread_key_create (&rpc_g_thread_context_key, 
 			(void (*) _DCE_PROTOTYPE_((pointer_t))) thread_context_destructor);
 #else

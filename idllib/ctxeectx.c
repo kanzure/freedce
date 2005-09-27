@@ -175,14 +175,15 @@ void rpc_ss_create_callee_context
 #endif
 {
     rpc_client_handle_t  ctx_client;         /* ID of client owning context */
-    callee_context_entry_t *this_link, *next_link, *new_link;
+    callee_context_entry_t *this_link, *next_link;
+    callee_context_entry_t *new_link;
     ndr_boolean is_new_client;
-
-	 DO_NOT_CLOBBER(new_link);
 
 #ifdef PERFMON
     RPC_SS_CREATE_CALLEE_CONTEXT_N;
 #endif
+
+	 DO_NOT_CLOBBER(new_link);
 
     /* If this is the first context to be created, initialization is needed */
     RPC_SS_INIT_CONTEXT

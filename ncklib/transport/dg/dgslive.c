@@ -205,7 +205,7 @@ unsigned32 *st;
     if (! monitor_running)
     {
         monitor_running = true;
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
         pthread_create(&monitor_task, &pthread_attr_default, 
             (pthread_startroutine_t) network_monitor_liveness, 
             NULL);  
@@ -366,7 +366,7 @@ INTERNAL void network_monitor_liveness(void)
                  * Nothing left to monitor, so terminate the thread.
                  */
                 TRY {
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
                     pthread_detach(monitor_task);
 #else
                     pthread_detach(&monitor_task);

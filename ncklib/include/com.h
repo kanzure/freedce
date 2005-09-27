@@ -1000,7 +1000,7 @@ typedef struct
  * key has been initialized (in rpc__init) and will fail if it hasn't
  * been.
  */
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #define RPC_GET_THREAD_CONTEXT(thread_context, status) \
 { \
     *status = rpc_s_ok; \
@@ -1063,7 +1063,7 @@ typedef struct
     } \
 }
 
-#endif /* HAVE_OS_WIN32 */
+#endif /* ENABLE_PTHREADS */
 
 #define RPC_SET_CANCEL_TIMEOUT(value, status) \
 { \

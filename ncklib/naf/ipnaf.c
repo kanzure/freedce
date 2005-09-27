@@ -281,7 +281,7 @@ INTERNAL void inq_max_frag_size _DCE_PROTOTYPE_ ((
 #if !NAF_IP_STATIC
 #include <comp.h>
 #ifndef HAVE_OS_WIN32
-PRIVATE __declspec (dllexport) void __cdecl rpc__module_init_func(void)
+PRIVATE void rpc__module_init_func(void)
 #else
 PRIVATE void rpc__ipnaf_module_init_func(void)
 #endif

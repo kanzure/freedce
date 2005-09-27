@@ -102,7 +102,7 @@ PRIVATE void sliv_init(h, status)
 struct db       *h;
 error_status_t  *status;
 {
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
     pthread_cond_init(&h->sliv_task2_cv, &pthread_condattr_default);
 
     pthread_create(&h->sliv_task1_h, &pthread_attr_default, 
@@ -132,8 +132,10 @@ error_status_t  *status;
  *  slive_c_max_server_not_listening consecutive tries.
  */
 
+#ifdef HAVE_OS_WIN32
 struct timeval;
 extern int win32_gettimeofday(struct timeval *tp, void *unused);
+#endif
 
 INTERNAL void sliv_task1(arg)
 void    *arg;

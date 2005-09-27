@@ -72,10 +72,13 @@ AC_SUBST(SED)
 AC_OBJEXT
 AC_C_INLINE
 
+RPC_ARG_DEFINE(pthreads, ENABLE_PTHREADS, no,Enable pthreads: experimental)
+
 dnl AC_CHECK_HEADERS(windows.h)
 dnl Checks for libraries.
 if test "x$have_win32" = "x1"; then
 AC_CHECK_LIB(pthreadGC2, pthread_create)
+ENABLE_PTHREADS="1"
 else
 AC_CHECK_LIB(pthread, pthread_create)
 fi
@@ -90,7 +93,7 @@ AC_ARG_WITH(dcethreads-dir, [  --with-dcethreads-dir   Specify where you have in
 [THREADS_DIRS="$withval $THREADS_DIRS"])
 
 
-if test "x$have_win32" != "x1"; then
+if test "x$ENABLE_PTHREADS" != "x1"; then
 RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, $THREADS_DIRS,,
 AC_MSG_ERROR([freedce requires libdcethreads!]))
 else

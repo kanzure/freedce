@@ -184,7 +184,7 @@ unsigned32 *st;
     if (! maintain_thread_running)
     {     
         maintain_thread_running = true;
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
         pthread_create(&maintain_task, &pthread_attr_default, 
             (void*)network_maintain_liveness, 
             NULL);  
@@ -308,7 +308,7 @@ INTERNAL void * network_maintain_liveness(void * unused __attribute__((__unused_
              */
 			  /* FIXME: MNE */
 	  TRY	{
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 		pthread_detach(maintain_task);
 #else
 		pthread_detach(&maintain_task);

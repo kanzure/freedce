@@ -160,7 +160,7 @@ typedef struct rpc_cond_t
         } \
     }
 #else
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #  define RPC_MUTEX_INIT(mutex) \
     { \
         RPC_LOG_MUTEX_INIT_NTR; \
@@ -174,7 +174,7 @@ typedef struct rpc_cond_t
         pthread_mutex_init(&(mutex).m, pthread_mutexattr_default); \
         RPC_LOG_MUTEX_INIT_XIT; \
     }
-#endif /* HAVE_OS_WIN32 */
+#endif /* ENABLE_PTHREADS */
 #endif /* RPC_MUTEX_DEBUG or RPC_MUTEX_STATS */
 
 
@@ -388,7 +388,7 @@ typedef struct rpc_cond_t
         } \
     }
 #else
-#ifdef HAVE_OS_WIN32
+#ifdef ENABLE_PTHREADS
 #  define RPC_COND_INIT(cond,mutex) \
     { \
         RPC_LOG_COND_INIT_NTR; \

@@ -5,7 +5,9 @@ include $(top_srcdir)/include.mk
 
 # any libraries specified will be listed as dependencies; avoid this
 # as is means that a loop is present when we build libdcerpc
+if TARGET_OS_WIN32
 LIBS += -lkernel32 -lrpcrt4
+endif
 
 # Build the UUID shared library
 lib_LTLIBRARIES = libuuid.la
