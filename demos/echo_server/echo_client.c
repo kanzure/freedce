@@ -143,7 +143,7 @@ main(argc, argv)
   i = 0;
 #ifdef HAVE_OS_WIN32
       inargs->argv[0] = (string_t)strdup("hello");      
-      inargs->argv[2] = (string_t)strdup("there");      
+      inargs->argv[1] = (string_t)strdup("there");      
       inargs->argc = 2;
 #else
   while (!feof(stdin) && i < MAX_USER_INPUT )
