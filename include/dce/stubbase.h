@@ -712,15 +712,9 @@ typedef void *rpc_ss_threads_dest_arg_t;
 
 #define RPC_SS_THREADS_CANCEL_STATE_T int
 
-#ifdef HAVE_OS_WIN32
-#define RPC_SS_THREADS_DISABLE_ASYNC(state) 
-
-#define RPC_SS_THREADS_RESTORE_ASYNC(state)
-#else
 #define RPC_SS_THREADS_DISABLE_ASYNC(state) state=pthread_setasynccancel(CANCEL_OFF)
 #define RPC_SS_THREADS_RESTORE_ASYNC(state) pthread_setasynccancel(state)
 
-#endif
 
 #define RPC_SS_THREADS_ENABLE_GENERAL(state) state=pthread_setcancel(CANCEL_ON)
 
