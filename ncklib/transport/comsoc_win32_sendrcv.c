@@ -93,7 +93,7 @@ void RPC_SOCKET_SENDMSG(
 
 #ifdef HACK_DEBUG
 	printf("%s:\n", __FUNCTION__);
-	/*print_data(data, data_len);*/
+	print_data(data, data_len);
 #endif
 
 sendmsg_again:
@@ -104,8 +104,8 @@ sendmsg_again:
 		ad = ((struct sockaddr *) &(addrp)->sa);
 		ad_len = (addrp)->len;
 	}
-	*(ccp) = win32_sendto ((int) sock, data, data_len, 0, ad, ad_len);
-	*(serrp) = (*(ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
+	*ccp = win32_sendto ((int) sock, data, data_len, 0, ad, ad_len);
+	*serrp = ((*ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
 	RPC_LOG_SOCKET_SENDMSG_XIT;
 	if (*(serrp) == RPC_C_SOCKET_EINTR)
 	{
@@ -124,17 +124,18 @@ void RPC_SOCKET_RECVFROM
 	 volatile rpc_socket_error_t *serrp
 )
 {
-	int len;
+	int *len;
 recvfrom_again:
 	if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);
 	RPC_LOG_SOCKET_RECVFROM_NTR;
-	len = (from)->len;
-	*(ccp) = win32_recvfrom ((int) sock, buf, buflen, 0,
-			(struct sockaddr *) &((from)->sa), &len);
-	*(serrp) = (*(ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
+	len = from != NULL ? (int*)&(from->len) : NULL;
+	*ccp = win32_recvfrom ((int) sock, buf, buflen, 0,
+			(struct sockaddr *) (from != NULL ? &(from->sa) : NULL),
+			len);
+	*serrp = ((*ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
 	RPC_LOG_SOCKET_RECVFROM_XIT;
 	if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);
-	if (*(serrp) == RPC_C_SOCKET_EINTR)
+	if (*serrp == RPC_C_SOCKET_EINTR)
 	{
 		goto recvfrom_again;
 	}
@@ -143,10 +144,8 @@ recvfrom_again:
 	printf("%s: %d\n", __FUNCTION__, *serrp);
 	if ((*ccp) > buflen || (*ccp) < 0)
 		printf("%s: weird return value %d\n", __FUNCTION__, *ccp);
-	/*
 	else if ((*serrp) == RPC_C_SOCKET_OK)
 		print_data(buf, *ccp);
-		*/
 #endif
 }
 
@@ -170,6 +169,7 @@ void RPC_SOCKET_RECVMSG
 	char *data;
 	char *data_ptr;
 	int i;
+	size_t copied_so_far = 0;
 
 	for (i = 0; i < iovlen; i++)
 	{
@@ -186,19 +186,25 @@ void RPC_SOCKET_RECVMSG
 	RPC_SOCKET_RECVFROM(sock, data, data_len, addrp, ccp, serrp);
 
 #ifdef HACK_DEBUG
-	printf("%s: data received: %d\n", __FUNCTION__, *ccp);
+	printf("%s: data received: %d err: %d\n", __FUNCTION__, *ccp, *serrp);
 #endif
-	if ((*(serrp)) != RPC_C_SOCKET_OK)
+	if ((*serrp) != RPC_C_SOCKET_OK)
 	{
 		sys_free(data);
 		return;
 	}
 
 	data_ptr = data;
-	for (i = 0; i < iovlen; i++)
+	for (i = 0; i < iovlen && copied_so_far < (size_t)(*ccp); i++)
 	{
-		memcpy(iovp[i].iov_base, data_ptr, iovp[i].iov_len);
+		size_t copy_data_len;
+		copy_data_len = MIN( iovp[i].iov_len, (*ccp) - copied_so_far);
+#ifdef HACK_DEBUG
+		printf("%s: iov %d: %d\n", __FUNCTION__, i, (int)copy_data_len);
+#endif
+		memcpy(iovp[i].iov_base, data_ptr, copy_data_len);
 		data_ptr += iovp[i].iov_len;
+		copied_so_far += iovp[i].iov_len;
 	}
 
 	sys_free(data);

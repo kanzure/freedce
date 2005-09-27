@@ -49,7 +49,7 @@
   
 [
  uuid(e1af8308-5d1f-11c9-91a4-08002b14a0fa), version(3.0), 
- endpoint("ncadg_ip_udp:[135]", "ncadg_dds:[12]", "ncacn_ip_tcp:[135]"),
+ endpoint("ncadg_ip_udp:[136]", "ncadg_dds:[12]", "ncacn_ip_tcp:[136]"),
  pointer_default(ptr) 
 ]
 
