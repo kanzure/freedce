@@ -381,6 +381,8 @@ rpc_listener_state_p_t  lstate;
      * appropriately before the cancel is posted.
      */
               
+    pthread_setcancel(CANCEL_ON);
+
     while (listener_should_handle_cancels)
     {                                 
         RPC_MUTEX_LOCK (lstate->mutex);

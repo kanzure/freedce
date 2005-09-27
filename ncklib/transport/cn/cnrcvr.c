@@ -200,6 +200,8 @@ rpc_cn_assoc_p_t        assoc;
 
 	DO_NOT_CLOBBER(done);
 	 
+    pthread_setcancel(CANCEL_ON);
+
     RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_receiver);
 
     RPC_DBG_PRINTF (rpc_e_dbg_threads, RPC_C_CN_DBG_THREADS,
@@ -208,6 +210,8 @@ rpc_cn_assoc_p_t        assoc;
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
                     ("CN: assoc->%x call_rep->none Receiver thread starting...\n",
                      assoc));
+
+    pthread_setcancel(CANCEL_ON);
 
     /*
      * Loop until a cancel is sent to this thread.

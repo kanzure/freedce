@@ -497,6 +497,7 @@ cthread_elt_p_t cthread;
     cthread_pool_elt_p_t    p = cthread->pool;
     boolean                 skip_startup = true;
 
+    pthread_setcancel(CANCEL_ON);
     /*
      * Call executors execute with general cancelability disabled
      * until the stub dispatched to the manager.  This prevents the

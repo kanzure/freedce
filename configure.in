@@ -35,6 +35,8 @@ if test "x$have_win32" = "x1"; then
 	LIBS="$LIBS -lntdll -lws2_32 -liphlpapi";
 	WIN32_PROG_PREFIX=".exe"
 	AC_SUBST(WIN32_PROG_PREFIX)
+	NON_CANCELLABLE_IO="1"
+	AC_SUBST(NON_CANCELLABLE_IO)
 fi
 
 # show the user what we do

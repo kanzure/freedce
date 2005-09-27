@@ -272,6 +272,8 @@ INTERNAL void * network_maintain_liveness(void * unused __attribute__((__unused_
     maint_elt_p_t ptr;
     struct timespec next_ts;
 
+    pthread_setcancel(CANCEL_ON);
+
     RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1, 
                    ("(network_maintain_liveness) starting up...\n"));
 

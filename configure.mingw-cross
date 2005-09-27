@@ -17,6 +17,6 @@ do
 done
 
 ./configure \
-  --enable-shared=no --enable-static=yes --disable-afuxd \
+  --enable-pthreads=yes --enable-shared=no --enable-static=yes --disable-afuxd \
   --host i586-mingw32msvc --build i686-pc-linux-gnu \
   CC=$CC CXX=$CXX CFLAGS="-g" "$@"

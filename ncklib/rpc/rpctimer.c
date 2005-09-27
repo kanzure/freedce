@@ -91,6 +91,8 @@ INTERNAL void rpc__timer_set_int _DCE_PROTOTYPE_ ((
 
 INTERNAL void timer_loop(void)
 {
+    pthread_setcancel(CANCEL_ON);
+
     RPC_TIMER_LOCK(0);
 
     while (!stop_timer)

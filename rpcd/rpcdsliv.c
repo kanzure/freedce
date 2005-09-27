@@ -154,6 +154,8 @@ void    *arg;
     boolean32       server_listening;
     error_status_t  status;
 
+    pthread_setcancel(CANCEL_ON);
+
     h = (struct db *) arg;
 
 #ifdef HAVE_OS_WIN32
@@ -259,6 +261,8 @@ void    *arg;
 	DO_NOT_CLOBBER(waitsecs);
 	DO_NOT_CLOBBER(have_db_lock);
 	 
+    pthread_setcancel(CANCEL_ON);
+
     h = (struct db *) arg;
 
     /*  let other init stuff get done */

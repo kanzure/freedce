@@ -387,6 +387,8 @@ signal_handler(void * arg __attribute__((__unused__)))
   pthread_sigmask(SIG_BLOCK,  &catch_signal_mask, &old_signal_mask);
 #endif
 
+  pthread_setcancel(CANCEL_ON);
+
   while (1) 
     {
       

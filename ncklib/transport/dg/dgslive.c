@@ -306,6 +306,8 @@ INTERNAL void network_monitor_liveness(void)
     unsigned32 i;
     struct timespec next_ts;
 
+    pthread_setcancel(CANCEL_ON);
+
     RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1, 
                    ("(network_monitor_liveness) starting up...\n"));
 

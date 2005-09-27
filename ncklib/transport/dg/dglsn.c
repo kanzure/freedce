@@ -586,6 +586,8 @@ INTERNAL void convq_loop(void)
 {
     rpc_dg_recvq_elt_p_t rqe;
 
+    pthread_setcancel(CANCEL_ON);
+
     RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1, 
 	("(convq_loop) starting up..\n"));
 
@@ -613,7 +615,7 @@ INTERNAL void convq_loop(void)
 	    RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1,
 		("(convq_loop) sleeping for %d sec\n", i.tv_sec));
 #ifdef HAVE_OS_WIN32
-	    _sleep(i.tv_sec);
+	    _sleep(i.tv_sec * 1000);
 #else
 	    pthd4_delay_np(&i);
 #endif
