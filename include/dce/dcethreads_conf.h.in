@@ -130,10 +130,16 @@
 #  define _REENTRANT 1
 #endif
 
+#ifndef HAVE_FEATURES_H
+#undef HAVE_FEATURES_H
+#endif
 #ifdef HAVE_FEATURES_H
 #  include <features.h>
 #endif
 
+#ifndef HAVE_SYS_CDEFS_H
+#undef HAVE_SYS_CDEFS_H
+#endif
 /*
  * sys/cdefs.h is often included by features.h
  */
