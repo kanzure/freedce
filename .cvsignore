@@ -10,6 +10,9 @@ config.mk
 configure
 mkinstalldirs
 missing
+ltconfig
+libtool
+ltmain.sh
 install-sh
 *.lo
 *.la
