@@ -80,7 +80,7 @@ extern void abort(void);
 #endif 
 
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.3 2005/01/20 12:52:51 lkcl Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.4 2005/09/28 22:31:10 lkcl Exp $";
 #endif
 
 /****************************************************************************
@@ -99,12 +99,19 @@ static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dce.c,v 1.
  *   return: NO this routine must be used as a statement
  */
 
-#include </usr/include/pthread.h>
+#ifdef HAVE_OS_WIN32
+#include </usr/i586-mingw32msvc/include/pthread.h>    /* Import platform win32 threads*/
+#else
+#include </usr/include/pthread.h>          /* Import platform LinuxThreads */
+#endif
+
 
 #define _DCE_PTHREADS_COMPAT_MACROS_
 #include <dce/pthread_dce_common.h>    /* Import common D4/D7 overlays */
 #include <dce/pthread_dce.h>           /* Import DCE Threads */
+#ifndef HAVE_OS_WIN32
 #include "pthread_dce_atfork.h"
+#endif
 
 #include <errno.h>
 #include <sys/time.h>
@@ -276,7 +283,7 @@ pthd4_attr_getstacksize(pthread_attr_t attr __attribute__((unused)))
  */
 int
 pthd4_create(pthread_t *th_h,
-              pthread_attr_t attr,
+              pthread_attr_t *attr,
               pthread_startroutine_t proc,
               pthread_addr_t arg)
 {
@@ -288,7 +295,7 @@ pthd4_create(pthread_t *th_h,
     }
 
     istat = pthread_create(th_h,
-                           &attr,
+                           attr,
                            (pthread_startroutine_t) proc,
                            arg);
 
@@ -323,7 +330,7 @@ pthd4_create(pthread_t *th_h,
  *           -1/ESRCH  - thread does not match any existing thread
  */
 int 
-pthd4_detach(pthread_t *thread)
+pthd4_detach(pthread_t thread)
 {
     int istat = 0;
     
@@ -332,7 +339,7 @@ pthd4_detach(pthread_t *thread)
         return (FAILURE);
     }
 
-    istat = pthread_detach(*thread);
+    istat = pthread_detach(thread);
     switch (istat) {
     case SUCCESS:
         return (SUCCESS);
@@ -452,7 +459,7 @@ pthd4_mutexattr_delete(pthread_mutexattr_t *attr)
  *           -1/ENOMEM - insufficient memory to initialize
  */
 int 
-pthd4_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t attr)
+pthd4_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t *attr)
 {
     int istat = 0;
     
@@ -462,7 +469,7 @@ pthd4_mutex_init(pthread_mutex_t *mutex, pthread_mutexattr_t attr)
     }        
     
     /* pthread_mutex_init can't fail */
-    istat = pthread_mutex_init(mutex, &attr);
+    istat = pthread_mutex_init(mutex, attr);
     if (istat != SUCCESS) {
         errno = ENOMEM;
         return (FAILURE);
@@ -660,7 +667,7 @@ pthd4_condattr_delete(pthread_condattr_t *attr)
  *           -1/ENOMEM - insufficient memory to initialize
  */
 int 
-pthd4_cond_init(pthread_cond_t *cond, pthread_condattr_t attr)
+pthd4_cond_init(pthread_cond_t *cond, pthread_condattr_t *attr)
 {
     int istat = 0;
     
@@ -670,7 +677,7 @@ pthd4_cond_init(pthread_cond_t *cond, pthread_condattr_t attr)
     }        
 
     /* pthread_cond_init can't fail */
-    istat = pthread_cond_init(cond, &attr);
+    istat = pthread_cond_init(cond, attr);
     if (istat != SUCCESS) {
         errno = ENOMEM;
         return (FAILURE);
@@ -856,7 +863,7 @@ pthd4_once(pthread_once_t *once_block, void (*init_routine)(void))
  *           -1/EAGAIN - insufficient memory exist for create a key
  */
 int 
-pthd4_keycreate(pthread_key_t *key, pthread_destructor_t destructor)
+pthd4_key_create(pthread_key_t *key, pthread_destructor_t destructor)
 {
     int istat = 0;
 
@@ -916,22 +923,16 @@ pthd4_setspecific(pthread_key_t key, pthread_addr_t value)
  *   return:  0 - successfull
  *           -1/EINVAL - invalid value for key
  */
-int 
-pthd4_getspecific(pthread_key_t key, pthread_addr_t *value)
+pthread_addr_t 
+pthd4_getspecific(pthread_key_t key)
 {
 
     if (pthread_once(&defaults_initialized, pthd4_lib_init) != SUCCESS) {
         errno = ENOMEM;
-        return (FAILURE);
+        return NULL;
     }
 
-    *value = pthread_getspecific(key);
-    if (value == NULL) {
-        errno = EINVAL;
-        return (FAILURE);
-    }
-
-    return (SUCCESS);
+    return pthread_getspecific(key);
 }
 
 /*
@@ -1332,7 +1333,9 @@ pthd4_mutexattr_setkind_np(pthread_mutexattr_t *mutex_attr, int kind)
  *  int pthread_mutexattr_getkind_np(pthread_mutexattr_t*); FIXME
  */
  
+#ifndef HAVE_OS_WIN32
 int pthread_mutexattr_getkind_np (const pthread_mutexattr_t*, int*);
+#endif
 int
 pthd4_mutexattr_getkind_np(pthread_mutexattr_t mutex_attr)
 {
@@ -1621,6 +1624,7 @@ pthd4_self(void)
     return (pthread_self());
 }
 
+#ifndef HAVE_OS_WIN32
 /****************************************************************************
  * pthd4 pthread_delay_np()
  *
@@ -1663,6 +1667,31 @@ pthd4_delay_np(struct timespec *delay)
       return (FAILURE);
     }
 }
+#endif
+
+#ifdef HAVE_OS_WIN32
+#include <windows.h>
+#include <time.h>
+
+static int win32_gettimeofday(struct timeval *tp, void *unused) {
+  SYSTEMTIME syst;
+  time_t tlocal;
+  struct tm tmlocal;
+  unused = 0;
+  GetLocalTime(&syst);
+  tmlocal.tm_sec = syst.wSecond;
+  tmlocal.tm_min = syst.wMinute;
+  tmlocal.tm_hour = syst.wHour;
+  tmlocal.tm_mday = syst.wDay;
+  tmlocal.tm_mon = syst.wMonth - 1;
+  tmlocal.tm_year = syst.wYear - 1900;
+  tmlocal.tm_isdst = -1;
+  tlocal = mktime (&tmlocal); /* convert to UTC */
+  tp->tv_sec = tlocal;
+  tp->tv_usec = syst.wMilliseconds * 1000;
+  return 1;
+}
+#endif
 
 /****************************************************************************
  * pthd4 pthread_getexpiration_np()
@@ -1682,26 +1711,30 @@ pthd4_delay_np(struct timespec *delay)
  *   return:  0 - successful
  *           -1/EINVAL - invalid delta
  */
-int 
+int
 pthd4_get_expiration_np(struct timespec *delta, struct timespec *abstime)
 {
     struct timeval _now;
     struct timespec now;
-    
+
+#ifdef HAVE_OS_WIN32
+    win32_gettimeofday(&_now, NULL);
+#else
     gettimeofday(&_now, NULL);
-    
+#endif
+
     now.tv_sec = _now.tv_sec;
     now.tv_nsec = _now.tv_usec * 1000;      /* microseconds -> nanoseconds */
-    
+
     abstime->tv_sec = delta->tv_sec + now.tv_sec;
     abstime->tv_nsec = delta->tv_nsec + now.tv_nsec;
-    
+
     /* adjust overflow nsecs to secs */
-    
+
     abstime->tv_sec += abstime->tv_nsec / NANOSECS_PER_SEC;
     abstime->tv_nsec = abstime->tv_nsec % NANOSECS_PER_SEC;
-    
-    return (SUCCESS);
+
+    return 0;
 }
 
 /****************************************************************************
@@ -1716,14 +1749,14 @@ pthd4_get_expiration_np(struct timespec *delta, struct timespec *abstime)
  * It is a portability hazard.
  * 
  ****************************************************************************/
-
+#ifndef HAVE_OS_WIN32
 int
 pthd4_getunique_np(pthread_t *thread __attribute__((__unused__)))
 {
 	return pthread_self();
     /* return getpid(); */
 }
-
+#endif
 /****************************************************************************
  * pthd4 pthread_lock_global_np()
  *       pthread_unlock_global_np()
@@ -1748,7 +1781,7 @@ pthd4_getunique_np(pthread_t *thread __attribute__((__unused__)))
  ****************************************************************************/
 
 
-			
+#ifndef HAVE_OS_WIN32
 /*
  * atfork:
  *  return: nothing
@@ -1774,6 +1807,7 @@ pthd4_atfork(void *userstate,
 		abort();
 	}
 }
+#endif
 
 /*
  * pthread_lock_global_np:
@@ -1820,7 +1854,7 @@ pthd4_is_multithreaded_np(void)
  *
  *
  ****************************************************************************/
-
+#ifndef HAVE_OS_WIN32
 /*
  * pthread_signal_to_cancel_np:
  *   return:  0 - successful
@@ -1885,7 +1919,7 @@ pthd4__cancel_thread(void)
         pthread_cancel(pthd4__g_handle_target);
     }
 }
-
+#endif
             
 int
 linuxdce_set_pthread_is_multithreaded(int new)

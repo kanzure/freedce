@@ -201,7 +201,7 @@
 #undef pthread_yield 
 #undef pthread_once  
 #undef pthread_delay_np 
-#undef pthread_keycreate
+#undef pthread_key_create
 #undef pthread_setcancel
 #undef pthread_setasynccancel
 #undef pthread_cancel      
@@ -227,7 +227,7 @@
 #define pthread_yield                  (pthd4exc_yield)
 #define pthread_once                   (pthd4exc_once)
 #define pthread_delay_np               (pthd4exc_delay_np)
-#define pthread_keycreate              (pthd4exc_keycreate)
+#define pthread_key_create              (pthd4exc_key_create)
 #define pthread_keydelete              (pthd4exc_keydelete)
 #define pthread_setcancel              (pthd4exc_setcancel)
 #define pthread_setasynccancel         (pthd4exc_setasynccancel)
@@ -277,7 +277,7 @@
 #undef pthread_cleanup_push_defer
 #undef pthread_cleanup_pop_restore
 #undef pthread_kill
-#undef pthread_key_create
+/*#undef pthread_key_create*/
 #undef pthread_key_delete
 #undef pthread_atfork
 
@@ -304,7 +304,7 @@
 #define pthread_condattr_destroy                 WARNING_CONFLICTING_API_USAGE
 #define pthread_cleanup_push_defer               WARNING_CONFLICTING_API_USAGE
 #define pthread_kill                             WARNING_CONFLICTING_API_USAGE
-#define pthread_key_create                       WARNING_CONFLICTING_API_USAGE
+/*#define pthread_key_create                       WARNING_CONFLICTING_API_USAGE*/
 #define pthread_key_delete                       WARNING_CONFLICTING_API_USAGE
 #define pthread_atfork                           WARNING_CONFLICTING_API_USAGE
 
@@ -375,7 +375,7 @@ pthd4exc_attr_setguardsize_np __P(( pthread_attr_t * attr, long size));
    */
 
 extern int 
-pthd4exc_mutex_init __P(( pthread_mutex_t * mutex, pthread_mutexattr_t attr ));
+pthd4exc_mutex_init __P(( pthread_mutex_t * mutex, pthread_mutexattr_t * attr ));
 
 extern int 
 pthd4exc_mutex_destroy __P(( pthread_mutex_t * mutex ));
@@ -408,7 +408,7 @@ pthd4exc_mutexattr_getkind_np __P(( pthread_mutexattr_t  mutexattr ));
  */
 
 extern int 
-pthd4exc_cond_init __P(( pthread_cond_t * cond, pthread_condattr_t attr ));
+pthd4exc_cond_init __P(( pthread_cond_t * cond, pthread_condattr_t *attr ));
 
 extern int 
 pthd4exc_cond_destroy __P(( pthread_cond_t * cond ));
@@ -454,12 +454,12 @@ pthd4exc_unlock_global_np __P(( void ));
 
 extern int 
 pthd4exc_create __P(( pthread_t * th_h,
-              pthread_attr_t attr,
+              pthread_attr_t *attr,
               pthread_startroutine_t proc,
               pthread_addr_t arg ));
 
 extern int
-pthd4exc_detach __P(( pthread_t * thread ));
+pthd4exc_detach __P(( pthread_t thread ));
 
 extern void
 pthd4exc_exit __P(( pthread_addr_t status ));
@@ -476,8 +476,8 @@ pthd4exc_self __P(( void ));
 extern int 
 pthd4exc_setspecific __P(( pthread_key_t key, pthread_addr_t value ));
 
-extern int 
-pthd4exc_getspecific __P(( pthread_key_t key, pthread_addr_t *value ));
+extern pthread_addr_t
+pthd4exc_getspecific __P(( pthread_key_t key));
 
 extern int 
 pthd4exc_setprio __P(( pthread_t thd, int p));
@@ -504,7 +504,7 @@ extern int
 pthd4exc_delay_np __P(( struct timespec * interval ));
 
 extern int 
-pthd4exc_keycreate __P(( pthread_key_t * key, pthread_destructor_t destructor ));
+pthd4exc_key_create __P(( pthread_key_t * key, pthread_destructor_t destructor ));
 
 extern int
 pthd4exc_setcancel __P(( int state ));
@@ -524,15 +524,19 @@ pthd4exc_get_expiration_np __P(( struct timespec * delta, struct timespec * abst
 extern int 
 pthd4exc_getunique_np __P(( pthread_t * handle));
 
+#ifndef HAVE_OS_WIN32
 extern int
 pthd4exc_signal_to_cancel_np __P(( sigset_t * sig, pthread_t * thd));
+#endif
 
 extern int
 pthd4_is_multithreaded_np __P(( void ));
 
+#ifndef HAVE_OS_WIN32
 extern void
 pthd4exc_atfork __P(( void * userstate, void (*pre_fork)(void*), 
 		 void  (*parent_fork)(void*), void (*child_fork)(void*) ));
+#endif
 
 
 __END_DECLS

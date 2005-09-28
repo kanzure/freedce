@@ -28,11 +28,17 @@
 /* Define to 1 if you have the `pthread' library (-lpthread). */
 #undef HAVE_LIBPTHREAD
 
+/* Define to 1 if you have the `pthreadGC2' library (-lpthreadGC2). */
+#undef HAVE_LIBPTHREADGC2
+
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define, if target is win32 */
+#undef HAVE_OS_WIN32
 
 /* Define to 1 if the system has the type `ssize_t'. */
 #undef HAVE_SSIZE_T
@@ -124,16 +130,10 @@
 #  define _REENTRANT 1
 #endif
 
-#ifndef HAVE_FEATURES_H
-#undef HAVE_FEATURES_H
-#endif
 #ifdef HAVE_FEATURES_H
 #  include <features.h>
 #endif
 
-#ifndef HAVE_SYS_CDEFS_H
-#undef HAVE_SYS_CDEFS_H
-#endif
 /*
  * sys/cdefs.h is often included by features.h
  */

@@ -107,7 +107,7 @@
 
 #include "dce/dcethreads_conf.h"
 
-static char rcsid [] __attribute__((__unused__)) = "$Id: exc_handling.c,v 1.2 2005/01/20 12:52:51 lkcl Exp $";
+static char rcsid [] __attribute__((__unused__)) = "$Id: exc_handling.c,v 1.3 2005/09/28 22:31:10 lkcl Exp $";
 
 #include "dce/exc_handling.h"
 
@@ -205,7 +205,12 @@ static pthread_once_t init_once_block = pthread_once_init;
 
 
 /* Prototypes */
-static void sync_signal_handler(int signal, int code);
+static void sync_signal_handler(int signal
+#ifndef HAVE_OS_WIN32
+		                , int code
+#endif
+				);
+
 
 static void setup_sync_signal_handlers(void);
 
@@ -261,13 +266,21 @@ _set_dceexc_syncsignals_default()
    * The following signals are converted to exceptions
    */
 
+#if defined(SIGIOT)
   _dce_exclib_syncsig_catch[SIGIOT] = 1;   /* hardware fault */
+#endif
 #if defined(SIGEMT)
   _dce_exclib_syncsig_catch[SIGEMT] = 1;   /* hardware fault */
 #endif
+#if defined(SIGFPE)
   _dce_exclib_syncsig_catch[SIGFPE] = 1;   /* arithmetic exception */
+#endif
+#if defined(SIGPIPE)
   _dce_exclib_syncsig_catch[SIGPIPE] = 1;  /* write to pipe w no reader */
+#endif
+#if defined(SIGTRAP)
   _dce_exclib_syncsig_catch[SIGTRAP] = 1;  /* hardware fault */
+#endif
 #if defined(SIGSYS)       
   _dce_exclib_syncsig_catch[SIGSYS] = 1;   /* invalid syscall() */
 #endif
@@ -277,11 +290,18 @@ _set_dceexc_syncsignals_default()
    * thread termination with core dump
    */
 
+#if defined(SIGSEGV)       
   _dce_exclib_syncsig_catch[SIGSEGV] = 0;   /* SEG FAULT */
+#endif
+#if defined(SIGBUS)       
   _dce_exclib_syncsig_catch[SIGBUS] = 0;   /* SEG FAULT */
+#endif
+#if defined(SIGILL)       
   _dce_exclib_syncsig_catch[SIGILL] = 0;   /* ILLEGAL INSTRUCTION */
+#endif
 
 }
+
 
 /*
  * S Y N C _ S I G N A L _ H A N D L E R
@@ -309,25 +329,45 @@ _set_dceexc_syncsignals_default()
  */
 
 static void 
-sync_signal_handler(int signal, int code __attribute__((__unused__)))
+sync_signal_handler(int signal
+#ifndef HAVE_OS_WIN32
+		, int code __attribute__((__unused__))
+#endif
+		)
 {
     EXCEPTION *exc;
+#ifndef HAVE_OS_WIN32
     struct sigaction action;
+#endif
 
     switch (signal) {
+#if defined(SIGILL)
         case SIGILL:    exc = &exc_illinstr_e;      break;
+#endif
+#if defined(SIGTRAP)
         case SIGTRAP:   exc = &exc_SIGTRAP_e;       break;
+#endif
+#if defined(SIGIOT)
         case SIGIOT:    exc = &exc_SIGIOT_e;        break;
+#endif        
 #if defined(SIGEMT)       
         case SIGEMT:    exc = &exc_SIGEMT_e;        break;
 #endif        
+#if defined(SIGFPE)
         case SIGFPE:    exc = &exc_aritherr_e;      break;
+#endif
+#if defined(SIGBUS)
         case SIGBUS:    exc = &exc_illaddr_e;       break;
+#endif        
+#if defined(SIGSEGV)
         case SIGSEGV:   exc = &exc_illaddr_e;       break;
+#endif        
 #if defined(SIGSYS)       
         case SIGSYS:    exc = &exc_SIGSYS_e;        break;
 #endif        
+#if defined(SIGPIPE)
         case SIGPIPE:   exc = &exc_SIGPIPE_e;       break;
+#endif
         default:        exc = &exc_unksyncsig_e;    break;
     }
 
@@ -337,6 +377,7 @@ sync_signal_handler(int signal, int code __attribute__((__unused__)))
      * reinstall the signal.
      */
 
+#ifndef HAVE_OS_WIN32 /* oops */
     if (_dce_exclib_syncsig_catch[signal] != 0)
       {
 	sigaction(signal, (struct sigaction *)0, &action);
@@ -344,7 +385,7 @@ sync_signal_handler(int signal, int code __attribute__((__unused__)))
 	  action.sa_handler = (__sighandler_t) sync_signal_handler;
 	sigaction(signal, &action, (struct sigaction *)0);
       }
-
+#endif
     _exc_raise(exc, NULL, 0);
 }
 
@@ -374,6 +415,9 @@ setup_sync_signal_handlers()
      * be better for some implementations.
      */
 
+#ifdef HAVE_OS_WIN32
+#define SIGACTION(_sig) signal(_sig, sync_signal_handler)
+#else
 #define SIGACTION(_sig) \
 { \
     struct sigaction action; \
@@ -382,6 +426,7 @@ setup_sync_signal_handlers()
         action.sa_handler = (__sighandler_t) sync_signal_handler; \
     (void)sigaction((_sig), &action, (struct sigaction *)0); \
 };
+#endif
 
 /*
  *  initialize the PER-PROCESS sync signal policy table,
@@ -391,22 +436,36 @@ setup_sync_signal_handlers()
     pthread_once(&_dce_exclib_syncsig_setdefault, 
 		     _set_dceexc_syncsignals_default);
 	
+#if defined(SIGIOT)    
     if (_dce_exclib_syncsig_catch[SIGIOT]) SIGACTION(SIGIOT);
+#endif    
 #if defined(SIGEMT)    
     if (_dce_exclib_syncsig_catch[SIGEMT]) SIGACTION(SIGEMT);
 #endif    
 
 
+#if defined(SIGILL)    
     if (_dce_exclib_syncsig_catch[SIGILL]) SIGACTION(SIGILL);
+#endif    
+#if defined(SIGTRAP)    
     if (_dce_exclib_syncsig_catch[SIGTRAP]) SIGACTION(SIGTRAP);
+#endif    
+#if defined(SIGFPE)    
     if (_dce_exclib_syncsig_catch[SIGFPE]) SIGACTION(SIGFPE);
+#endif    
+#if defined(SIGBUS)    
     if (_dce_exclib_syncsig_catch[SIGBUS]) SIGACTION(SIGBUS);
+#endif    
+#if defined(SIGSEGV)    
     if (_dce_exclib_syncsig_catch[SIGSEGV]) SIGACTION(SIGSEGV);
+#endif    
 
 #if defined(SIGSYS)
     if (_dce_exclib_syncsig_catch[SIGSYS]) SIGACTION(SIGSYS);
 #endif    
+#if defined(SIGPIPE)    
     if (_dce_exclib_syncsig_catch[SIGPIPE]) SIGACTION(SIGPIPE);
+#endif    
 
 #undef SIGACTION
 }
@@ -487,7 +546,7 @@ init_once()
 
     EXCEPTION_INIT(exc_unhandled_exc);
 
-    if (pthd4_keycreate(&_exc_key, destroy_exc) != 0) {
+    if (pthd4_key_create(&_exc_key, destroy_exc) != 0) {
 	exc_library_fatal_error(EXC_INT_FAIL_KEYCREATE, "init_once", 0);
     }
 }
@@ -513,10 +572,9 @@ _exc_thread_init(void)
      * current exception buffer (actually the pointer to the head (most recent) 
      * of the exc_buf list), we're done.
      */
-    if (pthd4_getspecific(_exc_key, (void *)&eb) == 0) {
-	if (eb != NULL) {
+    eb = pthd4_getspecific(_exc_key);
+    if (eb != NULL) {
 	    return;
-        }
     }
 
     /*
@@ -556,7 +614,8 @@ _exc_set_current(EXCEPTION *exc)
 {
     _exc_buf *eb;
 
-    if (pthd4_getspecific(_exc_key, (void *)&eb) == -1) {
+    eb = pthd4_getspecific(_exc_key);
+    if (eb == NULL) {
         exc_library_fatal_error(EXC_INT_FAIL_GETKEY, "_exc_set_current", eb);
     }
 
@@ -567,7 +626,7 @@ _exc_set_current(EXCEPTION *exc)
      */
     if (!eb) {
 	    _exc_buf excb;
-	    bzero(&excb, sizeof(excb));
+	    memset(&excb, 0, sizeof(excb));
 	    excb.current_exc = exc;
 	    eb = &excb;
 	    exc_library_fatal_error(EXC_INT_FAIL_NOTRY, "_exc_set_current", eb);
@@ -607,7 +666,11 @@ _exc_set_current(EXCEPTION *exc)
       }
     else
       {
-	siglongjmp(eb->jb, 1);
+#ifdef HAVE_OS_WIN32
+        longjmp(eb->jb, 1);
+#else
+        siglongjmp(eb->jb, 1);
+#endif
       }
 }
 
@@ -745,7 +808,9 @@ exc_library_fatal_error(int failure_reason,
       * Terminate all threads in the process, then exit with 255 
       */
 
+#ifndef HAVE_OS_WIN32
      pthread_kill_other_threads_np();
+#endif
      /* raise(SIGABRT); */
      exit(255);
 }

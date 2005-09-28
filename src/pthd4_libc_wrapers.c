@@ -58,9 +58,14 @@
 
 #include "dce/dcethreads_conf.h"
 
-static char rcsid [] __attribute__((__unused__)) = "$Id: pthd4_libc_wrapers.c,v 1.2 2005/01/20 12:52:51 lkcl Exp $";
+static char rcsid [] __attribute__((__unused__)) = "$Id: pthd4_libc_wrapers.c,v 1.3 2005/09/28 22:31:10 lkcl Exp $";
 
-#include </usr/include/pthread.h>
+#ifdef HAVE_OS_WIN32
+#include </usr/i586-mingw32msvc/include/pthread.h>    /* Import platform win32 threads*/
+#else
+#include </usr/include/pthread.h>          /* Import platform LinuxThreads */
+#endif
+
 #include "pthread_dce_atfork.h"
 
 #include <sys/types.h>

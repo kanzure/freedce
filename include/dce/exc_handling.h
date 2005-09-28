@@ -104,7 +104,11 @@
 #  include "dcethreads_conf.h"
 #endif
 
+#ifdef HAVE_OS_WIN32
+#include </usr/i586-mingw32msvc/include/pthread.h>    /* Import platform win32 threads*/
+#else
 #include </usr/include/pthread.h>          /* Import platform LinuxThreads */
+#endif
 #include "pthread_dce_common.h"
 #include "pthread_dce.h"
 
@@ -220,7 +224,7 @@
 #undef pthread_yield 
 #undef pthread_once  
 #undef pthread_delay_np 
-#undef pthread_keycreate
+#undef pthread_key_create
 #undef pthread_setcancel
 #undef pthread_setasynccancel
 #undef pthread_cancel      
@@ -246,7 +250,7 @@
 #define pthread_yield                  WARNING_CONFLICTING_API_USAGE
 #define pthread_once                   WARNING_CONFLICTING_API_USAGE
 #define pthread_delay_np               WARNING_CONFLICTING_API_USAGE
-#define pthread_keycreate              WARNING_CONFLICTING_API_USAGE
+#define pthread_key_create              WARNING_CONFLICTING_API_USAGE
 #define pthread_setcancel              WARNING_CONFLICTING_API_USAGE
 #define pthread_setasynccancel         WARNING_CONFLICTING_API_USAGE
 #define pthread_cancel                 WARNING_CONFLICTING_API_USAGE
@@ -297,7 +301,7 @@
 #undef pthread_cleanup_push_defer
 #undef pthread_cleanup_pop_restore
 #undef pthread_kill
-#undef pthread_key_create
+/*#undef pthread_key_create*/
 #undef pthread_key_delete
 
 #define pthread_attr_init                        WARNING_CONFLICTING_API_USAGE
@@ -406,8 +410,10 @@ extern int _dce_exclib_syncsig_catch[];
 typedef struct _exc_buf
 {
     jmp_buf             jb;             /* Jump buffer */
+#ifndef HAVE_OS_WIN32
     struct _pthread_cleanup_buffer*
                         cancel_buf;     /* thread cancel handler buffer */
+#endif
     EXCEPTION           *current_exc;   /* Current exception */
     struct _exc_buf     *next;          /* Next state block */
 } _exc_buf;
@@ -571,15 +577,18 @@ _exc_push_buf(_exc_buf * buf)
 {
 
     void *__head;
-    if ((pthd4_getspecific(_exc_key, &__head)) == -1) {
+    __head = pthd4_getspecific(_exc_key);
+    if (__head == NULL) {
       // XXX Something went seriously wrong
 	pthread_cancel(pthread_self()); pthread_testcancel();
     }
     (buf)->next = (_exc_buf *)__head;
     __head = (buf);
     pthd4_setspecific(_exc_key, __head);
+#ifndef HAVE_OS_WIN32 /* no idea what do do - heck, comment it out :) */
     _pthread_cleanup_push_defer (buf->cancel_buf, 
 				 _exc_cancel_catcher, NULL);
+#endif
 }
 
 
@@ -587,14 +596,17 @@ static inline void
 _exc_pop_buf(_exc_buf * buf)
 {
     void *__head; 
-    if ((pthd4_getspecific(_exc_key, (void **)&__head)) == -1) { 
+    __head = pthd4_getspecific(_exc_key);
+    if (__head == NULL) {
       // XXX Something went seriously wrong
 	pthread_cancel(pthread_self()); pthread_testcancel();
     }
     (buf) = (_exc_buf *)__head;
     __head = buf->next;
     pthd4_setspecific(_exc_key, (void *)__head);
+#ifndef HAVE_OS_WIN32 /* no idea what do do - heck, comment it out :) */
     _pthread_cleanup_pop_restore (buf->cancel_buf, 0); 
+#endif
 }
        
 /* --------------------------------------------------------------------------- */
@@ -624,18 +636,54 @@ _exc_pop_buf(_exc_buf * buf)
  * T R Y
  *
  */
-    
+
+#ifdef HAVE_OS_WIN32
+#define _exc_longjmp(jmpbuf, val) longjmp((jmpbuf)->jb, (val))
+#define _exc_setjmp(jmpbuf) setjmp(jmpbuf)
+#else
 #define _exc_longjmp(jmpbuf, val) siglongjmp((jmpbuf)->jb, (val))
 #define _exc_setjmp(jmpbuf) sigsetjmp((jmpbuf), 1)
+#endif
 #define disable_async_events()
 #define enable_async_events()
+
+#ifdef HAVE_OS_WIN32
+#define TRY \
+do \
+{ \
+    _exc_buf *_eb = NULL; \
+    EXCEPTION *_exc_cur = NULL; \
+    volatile char _exc_cur_handled = 0; \
+    volatile char _exc_in_finally = 0; \
+    volatile int _setjmp_res = 0; \
+    _exc_cur = *&_exc_cur; \
+    _exc_thread_init(); \
+    _exc_alloc_buf(&_eb); \
+    _exc_push_buf(_eb); \
+    _setjmp_res = _exc_setjmp(_eb->jb); \
+    if (_setjmp_res != 0) \
+    { \
+        /* we land here from a RAISE */ \
+        _exc_pop_buf(_eb); \
+        _exc_cur = _eb->current_exc; \
+        if (_exc_in_finally) \
+            _exc_reraise(_exc_cur); \
+    } \
+    else { \
+             /* we land here from as TRY continues through */ \
+        pthread_setspecific(_exc_key, (void *)_eb); \
+    } \
+    if (_setjmp_res == 0) \
+    { \
+        /* normal code here  */
+#else
 
 #define TRY \
 do \
 { \
     struct _pthread_cleanup_buffer _cb; \
     _exc_buf *_eb; \
-    EXCEPTION *_exc_cur; \
+    EXCEPTION *_exc_cur = NULL; \
     volatile char _exc_cur_handled = 0; \
     volatile char _exc_in_finally = 0; \
     volatile int _setjmp_res; \
@@ -660,6 +708,8 @@ do \
     if (_setjmp_res == 0) \
     { \
         /* normal code here  */
+
+#endif
 
 /* --------------------------------------------------------------------------- */
 

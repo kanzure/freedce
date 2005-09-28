@@ -45,7 +45,7 @@ int main()
 	TRY
 	{
 		pthd4exc_create(&worker, 
-				pthread_attr_default, 
+				&pthread_attr_default, 
 				(pthread_startroutine_t)worker_thd_routine, 
 				(pthread_addr_t)NULL);
 	}

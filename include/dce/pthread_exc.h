@@ -53,7 +53,11 @@
 #endif
 
 
-#include </usr/include/pthread.h>       /* Import platform LinuxThreads */
+#ifdef HAVE_OS_WIN32
+#include </usr/i586-mingw32msvc/include/pthread.h>    /* Import platform win32 threads*/
+#else
+#include </usr/include/pthread.h>          /* Import platform LinuxThreads */
+#endif
 
 
 /* Enable Draft 4 POSIX Threads API compatibility */

@@ -76,21 +76,28 @@
 #include "dce/dcethreads_conf.h"
 
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.3 2005/01/20 12:52:51 lkcl Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.4 2005/09/28 22:31:10 lkcl Exp $";
 #endif
 
 /*
  * Exceptions returning interfaces
  */
 
-#include </usr/include/pthread.h>
+#ifdef HAVE_OS_WIN32
+#include </usr/i586-mingw32msvc/include/pthread.h>    /* Import platform win32 threads*/
+#else
+#include </usr/include/pthread.h>          /* Import platform LinuxThreads */
+#endif
+
 
 #define _DCE_PTHREADS_COMPAT_MACROS_
 #include "dce/pthread_dce_common.h"   /* Import common D4/D7 overlays */
 #include "dce/pthread_dce_exc.h"      /* Import DCE Threads */
 #include "dce/pthread_dce.h"
 #include "dce/exc_handling.h"
+#ifndef HAVE_OS_WIN32
 #include "pthread_dce_atfork.h"
+#endif
 
 #include <stdio.h>
 #include <errno.h>
@@ -219,7 +226,7 @@ pthd4exc_attr_getstacksize( pthread_attr_t attr)
 
 int
 pthd4exc_create( pthread_t *th_h,
-              pthread_attr_t attr,
+              pthread_attr_t *attr,
               pthread_startroutine_t proc,
               pthread_addr_t arg )
 {
@@ -240,7 +247,7 @@ pthd4exc_create( pthread_t *th_h,
 /****/
 
 int 
-pthd4exc_detach( pthread_t *thread )
+pthd4exc_detach( pthread_t thread )
 {
   int e;
   if ( pthread_once( &pthd4exc_is_initialized, pthd4exc_lib_init ) != SUCCESS )
@@ -333,7 +340,7 @@ pthd4exc_mutexattr_delete ( pthread_mutexattr_t *attr)
 }
 
 int 
-pthd4exc_mutex_init( pthread_mutex_t * mutex, pthread_mutexattr_t attr )
+pthd4exc_mutex_init( pthread_mutex_t * mutex, pthread_mutexattr_t *attr )
 {
   int e;
   if ( pthread_once( &pthd4exc_is_initialized, pthd4exc_lib_init ) != SUCCESS )
@@ -446,7 +453,7 @@ pthd4exc_condattr_delete ( pthread_condattr_t *attr)
 
 
 int 
-pthd4exc_cond_init( pthread_cond_t *cond, pthread_condattr_t attr )
+pthd4exc_cond_init( pthread_cond_t *cond, pthread_condattr_t *attr )
 {
   int e;
   if ( pthread_once( &pthd4exc_is_initialized, pthd4exc_lib_init ) != SUCCESS )
@@ -561,13 +568,13 @@ pthd4exc_once( pthread_once_t *once_block, void (*init_routine)(void) )
 }
 
 int 
-pthd4exc_keycreate( pthread_key_t *key, pthread_destructor_t destructor )
+pthd4exc_key_create( pthread_key_t *key, pthread_destructor_t destructor )
 {
   int e;
   if ( pthread_once( &pthd4exc_is_initialized, pthd4exc_lib_init ) != SUCCESS )
                 RAISE(pthread_use_error_e);
   
-  e = pthd4_keycreate( key, destructor);
+  e = pthd4_key_create( key, destructor);
   if (e != SUCCESS) 
     {
       pthd4_map_errno_to_exc(errno);
@@ -590,19 +597,13 @@ pthd4exc_setspecific( pthread_key_t key, pthread_addr_t value )
   return e;
 }
 
-int 
-pthd4exc_getspecific( pthread_key_t key, pthread_addr_t *value )
+pthread_addr_t 
+pthd4exc_getspecific( pthread_key_t key)
 {
-  int e;
   if ( pthread_once( &pthd4exc_is_initialized, pthd4exc_lib_init ) != SUCCESS )
                 RAISE(pthread_use_error_e);
   
-  e = pthd4_getspecific(key, value);
-  if (e != SUCCESS) 
-    {
-      pthd4_map_errno_to_exc(errno);
-    }
-  return e;
+  return pthd4_getspecific(key);
 }
 
 int 
@@ -929,6 +930,7 @@ pthd4exc_self( void )
   return pthd4_self();
 }
 
+#ifndef HAVE_OS_WIN32
 int
 pthd4exc_delay_np(struct timespec * delay)
 {
@@ -943,7 +945,7 @@ pthd4exc_delay_np(struct timespec * delay)
     }
   return e;
 }
-
+#endif
 
 int 
 pthd4exc_get_expiration_np(struct timespec * delta, struct timespec * abstime)
@@ -960,6 +962,7 @@ pthd4exc_get_expiration_np(struct timespec * delta, struct timespec * abstime)
   return e;
 }
 
+#ifndef HAVE_OS_WIN32
 int
 pthd4exc_getunique_np(pthread_t * thread)
 {
@@ -1004,6 +1007,7 @@ pthd4exc_atfork(void *userstate,
 	if (res != SUCCESS)
 		pthd4_map_errno_to_exc(res);
 }
+#endif
 
 void
 pthd4exc_lock_global_np(void)

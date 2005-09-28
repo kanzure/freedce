@@ -47,7 +47,7 @@ global:
 	pthd4_is_multithreaded_np;
 	pthd4_is_multithreaded_np;
 	pthd4_join;
-	pthd4_keycreate;
+	pthd4_key_create;
 	pthd4_lock_global_np;
 	pthd4_mutex_destroy;
 	pthd4_mutex_init;
@@ -104,7 +104,7 @@ global:
 	pthd4exc_getspecific;
 	pthd4exc_getunique_np;
 	pthd4exc_join;
-	pthd4exc_keycreate;
+	pthd4exc_key_create;
 	pthd4exc_lock_global_np;
 	pthd4exc_mutex_destroy;
 	pthd4exc_mutex_init;
