@@ -1035,11 +1035,11 @@ struct timeval *tmo;
     FD_SET ((unsigned int)sock, &write_fds);
     nfds = sock + 1;
                   
-	 pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+    cs = sys_pthread_setcancel(CANCEL_ON);
 
     num_found = select(nfds, NULL, (void *)&write_fds, NULL, tmo);
 
-    pthread_setcancelstate(cs, NULL);
+    cs = sys_pthread_setcancel(cs);
 
     if (num_found < 0)
     {

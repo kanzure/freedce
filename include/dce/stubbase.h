@@ -636,30 +636,20 @@ typedef ndr_ulong_int rpc_op_t;
 
 #ifdef STUBS_USE_PTHREADS
 
-#ifdef ENABLE_PTHREADS
-#define RPC_SS_THREADS_INIT \
-	pthread_once(&dcethreads_exc_defaults_initialized, dcethreads_exc_lib_init);
-#else
 #define RPC_SS_THREADS_INIT
-#endif
 
 #define RPC_SS_THREADS_ONCE_T pthread_once_t
 
 #define RPC_SS_THREADS_ONCE_INIT pthread_once_init
 
-#define RPC_SS_THREADS_ONCE(once_block_addr,init_routine) pthread_once( \
+#define RPC_SS_THREADS_ONCE(once_block_addr,init_routine) sys_pthread_once( \
     once_block_addr,(pthread_initroutine_t)init_routine)
 
 
 #define RPC_SS_THREADS_MUTEX_T pthread_mutex_t
 
-#ifdef ENABLE_PTHREADS
 #define RPC_SS_THREADS_MUTEX_CREATE(mutex_addr) pthread_mutex_init( \
-    mutex_addr, &pthread_mutexattr_default )
-#else
-#define RPC_SS_THREADS_MUTEX_CREATE(mutex_addr) pthread_mutex_init( \
-    mutex_addr, pthread_mutexattr_default )
-#endif
+    mutex_addr, &sys_pthread_mutexattr_default )
 
 #define RPC_SS_THREADS_MUTEX_LOCK(mutex_addr) pthread_mutex_lock(mutex_addr)
 
@@ -671,59 +661,43 @@ typedef void *rpc_ss_threads_dest_arg_t;
 
 #define RPC_SS_THREADS_KEY_T pthread_key_t
 
-#ifdef ENABLE_PTHREADS
-#define RPC_SS_THREADS_KEY_CREATE(key_addr,destructor) pthread_key_create( \
+#define RPC_SS_THREADS_KEY_CREATE(key_addr,destructor) sys_pthread_key_create( \
     (key_addr),(destructor))
-#else
-#define RPC_SS_THREADS_KEY_CREATE(key_addr,destructor) pthread_keycreate( \
-    (key_addr),(destructor))
-#endif
 
-#define RPC_SS_THREADS_KEY_SET_CONTEXT(key,value) pthread_setspecific( \
+#define RPC_SS_THREADS_KEY_SET_CONTEXT(key,value) sys_pthread_setspecific( \
     (key),(pthread_addr_t)(value))
 
-#ifdef ENABLE_PTHREADS
 #define RPC_SS_THREADS_KEY_GET_CONTEXT(key,value_addr) \
-	(*value_addr) = (void*)pthread_getspecific( key)
-#else
-#define RPC_SS_THREADS_KEY_GET_CONTEXT(key,value_addr) pthread_getspecific( \
-    key,(pthread_addr_t*)(value_addr))
-#endif
+	(*value_addr) = (void*)sys_pthread_getspecific( key)
 
 #define RPC_SS_THREADS_CONDITION_T pthread_cond_t
 
-#ifdef ENABLE_PTHREADS
-#define RPC_SS_THREADS_CONDITION_CREATE(condition_addr) pthread_cond_init( \
-    condition_addr,&pthread_condattr_default)
-#else
-#define RPC_SS_THREADS_CONDITION_CREATE(condition_addr) pthread_cond_init( \
-    condition_addr,pthread_condattr_default)
-#endif
-#define RPC_SS_THREADS_CONDITION_SIGNAL(condition_addr) pthread_cond_signal( \
+#define RPC_SS_THREADS_CONDITION_CREATE(condition_addr) sys_pthread_cond_init( \
+    condition_addr,&sys_pthread_condattr_default)
+#define RPC_SS_THREADS_CONDITION_SIGNAL(condition_addr) sys_pthread_cond_signal( \
     condition_addr)
 
-#define RPC_SS_THREADS_CONDITION_WAIT(condition_addr,mutex_addr) pthread_cond_wait( \
+#define RPC_SS_THREADS_CONDITION_WAIT(condition_addr,mutex_addr) sys_pthread_cond_wait( \
     condition_addr,mutex_addr)
 
-#define RPC_SS_THREADS_CONDITION_DELETE(condition_addr) pthread_cond_destroy( \
+#define RPC_SS_THREADS_CONDITION_DELETE(condition_addr) sys_pthread_cond_destroy( \
     condition_addr)
 
 #define RPC_SS_THREADS_X_CANCELLED pthread_cancel_e
 
 #define RPC_SS_THREADS_CANCEL_STATE_T int
 
-#define RPC_SS_THREADS_DISABLE_ASYNC(state) state=pthread_setasynccancel(CANCEL_OFF)
-#define RPC_SS_THREADS_RESTORE_ASYNC(state) pthread_setasynccancel(state)
+#define RPC_SS_THREADS_DISABLE_ASYNC(state) state=sys_pthread_setasynccancel(CANCEL_OFF)
+#define RPC_SS_THREADS_RESTORE_ASYNC(state) sys_pthread_setasynccancel(state)
 
 
-#define RPC_SS_THREADS_ENABLE_GENERAL(state) state=pthread_setcancel(CANCEL_ON)
+#define RPC_SS_THREADS_ENABLE_GENERAL(state) state=sys_pthread_setcancel(CANCEL_ON)
 
-#define RPC_SS_THREADS_RESTORE_GENERAL(state) state=pthread_setcancel(state)
+#define RPC_SS_THREADS_RESTORE_GENERAL(state) state=sys_pthread_setcancel(state)
 
 #else
 
-#define RPC_SS_THREADS_INIT cma_init(); \
-	pthread_once(&dcethreads_exc_defaults_initialized, dcethreads_exc_lib_init);
+#define RPC_SS_THREADS_INIT cma_init();
 
 #define RPC_SS_THREADS_ONCE_T cma_t_once
 

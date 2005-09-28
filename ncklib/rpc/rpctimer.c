@@ -91,7 +91,9 @@ INTERNAL void rpc__timer_set_int _DCE_PROTOTYPE_ ((
 
 INTERNAL void timer_loop(void)
 {
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     RPC_TIMER_LOCK(0);
 
@@ -190,39 +192,35 @@ PRIVATE void rpc__timer_init(void)
     timer_task_running      = true;
     while(!successful) {
         TRY {
-            pthread_create (
+            sys_pthread_create (
                 &timer_task,                            /* new thread    */
-#ifdef ENABLE_PTHREADS
-                &pthread_attr_default,                   /* attributes    */
-#else
-                pthread_attr_default,                   /* attributes    */
-#endif
+                &sys_pthread_attr_default,                   /* attributes    */
                 (pthread_startroutine_t)timer_loop,    /* start routine */
                 NULL);                 /* arguments     */
             successful = true;
          }
          CATCH (pthread_in_use_e) {
-             fprintf(stderr,"pthread_in_use_e after pthread_create timer thread");
+             fprintf(stderr,"pthread_in_use_e after sys_pthread_create timer thread");
              successful=false;
          }
          CATCH (exc_insfmem_e) {
-             fprintf(stderr,"exc_insfmem_e after pthread_create timer thread");
+             fprintf(stderr,"exc_insfmem_e after sys_pthread_create timer thread");
              successful=false;
          }
          CATCH (pthread_use_error_e) {
-             fprintf(stderr,"pthread_use_error_e after pthread_create timer thread");
+             fprintf(stderr,"pthread_use_error_e after sys_pthread_create timer thread");
          }
          CATCH (exc_nopriv_e) {
-             fprintf(stderr,"exc_nopriv_e after pthread_create timer thread");
+             fprintf(stderr,"exc_nopriv_e after sys_pthread_create timer thread");
          }
          CATCH (pthread_unimp_e) {
-             fprintf(stderr,"pthread_unimp_e after pthread_create timer thread");
+             fprintf(stderr,"pthread_unimp_e after sys_pthread_create timer thread");
          }
          CATCH (pthread_badparam_e) {
-             fprintf(stderr,"pthread_badparam_e after pthread_create timer thread");
+             fprintf(stderr,"pthread_badparam_e after sys_pthread_create timer thread");
          }
          CATCH_ALL {
-             fprintf(stderr,"unhandled exception after pthread_create timer thread");
+             fprintf(stderr,"unhandled exception after sys_pthread_create timer thread");
          }
          ENDTRY;
     }
@@ -264,7 +262,7 @@ rpc_fork_stage_id_t stage;
                 rpc__timer_prod(0);
                 RPC_TIMER_UNLOCK(0);
                 TRY  {
-                    pthread_join(timer_task, (void**)&st);
+                    sys_pthread_join(timer_task, (void**)&st);
                 }
                 CATCH(pthread_cancel_e)      {
                 }
@@ -277,7 +275,7 @@ rpc_fork_stage_id_t stage;
                 ENDTRY;
                 RPC_TIMER_LOCK(0);
                 TRY     {
-                    pthread_detach(&timer_task);
+                    sys_pthread_detach(&timer_task);
                 }
                 CATCH(pthread_use_error_e)      {}
                 CATCH(pthread_badparam_e)       {}
@@ -295,35 +293,35 @@ rpc_fork_stage_id_t stage;
                 stop_timer = 0;
                 while (!successful) {
                 TRY {
-                   pthread_create (
+                   sys_pthread_create (
                        &timer_task,                          /* new thread    */
-                       pthread_attr_default,                 /* attributes    */
+                       sys_pthread_attr_default,                 /* attributes    */
                        (pthread_startroutine_t) timer_loop,  /* start routine */
                        NULL);               /* arguments     */
                    successful=true;
                 }
                 CATCH (pthread_in_use_e) {
-                    fprintf(stderr,"pthread_in_use_e after pthread_create timer thread");
+                    fprintf(stderr,"pthread_in_use_e after sys_pthread_create timer thread");
                     successful=false;
                 }
                 CATCH (exc_insfmem_e) {
-                    fprintf(stderr,"exc_insfmem_e after pthread_create timer thread");
+                    fprintf(stderr,"exc_insfmem_e after sys_pthread_create timer thread");
                     successful=false;
                 }
                 CATCH (pthread_use_error_e) {
-                    fprintf(stderr,"pthread_use_error_e after pthread_create timer thread");
+                    fprintf(stderr,"pthread_use_error_e after sys_pthread_create timer thread");
                 }
                 CATCH (exc_nopriv_e) {
-                    fprintf(stderr,"exc_nopriv_e after pthread_create timer thread");
+                    fprintf(stderr,"exc_nopriv_e after sys_pthread_create timer thread");
                 }
                 CATCH (pthread_unimp_e) {
-                    fprintf(stderr,"pthread_unimp_e after pthread_create timer thread");
+                    fprintf(stderr,"pthread_unimp_e after sys_pthread_create timer thread");
                 }
                 CATCH (pthread_badparam_e) {
-                    fprintf(stderr,"pthread_badparam_e after pthread_create timer thread");
+                    fprintf(stderr,"pthread_badparam_e after sys_pthread_create timer thread");
                 }
                 CATCH_ALL {
-                    fprintf(stderr,"unhandled exception after pthread_create timer thread");
+                    fprintf(stderr,"unhandled exception after sys_pthread_create timer thread");
                 }
                 ENDTRY;
                 }

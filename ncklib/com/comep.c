@@ -419,7 +419,7 @@ unsigned32                  *status;
                 (*ept_v3_0_c_epv.ept_insert)
                     (ep_binding, 1L, ept_entry, replace, status);
                 if (*status == rpc_s_call_cancelled)
-                    pthread_cancel(pthread_self());
+                    sys_pthread_cancel(sys_pthread_self());
             }
             else
             {
@@ -429,7 +429,7 @@ unsigned32                  *status;
                     (*ept_v3_0_c_epv.ept_insert)
                         (ep_binding, 1L, ept_entry, replace, status);
                     if (*status == rpc_s_call_cancelled)
-                        pthread_cancel(pthread_self());
+                        sys_pthread_cancel(sys_pthread_self());
                     if (*status != rpc_s_ok)
                         break;
                 }         
@@ -737,7 +737,7 @@ unsigned32                  *status;
                 ept_entry->object = uuid_g_nil_uuid;
                 (*ept_v3_0_c_epv.ept_delete)(ep_binding, 1L, ept_entry, &st);
                 if (st == rpc_s_call_cancelled)
-                    pthread_cancel(pthread_self());
+                    sys_pthread_cancel(sys_pthread_self());
             }
             else
             {
@@ -748,7 +748,7 @@ unsigned32                  *status;
                     if (st != rpc_s_ok)
                     {
                         if (*status == rpc_s_call_cancelled)
-                            pthread_cancel(pthread_self());
+                            sys_pthread_cancel(sys_pthread_self());
                         if (lstatus == rpc_s_ok)
                             lstatus = st;
 
@@ -1083,7 +1083,7 @@ unsigned32                *status;
                 if (*status == ept_s_not_registered)
                     *status = rpc_s_no_more_elements;
                 if (*status == rpc_s_call_cancelled)
-                    pthread_cancel(pthread_self());
+                    sys_pthread_cancel(sys_pthread_self());
                 return;
             }
             chp->next_ent = 0;
@@ -1247,7 +1247,7 @@ unsigned32              *status;
     if (chp->entry_handle != NULL)
         (*ept_v3_0_c_epv.ept_lookup_handle_free)(chp->ep_binding, &chp->entry_handle, status);
     if (*status == rpc_s_call_cancelled)
-        pthread_cancel(pthread_self());
+        sys_pthread_cancel(sys_pthread_self());
 
     rpc_binding_free(&chp->ep_binding, status);
 
@@ -1401,7 +1401,7 @@ unsigned32              *status;
         (ep_binding, object_speced, objp, tower, status);
 
     if (*status == rpc_s_call_cancelled)
-        pthread_cancel(pthread_self());
+        sys_pthread_cancel(sys_pthread_self());
 
     rpc__tower_free(&tower, &tmp_st);
     rpc__tower_ref_vec_free(&tower_vec, &tmp_st);
@@ -2190,7 +2190,7 @@ unsigned32              *st;
                      &temp_status);
                     
                     if (temp_status == rpc_s_call_cancelled)
-                        pthread_cancel(pthread_self());
+                        sys_pthread_cancel(sys_pthread_self());
 
                     /*
                      * We'll ignore any problem in trying to free the handle

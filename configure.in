@@ -35,9 +35,13 @@ if test "x$have_win32" = "x1"; then
 	LIBS="$LIBS -lntdll -lws2_32 -liphlpapi";
 	WIN32_PROG_PREFIX=".exe"
 	AC_SUBST(WIN32_PROG_PREFIX)
-	NON_CANCELLABLE_IO="1"
-	AC_SUBST(NON_CANCELLABLE_IO)
 fi
+
+dnl NON_CANCELLABLE_IO="1"
+dnl AC_SUBST(NON_CANCELLABLE_IO)
+
+NON_CANCELLABLE_IO_SELECT="1"
+AC_SUBST(NON_CANCELLABLE_IO_SELECT)
 
 # show the user what we do
 echo "########################################"
@@ -80,7 +84,7 @@ dnl AC_CHECK_HEADERS(windows.h)
 dnl Checks for libraries.
 if test "x$have_win32" = "x1"; then
 AC_CHECK_LIB(pthreadGC2, pthread_create)
-ENABLE_PTHREADS="1"
+dnl ENABLE_PTHREADS="yes"
 else
 AC_CHECK_LIB(pthread, pthread_create)
 fi
@@ -90,18 +94,25 @@ SAMBA_TNG_DIRS="/usr/local/samba"
 AC_ARG_WITH(dcethreads-dir, [  --with-samba-tng-dir   Specify where you have installed Samba (The Next Generation)],
 [SAMBA_TNG_DIRS="$withval $SAMBA_TNG_DIRS"])
 
+if test "x$have_win32" = "x1"; then
+THREADS_DIRS="/opt/dce-win32"
+else
 THREADS_DIRS="/opt/dce"
+fi
+
 AC_ARG_WITH(dcethreads-dir, [  --with-dcethreads-dir   Specify where you have installed dcethreads],
 [THREADS_DIRS="$withval $THREADS_DIRS"])
 
 
-if test "x$ENABLE_PTHREADS" != "x1"; then
+echo "enable_pthreads: $ENABLE_PTHREADS"
+
+#if test "x$ENABLE_PTHREADS" == "xyes"; then
 RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, $THREADS_DIRS,,
 AC_MSG_ERROR([freedce requires libdcethreads!]))
-else
-RPC_CHECK_LIBDIR(dcethreads_exc_lib_init, dcethreads, $THREADS_DIRS,,
-AC_MSG_ERROR([freedce requires libdcethreads!]))
-fi
+#else
+#RPC_CHECK_LIBDIR(dcethreads_exc_lib_init, dcethreads, $THREADS_DIRS,,
+#AC_MSG_ERROR([freedce requires libdcethreads!]))
+#fi
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(features.h sys/cdefs.h dlfcn.h)

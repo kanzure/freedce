@@ -51,6 +51,8 @@
 **
 */
 
+#define NON_CANCELLABLE_IO_SELECT
+
 #include <commonp.h>
 #include <com.h>
 #include <comp.h>
@@ -172,7 +174,7 @@ unsigned32              *status;
 
     if (listener_thread_running)
     {
-        pthread_cancel (listener_thread);
+        sys_pthread_cancel (listener_thread);
     }
     else
     {
@@ -180,39 +182,35 @@ unsigned32              *status;
         listener_should_handle_cancels = true;
         while (!successful) {
             TRY {
-                pthread_create (
+                sys_pthread_create (
                     &listener_thread,                   /* new thread    */
-#ifdef ENABLE_PTHREADS
                     &rpc_g_default_pthread_attr,         /* attributes    */
-#else
-                    rpc_g_default_pthread_attr,         /* attributes    */
-#endif
                     (pthread_startroutine_t)lthread,   /* start routine */
                     lstate);           /* arguments     */
                 successful = true;
             }
             CATCH (pthread_in_use_e) {
-                fprintf(stderr,"pthread_in_use_e after pthread_create listener thread");
+                fprintf(stderr,"pthread_in_use_e after sys_pthread_create listener thread");
                 successful=false;
             }
             CATCH (exc_insfmem_e) {
-                fprintf(stderr,"exc_insfmem_e after pthread_create listener thread");
+                fprintf(stderr,"exc_insfmem_e after sys_pthread_create listener thread");
                 successful=false;
             }
             CATCH (pthread_use_error_e) {
-                fprintf(stderr,"pthread_use_error_e after pthread_create listener thread");
+                fprintf(stderr,"pthread_use_error_e after sys_pthread_create listener thread");
             }
             CATCH (exc_nopriv_e) {
-                fprintf(stderr,"exc_nopriv_e after pthread_create listener thread");
+                fprintf(stderr,"exc_nopriv_e after sys_pthread_create listener thread");
             }
             CATCH (pthread_unimp_e) {
-                fprintf(stderr,"pthread_unimp_e after pthread_create listener thread");
+                fprintf(stderr,"pthread_unimp_e after sys_pthread_create listener thread");
             }
             CATCH (pthread_badparam_e) {
-                fprintf(stderr,"pthread_badparam_e after pthread_create listener thread");
+                fprintf(stderr,"pthread_badparam_e after sys_pthread_create listener thread");
             }
             CATCH_ALL {
-                fprintf(stderr,"unhandled exception after pthread_create listener thread");
+                fprintf(stderr,"unhandled exception after sys_pthread_create listener thread");
             }
             ENDTRY;
         }
@@ -272,15 +270,15 @@ unsigned32              *status;
      * thread never uses this reincarnated FD.)
      */
 
-    current_thread = pthread_self();
-    if (pthread_equal (current_thread, listener_thread))
+    current_thread = sys_pthread_self();
+    if (sys_pthread_equal (current_thread, listener_thread))
     {
         copy_listener_state(lstate);
     }
     else 
     {
         lstate->reload_pending = true;
-        pthread_cancel (listener_thread);
+        sys_pthread_cancel (listener_thread);
 
         while (lstate->reload_pending)
         {
@@ -381,7 +379,9 @@ rpc_listener_state_p_t  lstate;
      * appropriately before the cancel is posted.
      */
               
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     while (listener_should_handle_cancels)
     {                                 
@@ -401,7 +401,7 @@ rpc_listener_state_p_t  lstate;
         CATCH(pthread_cancel_e)
         {    
 #ifdef NON_CANCELLABLE_IO_SELECT
-			  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+			  sys_pthread_setasynccancel(CANCEL_OFF);
 #endif   
             RPC_DBG_PRINTF (rpc_e_dbg_general, 2, ("(lthread) Unwound\n"));
         }
@@ -445,16 +445,16 @@ INTERNAL void lthread_loop (void)
              * on a particular implementation, enabling async
              * cancellability should do the trick.
              *
-             * By posix definition pthread_setasynccancel is not a "cancel
+             * By posix definition sys_pthread_setasynccancel is not a "cancel
              * point" because it must return an error status and an errno.
-             * pthread_setasynccancel(CANCEL_ON) will not deliver
+             * sys_pthread_setasynccancel(CANCEL_ON) will not deliver
              * a pending cancel nor will the cancel be delivered asynchronously,
-             * thus the need for pthread_testcancel.
+             * thus the need for sys_pthread_testcancel.
              * 
              */
 #ifdef NON_CANCELLABLE_IO_SELECT
-			  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-	    	  pthread_testcancel();
+	    sys_pthread_setasynccancel(CANCEL_ON);
+	    sys_pthread_testcancel();
 #endif
             RPC_LOG_SELECT_PRE;
 #ifdef HAVE_OS_WIN32
@@ -467,7 +467,7 @@ INTERNAL void lthread_loop (void)
             RPC_LOG_SELECT_POST;
 
 #ifdef NON_CANCELLABLE_IO_SELECT
-			  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+	    sys_pthread_setasynccancel(CANCEL_OFF);
 #endif   
             if (n_found < 0)
             {
@@ -485,7 +485,7 @@ INTERNAL void lthread_loop (void)
                      * to take the cancel that the thread trying to
                      * deactivate the socket sent us.
                      */
-                    pthread_testcancel();
+                    sys_pthread_testcancel();
                 }
                 continue;
             }
@@ -521,7 +521,7 @@ INTERNAL void lthread_loop (void)
                      * the thread trying to deactivate the socket sent
                      * us.
                      */
-                    pthread_testcancel();
+                    sys_pthread_testcancel();
                 }
             }
         }
@@ -560,7 +560,7 @@ rpc_fork_stage_id_t stage;
             {
                 listener_should_handle_cancels = false;
                 TRY {
-                    pthread_cancel(listener_thread);
+                    sys_pthread_cancel(listener_thread);
                 }
                 CATCH (pthread_cancel_e) {
                 }
@@ -573,7 +573,7 @@ rpc_fork_stage_id_t stage;
                 ENDTRY
                 RPC_MUTEX_UNLOCK (lstate->mutex);
                 TRY     {
-                    pthread_join(listener_thread, (void**)&st);
+                    sys_pthread_join(listener_thread, (void**)&st);
                 }
                 CATCH (pthread_cancel_e) {
                 }
@@ -586,7 +586,7 @@ rpc_fork_stage_id_t stage;
                 ENDTRY
                 RPC_MUTEX_LOCK (lstate->mutex);
 					 TRY	{
-						pthread_detach(&listener_thread);
+						sys_pthread_detach(&listener_thread);
 					}
 					 CATCH(pthread_use_error_e)
 					 {}
@@ -607,7 +607,7 @@ rpc_fork_stage_id_t stage;
                 listener_should_handle_cancels = true;
                 while(!successful) {
                     TRY {
-                            pthread_create (
+                            sys_pthread_create (
                                 &listener_thread,                   /* new thread    */
                                 rpc_g_default_pthread_attr,         /* attributes    */
                                 (pthread_startroutine_t)lthread,   /* start routine */
@@ -615,27 +615,27 @@ rpc_fork_stage_id_t stage;
                             successful = true;
                         }
                     CATCH (pthread_in_use_e) {
-                        fprintf(stderr,"pthread_in_use_e after pthread_create listener thread");
+                        fprintf(stderr,"pthread_in_use_e after sys_pthread_create listener thread");
                         successful=false;
                     }
                     CATCH (exc_insfmem_e) {
-                        fprintf(stderr,"exc_insfmem_e after pthread_create listener thread");
+                        fprintf(stderr,"exc_insfmem_e after sys_pthread_create listener thread");
                         successful=false;
                     }
                     CATCH (pthread_use_error_e) {
-                        fprintf(stderr,"pthread_use_error_e after pthread_create listener thread");
+                        fprintf(stderr,"pthread_use_error_e after sys_pthread_create listener thread");
                     }
                     CATCH (exc_nopriv_e) {
-                        fprintf(stderr,"exc_nopriv_e after pthread_create listener thread");
+                        fprintf(stderr,"exc_nopriv_e after sys_pthread_create listener thread");
                     }
                     CATCH (pthread_unimp_e) {
-                        fprintf(stderr,"pthread_unimp_e after pthread_create listener thread");
+                        fprintf(stderr,"pthread_unimp_e after sys_pthread_create listener thread");
                     }
                     CATCH (pthread_badparam_e) {
-                        fprintf(stderr,"pthread_badparam_e after pthread_create listener thread");
+                        fprintf(stderr,"pthread_badparam_e after sys_pthread_create listener thread");
                     }
                     CATCH_ALL {
-                        fprintf(stderr,"unhandled exception after pthread_create listener thread");
+                        fprintf(stderr,"unhandled exception after sys_pthread_create listener thread");
                     }
                     ENDTRY;
                 }

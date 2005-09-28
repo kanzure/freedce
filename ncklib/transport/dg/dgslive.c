@@ -205,15 +205,9 @@ unsigned32 *st;
     if (! monitor_running)
     {
         monitor_running = true;
-#ifdef ENABLE_PTHREADS
-        pthread_create(&monitor_task, &pthread_attr_default, 
+        sys_pthread_create(&monitor_task, &sys_pthread_attr_default, 
             (pthread_startroutine_t) network_monitor_liveness, 
             NULL);  
-#else
-        pthread_create(&monitor_task, pthread_attr_default, 
-            (pthread_startroutine_t) network_monitor_liveness, 
-            NULL);  
-#endif
     }                         
 
     *st = rpc_s_ok;
@@ -306,7 +300,9 @@ INTERNAL void network_monitor_liveness(void)
     unsigned32 i;
     struct timespec next_ts;
 
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1, 
                    ("(network_monitor_liveness) starting up...\n"));
@@ -368,11 +364,7 @@ INTERNAL void network_monitor_liveness(void)
                  * Nothing left to monitor, so terminate the thread.
                  */
                 TRY {
-#ifdef ENABLE_PTHREADS
-                    pthread_detach(monitor_task);
-#else
-                    pthread_detach(&monitor_task);
-#endif
+                    sys_pthread_detach(monitor_task);
                 }
                 CATCH(pthread_use_error_e) {
                 }
@@ -632,7 +624,7 @@ rpc_fork_stage_id_t stage;
             RPC_COND_SIGNAL(monitor_cond, monitor_mutex);
             RPC_MUTEX_UNLOCK(monitor_mutex);
             TRY {
-                pthread_join (monitor_task, (void **) &st);
+                sys_pthread_join (monitor_task, (void **) &st);
             }
             CATCH(pthread_cancel_e) {
             }
@@ -645,7 +637,7 @@ rpc_fork_stage_id_t stage;
             ENDTRY;
             RPC_MUTEX_LOCK(monitor_mutex);
             TRY {
-                pthread_detach(&monitor_task);
+                sys_pthread_detach(&monitor_task);
             }
             CATCH(pthread_use_error_e) {
             }
@@ -667,7 +659,7 @@ rpc_fork_stage_id_t stage;
             monitor_was_running = false;
             monitor_running = true;
             stop_monitor = false;
-            pthread_create(&monitor_task, pthread_attr_default, 
+            sys_pthread_create(&monitor_task, sys_pthread_attr_default, 
                            (pthread_startroutine_t) network_monitor_liveness, 
                            NULL);  
         }

@@ -35,9 +35,13 @@ CLEAN_FILES=dsm.h ep_sstub.o objex_sstub.o
 
 # XXX: manually added in /opt/dce-win32/include (uh-oh) to get
 # round problem of objex_sstub cross-compile...
+if TARGET_OS_WIN32
+STUB_INCS=-I/opt/dce-win32/include
+endif
+
 objex_sstub.o: $(IDL_INCLUDE_DIR)/objex.idl
 	$(IDL) -keep object -no_cpp -v -no_mepv -cepv -client none \
-		-I/opt/dce-win32/include/ \
+		$(STUB_INCS) \
 		-I$(IDL_INCLUDE_DIR)/../ \
 		-cc_cmd "$(CC) -D_BSD $(IDL_CFLAGS) -c" \
 		$(IDL_INCLUDE_DIR)/objex.idl
@@ -45,7 +49,7 @@ objex_sstub.o: $(IDL_INCLUDE_DIR)/objex.idl
 
 ep_sstub.o: $(IDL_INCLUDE_DIR)/ep.idl
 	$(IDL) -keep object -no_cpp -v -no_mepv -cepv -client none \
-		-I/opt/dce-win32/include/ \
+		$(STUB_INCS) \
 		-I$(IDL_INCLUDE_DIR)/../ \
 		-cc_cmd "$(CC) -D_BSD $(IDL_CFLAGS) -c" \
 		$(IDL_INCLUDE_DIR)/ep.idl

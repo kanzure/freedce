@@ -1960,8 +1960,8 @@ pointer_t       sm;
     /*
      * Wake up any threads blocked waiting for receive data.
      */
-    current_thread_id = pthread_self();
-    if (pthread_equal (current_thread_id,
+    current_thread_id = sys_pthread_self();
+    if (sys_pthread_equal (current_thread_id,
                        assoc->cn_ctlblk.cn_rcvr_thread_id))
     {
         RPC_CN_ASSOC_WAKEUP (assoc);
@@ -4665,8 +4665,8 @@ rpc_g_cn_assoc_client_events[assoc->assoc_state.cur_event-RPC_C_CN_STATEBASE],
     /*
      * Wake up any threads blocked waiting for receive data.
      */
-    current_thread_id = pthread_self();
-    if (pthread_equal (current_thread_id,
+    current_thread_id = sys_pthread_self();
+    if (sys_pthread_equal (current_thread_id,
                        assoc->cn_ctlblk.cn_rcvr_thread_id))
     {
         RPC_CN_ASSOC_WAKEUP (assoc);

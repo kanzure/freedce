@@ -708,13 +708,13 @@ void perf_null_slow
   int oc = 0;
   
   if (mode == perf_slow_cpu)
-    oc = pthread_setcancel(CANCEL_OFF);
+    oc = sys_pthread_setcancel(CANCEL_OFF);
 
   print_binding_info ("perf_null_slow", h);
   slow (h, mode, secs);
 
   if (mode == perf_slow_cpu)
-    pthread_setcancel(oc);
+    sys_pthread_setcancel(oc);
 
 }
 
@@ -737,13 +737,13 @@ void perf_null_slow_idem
   int oc =0;
   
   if (mode == perf_slow_cpu)
-    oc = pthread_setcancel(CANCEL_OFF);
+    oc = sys_pthread_setcancel(CANCEL_OFF);
 
   print_binding_info ("perf_null_slow_idem", h);
   slow(h, mode, secs);
 
   if (mode == perf_slow_cpu)
-    pthread_setcancel(oc);
+    sys_pthread_setcancel(oc);
 
 }
 
@@ -830,9 +830,9 @@ void perf_shutdown2
     p = (struct shutdown_info *) malloc (sizeof *p);
     p->secs = secs;
 
-    pthread_create (&thread, pthread_attr_default, 
+    sys_pthread_create (&thread, sys_pthread_attr_default, 
 	shutdown_thread, (void *) p);
-    pthread_detach (&thread);
+    sys_pthread_detach (&thread);
 }
 
 

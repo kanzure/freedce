@@ -1226,20 +1226,20 @@ unsigned32              *st;
 
 #ifdef NON_CANCELLABLE_IO
 	    /*
-             * By posix definition pthread_setasynccancel is not a "cancel
+             * By posix definition sys_pthread_setasynccancel is not a "cancel
              * point" because it must return an error status and an errno.
-             * pthread_setasynccancel(CANCEL_ON) will not deliver
+             * sys_pthread_setasynccancel(CANCEL_ON) will not deliver
              * a pending cancel nor will the cancel be delivered asynchronously,
-             * thus the need for pthread_testcancel.
+             * thus the need for sys_pthread_testcancel.
              * 
 	     */
-                pthread_setasynccancel(CANCEL_ON);
-	        pthread_testcancel();
+                sys_pthread_setasynccancel(CANCEL_ON);
+	        sys_pthread_testcancel();
 #endif
                 serr = rpc__socket_connect (assoc->cn_ctlblk.cn_sock, rpc_addr);
 
 #ifdef NON_CANCELLABLE_IO
-                pthread_setasynccancel(CANCEL_OFF);
+                sys_pthread_setasynccancel(CANCEL_OFF);
 #endif   
                 /*
                  * If we got here, then the connect was not cancelled;
@@ -1251,7 +1251,7 @@ unsigned32              *st;
             CATCH (pthread_cancel_e)
             {
 #ifdef NON_CANCELLABLE_IO
-                pthread_setasynccancel(CANCEL_OFF);
+                sys_pthread_setasynccancel(CANCEL_OFF);
 #endif   
 
                 RPC_CN_LOCK ();
@@ -1445,7 +1445,7 @@ unsigned32              *st;
      */
     if (assoc->cn_ctlblk.cn_state == RPC_C_CN_OPEN)
     {
-        pthread_cancel (assoc->cn_ctlblk.cn_rcvr_thread_id);
+        sys_pthread_cancel (assoc->cn_ctlblk.cn_rcvr_thread_id);
     }
     *st = rpc_s_ok;
 }

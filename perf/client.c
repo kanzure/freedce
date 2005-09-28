@@ -1467,7 +1467,7 @@ static boolean32 cancel_was_pending()
 
     TRY
     {
-        pthread_testcancel();
+        sys_pthread_testcancel();
     }
     CATCH (pthread_cancel_e)
     {
@@ -1503,7 +1503,7 @@ unsigned long           slow_secs;
   printf("    Static Cancel Test 1 (server should NOT detect cancel):\n");
 
   /* make sure general cancellability is on */
-  pthread_setcancel(CANCEL_ON);
+  sys_pthread_setcancel(CANCEL_ON);
 
     TRY
     {
@@ -1512,7 +1512,7 @@ unsigned long           slow_secs;
        * post a cancel to this thread and make a server RPC call
        */
 
-        pthread_cancel(pthread_self());
+        sys_pthread_cancel(sys_pthread_self());
         if (idem)
         {
             perf_null_slow_idem(rh, 2 /* CPU LOOP */, slow_secs);
@@ -1572,7 +1572,7 @@ unsigned long           slow_secs;
 
     TRY
     {
-        pthread_cancel(pthread_self());
+        sys_pthread_cancel(sys_pthread_self());
         if (idem)
         {
             perf_null_slow_idem(rh, 0 /* SLEEP LOOP */, slow_secs);
@@ -1584,7 +1584,7 @@ unsigned long           slow_secs;
         fprintf(stderr, "    *** cancel exception NOT raised!\n");
 
 	pending = cancel_was_pending();
-	oc = pthread_setcancel(CANCEL_OFF);
+	oc = sys_pthread_setcancel(CANCEL_OFF);
 
         if (pending)
             printf("    ... but cancel not lost (was pending)\n");
@@ -1636,7 +1636,7 @@ unsigned long           slow_secs;
 
     TRY
     {
-        pthread_cancel(pthread_self());
+        sys_pthread_cancel(sys_pthread_self());
 
         if (idem)
         {
@@ -1652,7 +1652,7 @@ unsigned long           slow_secs;
         }
 
 	pending = cancel_was_pending();
-	oc = pthread_setcancel(CANCEL_OFF);
+	oc = sys_pthread_setcancel(CANCEL_OFF);
 
 
         fprintf(stderr, "    *** cancel exception NOT raised!\n");
@@ -1815,7 +1815,7 @@ char                *argv[];
         if (delay.tv_sec > 0)
         {
             printf ("        Sleeping for %ld seconds...\n", delay.tv_sec);
-            pthread_delay_np(&delay);
+            sys_pthread_delay_np(&delay);
             printf ("        ...awake\n");
         }
 
@@ -2447,11 +2447,11 @@ char                *argv[];
         info->argv   = argv;
 
         TRY {
-            pthread_create(&tasks[i], pthread_attr_default,
+            sys_pthread_create(&tasks[i], sys_pthread_attr_default,
                 (pthread_startroutine_t) multi_task, (pthread_addr_t) info);
         } CATCH_ALL {
             exc_report(THIS_CATCH);
-            printf("*** pthread_create failed\n");
+            printf("*** sys_pthread_create failed\n");
             exit(1);
         } ENDTRY
     }
@@ -2463,7 +2463,7 @@ char                *argv[];
             for (i = 0; i < n_tasks; i++)
             {
                 void *junk;
-                pthread_join(tasks[i], &junk);
+                sys_pthread_join(tasks[i], &junk);
             }
             done = true;
         } CATCH_ALL {
@@ -2471,7 +2471,7 @@ char                *argv[];
             printf("*** Cancelling threads\n");
             for (i = 0; i < n_tasks; i++)
             {
-                pthread_cancel(tasks[i]);
+                sys_pthread_cancel(tasks[i]);
             }
         } ENDTRY
     }
@@ -2734,7 +2734,7 @@ fork_test_replay:
     if (fork_count != 0 || do_fork != 6)
     {
 #ifdef _POSIX_THREADS
-        pthread_mutex_init(&global_mutex, pthread_mutexattr_default);
+        pthread_mutex_init(&global_mutex, sys_pthread_mutexattr_default);
 
         if (multithread)
         {

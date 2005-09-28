@@ -184,15 +184,9 @@ unsigned32 *st;
     if (! maintain_thread_running)
     {     
         maintain_thread_running = true;
-#ifdef ENABLE_PTHREADS
-        pthread_create(&maintain_task, &pthread_attr_default, 
+        sys_pthread_create(&maintain_task, &sys_pthread_attr_default, 
             (void*)network_maintain_liveness, 
             NULL);  
-#else
-        pthread_create(&maintain_task, pthread_attr_default, 
-            (void*)network_maintain_liveness, 
-            NULL);  
-#endif
     }
 
     RPC_MAINT_UNLOCK();
@@ -272,7 +266,9 @@ INTERNAL void * network_maintain_liveness(void * unused __attribute__((__unused_
     maint_elt_p_t ptr;
     struct timespec next_ts;
 
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1, 
                    ("(network_maintain_liveness) starting up...\n"));
@@ -310,11 +306,7 @@ INTERNAL void * network_maintain_liveness(void * unused __attribute__((__unused_
              */
 			  /* FIXME: MNE */
 	  TRY	{
-#ifdef ENABLE_PTHREADS
-		pthread_detach(maintain_task);
-#else
-		pthread_detach(&maintain_task);
-#endif
+		sys_pthread_detach(maintain_task);
 	  }
 		  CATCH(pthread_badparam_e) {
 	  }
@@ -415,7 +407,7 @@ rpc_fork_stage_id_t stage;
             RPC_COND_SIGNAL(maintain_cond, rpc_g_maint_mutex);
             RPC_MAINT_UNLOCK();
             TRY {
-                pthread_join (maintain_task, (void**) &st);
+                sys_pthread_join (maintain_task, (void**) &st);
             }
             CATCH(pthread_cancel_e) {
             }
@@ -428,7 +420,7 @@ rpc_fork_stage_id_t stage;
             ENDTRY;
             RPC_MAINT_LOCK();
 				TRY	{
-					pthread_detach(&maintain_task);
+					sys_pthread_detach(&maintain_task);
 				}
 				CATCH(pthread_use_error_e)	{
 				}
@@ -445,7 +437,7 @@ rpc_fork_stage_id_t stage;
             maintain_thread_was_running = false;
             maintain_thread_running = true;
             stop_maintain_thread = false;
-            pthread_create(&maintain_task, pthread_attr_default, 
+            sys_pthread_create(&maintain_task, sys_pthread_attr_default, 
                            network_maintain_liveness, 
                            NULL);  
         }

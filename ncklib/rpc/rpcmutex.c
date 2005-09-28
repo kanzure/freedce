@@ -59,7 +59,7 @@
 PRIVATE pthread_t rpc_g_null_thread_handle;
 #define NULL_THREAD rpc_g_null_thread_handle
 
-#define IS_MY_THREAD(t) pthread_equal((t), my_thread)
+#define IS_MY_THREAD(t) sys_pthread_equal((t), my_thread)
 
 /*
  * Some package wide statistics.
@@ -95,7 +95,7 @@ rpc_mutex_p_t mp;
     mp->owner = NULL_THREAD;
     mp->locker_file = "never_locked";
     mp->locker_line = 0;
-    pthread_mutex_init(&mp->m, pthread_mutexattr_default);
+    pthread_mutex_init(&mp->m, sys_pthread_mutexattr_default);
     mutex_stats.init++;
     return(true);
 }
@@ -147,7 +147,7 @@ int line;
     dbg = RPC_DBG(rpc_es_dbg_mutex, 5);
     if (dbg) 
     {
-        my_thread = pthread_self();
+        my_thread = sys_pthread_self();
         if (is_locked && IS_MY_THREAD(mp->owner))
         {
             RPC_DBG_PRINTF(rpc_e_dbg_mutex, 1,
@@ -202,7 +202,7 @@ int line;
     dbg = RPC_DBG(rpc_es_dbg_mutex, 5);
     if (dbg) 
     {
-        my_thread = pthread_self();
+        my_thread = sys_pthread_self();
         if (is_locked && IS_MY_THREAD(mp->owner))
         {
             RPC_DBG_PRINTF(rpc_e_dbg_mutex, 1,
@@ -260,7 +260,7 @@ rpc_mutex_p_t mp;
 		("(rpc__mutex_unlock) not locked\n"));
             return(false);
         }
-        my_thread = pthread_self();
+        my_thread = sys_pthread_self();
         if (!IS_MY_THREAD(mp->owner))
         {
             RPC_DBG_PRINTF(rpc_e_dbg_mutex, 1,
@@ -309,7 +309,7 @@ rpc_mutex_p_t mp;
 		("(rpc__mutex_lock_assert) not locked\n"));
             return(false);
         }
-        my_thread = pthread_self();
+        my_thread = sys_pthread_self();
         if (!IS_MY_THREAD(mp->owner))
         {
             RPC_DBG_PRINTF(rpc_e_dbg_mutex, 1,
@@ -348,7 +348,7 @@ rpc_mutex_p_t mp;
     {
         if (! is_locked)
             return(true);
-        my_thread = pthread_self();
+        my_thread = sys_pthread_self();
         if (IS_MY_THREAD(mp->owner))
         {
             RPC_DBG_PRINTF(rpc_e_dbg_mutex, 1,
@@ -383,7 +383,7 @@ rpc_mutex_p_t mp;
     cp->stats.wait = 0;
     cp->stats.signals = 0;
     cp->mp = mp;
-    pthread_cond_init(&cp->c, pthread_condattr_default);
+    sys_pthread_cond_init(&cp->c, sys_pthread_condattr_default);
     cond_stats.init++;
     return(true);
 }
@@ -407,7 +407,7 @@ rpc_mutex_p_t mp;
 {
     cp->stats.delete++;
     cond_stats.delete++;
-    pthread_cond_destroy(&cp->c);
+    sys_pthread_cond_destroy(&cp->c);
     return(true);
 }
 
@@ -454,12 +454,12 @@ int line;
 		("(rpc__cond_wait) incorrect mutex\n"));
             return(false);
         }
-        my_thread = pthread_self();
+        my_thread = sys_pthread_self();
         mp->owner = NULL_THREAD;
     }
     mp->is_locked = false;
     TRY
-        pthread_cond_wait(&cp->c, &mp->m);
+        sys_pthread_cond_wait(&cp->c, &mp->m);
     CATCH_ALL
         mp->is_locked = true;
         if (dbg)
@@ -525,14 +525,14 @@ int line;
 		("(rpc__cond_wait) incorrect mutex\n"));
             return(false);
         }
-        my_thread = pthread_self();
+        my_thread = sys_pthread_self();
         mp->owner = NULL_THREAD;
     }
     mp->is_locked = false;
     TRY	{
 		 int __istat;
 		 do {
-        __istat = pthread_cond_timedwait(&cp->c, &mp->m, wtime);
+        __istat = sys_pthread_cond_timedwait(&cp->c, &mp->m, wtime);
 		 } while(__istat == EINTR);
 	 }
     CATCH_ALL
@@ -577,7 +577,7 @@ rpc_mutex_p_t mp;
 {
     cp->stats.signals++;
     cond_stats.signals++;
-    pthread_cond_signal(&cp->c);
+    sys_pthread_cond_signal(&cp->c);
     return(true);
 }
 
@@ -603,7 +603,7 @@ rpc_mutex_p_t mp;
 {
     cp->stats.signals++;
     cond_stats.signals++;
-    pthread_cond_broadcast(&cp->c);
+    sys_pthread_cond_broadcast(&cp->c);
     return(true);
 }
 

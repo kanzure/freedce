@@ -1,0 +1,62 @@
+#ifndef _PTHREADS_RENAME_H
+#define _PTHREADS_RENAME_H
+
+#define sys_pthread_equal                  (pthd4_equal)
+#define sys_pthread_create                 (pthd4_create)
+#define sys_pthread_detach                 (pthd4_detach)
+#define sys_pthread_exit                   (pthd4_exit)
+#define sys_pthread_join                   (pthd4_join)
+#define sys_pthread_self                   (pthd4_self)
+#define sys_pthread_setspecific            (pthd4_setspecific)
+#define sys_pthread_getspecific            (pthd4_getspecific)
+#define sys_pthread_setprio                (pthd4_setprio)
+#define sys_pthread_getprio                (pthd4_getprio)
+#define sys_pthread_setscheduler           (pthd4_setscheduler)
+#define sys_pthread_getscheduler           (pthd4_getscheduler)
+#define sys_pthread_yield                  (pthd4_yield)
+#define sys_pthread_once                   (pthd4_once)
+#define sys_pthread_delay_np               (pthd4_delay_np)
+#define sys_pthread_key_create              (pthd4_key_create)
+#define sys_pthread_setcancel              (pthd4_setcancel)
+#define sys_pthread_setasynccancel         (pthd4_setasynccancel)
+#define sys_pthread_cancel                 (pthd4_cancel)
+#define sys_pthread_testcancel             (pthd4_testcancel)
+#define sys_pthread_get_expiration_np      (pthd4_get_expiration_np)
+#define sys_pthread_get_unique_np          (pthd4_getunique_np)
+#define sys_pthread_getunique_np           (pthd4_getunique_np) 
+#define sys_pthread_signal_to_cancel_np    (pthd4_signal_to_cancel_np)
+#define sys_pthread_is_multithreaded_np    (pthd4_is_multithreaded_np)
+
+#define sys_pthread_cond_init              (pthd4_cond_init)
+#define sys_pthread_cond_destroy           (pthd4_cond_destroy)
+#define sys_pthread_cond_signal            (pthd4_cond_signal)
+#define sys_sys_pthread_cond_signal_int_np     (pthd4_cond_signal_int_np)
+#define sys_pthread_cond_broadcast         (pthd4_cond_broadcast)
+#define sys_pthread_cond_wait              (pthd4_cond_wait)
+#define sys_pthread_cond_timedwait         (pthd4_cond_timedwait)
+#define sys_pthread_condattr_create        (pthd4_condattr_create)
+#define sys_pthread_condattr_delete        (pthd4_condattr_delete)
+
+#define sys_pthread_lock_global_np         (pthd4_lock_global_np)
+#define sys_pthread_unlock_global_np       (pthd4_unlock_global_np)
+
+#define sys_pthread_attr_create            (pthd4_attr_create)
+#define sys_pthread_attr_delete            (pthd4_attr_delete )
+#define sys_pthread_attr_setstacksize      (pthd4_attr_setstacksize)
+#define sys_pthread_attr_getstacksize      (pthd4_attr_getstacksize)
+#define sys_pthread_attr_getprio           (pthd4_attr_getprio)
+#define sys_pthread_attr_setprio           (pthd4_attr_setprio)
+#define sys_pthread_attr_getsched          (pthd4_attr_getsched)
+#define sys_pthread_attr_setsched          (pthd4_attr_setsched)
+#define sys_pthread_attr_getinheritedsched (pthd4_attr_getinheritedsched)
+#define sys_pthread_attr_setinheritedsched (pthd4_attr_setinheritedsched)
+#define sys_pthread_attr_getguardsize_np   (pthd4_attr_getguardsize_np)
+#define sys_pthread_attr_setguardsize_np   (pthd4_attr_setguardsize_np)
+
+#define sys_pthread_attr_default          (pthread4_attr_default)
+#define sys_pthread_mutexattr_default     (pthread4_mutexattr_default)
+#define sys_pthread_condattr_default      (pthread4_condattr_default)
+
+
+
+#endif

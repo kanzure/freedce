@@ -57,7 +57,7 @@
 */
 static boolean		rpc_g_codesets_did_read;
 static pthread_mutex_t	rpc_g_codesets_mutex;
-static pthread_once_t	rpc_g_codesets_once_block = pthread_once_init;
+static sys_pthread_once_t	rpc_g_codesets_once_block = sys_pthread_once_init;
 static entry_t		*rpc_g_codesets_list;
 static entry_t		*rpc_g_codesets_effective_ids;
 static entry_t		**rpc_g_codesets_sort_by_priority;
@@ -443,7 +443,7 @@ rpc__codesets_read_registry_file
 
 	if (!rpc_g_codesets_did_read)
 	{
-		pthread_once(&rpc_g_codesets_once_block,
+		sys_pthread_once(&rpc_g_codesets_once_block,
 		(pthread_initroutine_t)rpc__codesets_really_read_file);
 
 		if (rpc_g_codesets_status != rpc_s_ok)

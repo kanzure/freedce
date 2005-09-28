@@ -27,6 +27,8 @@
 extern "C" {
 #endif
 
+#include <dce/pthreads_rename.h>
+
 /*
  * Common definitions for DCE
  * This is a machine specific file that must be ported to each platform.

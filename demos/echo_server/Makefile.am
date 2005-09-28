@@ -32,9 +32,13 @@ echo_client_LDADD=echo_cstub.o $(libs)
 
 echo_server.c: echo.h
 
+if TARGET_OS_WIN32
+IDL_INCS= -I/opt/dce-win32/include/
+endif
+
 # XXX ooo, baad.  major hack.  _must_ write a cross-dceidl for mingw32.
 echo.h echo_sstub.o echo_cstub.o: echo.idl
-	$(IDL)                 -cc_cmd "$(CC) -D_BSD $(IDL_CFLAGS) -c" \
-	                -I/opt/dce-win32/include/ \
+	$(IDL)                 -cc_cmd "$(CC) -D_BSD $(IDL_FLAGS) $(IDL_CFLAGS) -c" \
+		$(IDL_INCS) \
 		$(top_srcdir)/demos/echo_server/echo.idl
 

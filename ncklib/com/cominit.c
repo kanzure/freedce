@@ -137,7 +137,7 @@ INTERNAL void init_getenv_port_restriction _DCE_PROTOTYPE_ ((void));
 **  RPC_VERIFY_INIT() in order to minimize overhead.  Upon return from
 **  this routine, the runtime will be initialized.
 **
-**  Prevent rpc__init() (actually pthread_once() of init_once()) recursive
+**  Prevent rpc__init() (actually sys_pthread_once() of init_once()) recursive
 **  call deadlocks by the thread that is actually performing the
 **  initialization (see init_once()).
 **
@@ -166,9 +166,9 @@ PRIVATE void rpc__init(void)
 
     if (init_in_progress)
     {
-        current_thread = pthread_self();
+        current_thread = sys_pthread_self();
         
-        if (pthread_equal(init_thread, current_thread))
+        if (sys_pthread_equal(init_thread, current_thread))
         {
             /*
              * We're the thread in the middle of initialization (init_once).
@@ -178,7 +178,7 @@ PRIVATE void rpc__init(void)
         }
     }
 
-    pthread_once (&init_once_block, init_once);
+    sys_pthread_once (&init_once_block, init_once);
 }
 
 
@@ -269,7 +269,7 @@ INTERNAL void init_once(void)
 	 * a thread that is executing init_once() to call other runtime
 	 * operations that would normally want to ensure that the runtime
 	 * is initialized prior to executing (which would typically recursively
-	 * call pthread_once for this block and deadlock).
+	 * call sys_pthread_once for this block and deadlock).
 	 * 
 	 * While this capability now allows the initializing thread to not
 	 * deadlock, it also allows it to *potentially* attempt some operation
@@ -281,7 +281,7 @@ INTERNAL void init_once(void)
 	 * the nca_dg initialization processing - the dg init code calls
 	 * rpc_server_register_if.
 	 */
-	init_thread = pthread_self();
+	init_thread = sys_pthread_self();
 	init_in_progress = true;
 	RPC_MUTEX_INIT(rpc_in_fork_mutex);
 
@@ -311,13 +311,8 @@ INTERNAL void init_once(void)
 	/*
 	 * create the per-thread context key
 	 */
-#ifdef ENABLE_PTHREADS
-	pthread_key_create (&rpc_g_thread_context_key, 
+	sys_pthread_key_create (&rpc_g_thread_context_key, 
 			(void (*) _DCE_PROTOTYPE_((pointer_t))) thread_context_destructor);
-#else
-	pthread_keycreate (&rpc_g_thread_context_key, 
-			(void (*) _DCE_PROTOTYPE_((pointer_t))) thread_context_destructor);
-#endif
 
 	/*
 	 * Initialize the timer service.
@@ -625,7 +620,7 @@ INTERNAL void init_once(void)
 	}
 #else
 	TRY 
-		pthread_attr_create(&rpc_g_server_pthread_attr);
+		sys_pthread_attr_create(&rpc_g_server_pthread_attr);
 	CATCH_ALL
 		/*
 		 * rpc_m_call_failed_no_status
@@ -662,7 +657,7 @@ INTERNAL void init_once(void)
 						"pthread_attr_init",
 						errno ));
 		}
-	if (pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
+	if (sys_pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
 				DEFAULT_STACK_SIZE) == -1) 
 	{
 		/*
@@ -674,13 +669,13 @@ INTERNAL void init_once(void)
 					rpc_svc_general,
 					svc_c_sev_fatal | svc_c_action_abort,
 					rpc_m_call_failed_errno,
-					"pthread_attr_setstacksize",
+					"sys_pthread_attr_setstacksize",
 					errno ));
 	}
 
 #else  /* PTHREAD_EXC */
 	TRY 
-		pthread_attr_create(&rpc_g_default_pthread_attr);
+		sys_pthread_attr_create(&rpc_g_default_pthread_attr);
 	CATCH_ALL
 		/*
 		 * rpc_m_call_failed_no_status
@@ -695,7 +690,7 @@ INTERNAL void init_once(void)
 	ENDTRY
 
 		TRY 
-		pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
+		sys_pthread_attr_setstacksize(&rpc_g_default_pthread_attr,
 				DEFAULT_STACK_SIZE);
 	CATCH_ALL
 		/*
@@ -707,7 +702,7 @@ INTERNAL void init_once(void)
 					rpc_svc_general,
 					svc_c_sev_fatal | svc_c_action_abort,
 					rpc_m_call_failed_no_status,
-					"pthread_attr_setstacksize" ));
+					"sys_pthread_attr_setstacksize" ));
 	ENDTRY
 #endif    /* not PTHREAD_EXC */
 
@@ -1653,8 +1648,8 @@ rpc_fork_stage_id_t stage;
          * We want the rpc__init code to run in the new invokation.
          */
         rpc_g_initialized = false;
-        /*b_z_e_r_o((char *)&init_once_block, sizeof(pthread_once_t));*/
-        memset((char *)&init_once_block, 0, sizeof(pthread_once_t));
+        /*b_z_e_r_o((char *)&init_once_block, sizeof(sys_pthread_once_t));*/
+        memset((char *)&init_once_block, 0, sizeof(sys_pthread_once_t));
         
         /*
          * Increment the global fork count.  For more info on the use

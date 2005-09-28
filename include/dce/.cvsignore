@@ -30,3 +30,7 @@ ep.h
 twr.h
 iovector.h
 rpcsts.h
+obase.h
+objex.h
+remact.h
+wtypes.h

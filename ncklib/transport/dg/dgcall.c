@@ -952,9 +952,9 @@ unsigned32 *st;
 
             RPC_DG_CALL_UNLOCK(&ccall->c);
 
-            pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oc);
+            oc = sys_pthread_setcancel(CANCEL_OFF);
             rpc__dg_execute_call((pointer_t) &ccall->cbk_scall->c, false);
-            pthread_setcancelstate(oc, NULL);
+            sys_pthread_setcancel(oc);
 
             RPC_DG_CALL_LOCK(&ccall->c);
         }
@@ -1024,7 +1024,7 @@ rpc_dg_call_p_t call;
 
         call->priv_cond_signal = true;
         TRY {
-            pthread_cancel(call->thread_id);
+            sys_pthread_cancel(call->thread_id);
         }
         CATCH (pthread_cancel_e) {
         }
@@ -1709,7 +1709,7 @@ rpc_dg_call_p_t call;
          *      then we treat this just like the normal scall and
          *          fail the cbk_scall
          *      otherwise, the cancel must have been a result
-         *          of a pthread_cancel() against the original
+         *          of a sys_pthread_cancel() against the original
          *          client and the cancel should treated just like
          *          the normal ccall; forward the cancel to the server
          */
@@ -1750,7 +1750,7 @@ rpc_dg_call_p_t call;
                         ("(rpc__dg_call_local_cancel) cbk_scall can't get ccall lock [%s]\n",
                         rpc__dg_act_seq_string(&scall->c.xq.hdr)));
 
-                    pthread_cancel(pthread_self());
+                    sys_pthread_cancel(sys_pthread_self());
                 }
                 else
                 {

@@ -160,21 +160,12 @@ typedef struct rpc_cond_t
         } \
     }
 #else
-#ifdef ENABLE_PTHREADS
 #  define RPC_MUTEX_INIT(mutex) \
     { \
         RPC_LOG_MUTEX_INIT_NTR; \
-        pthread_mutex_init(&(mutex).m, &pthread_mutexattr_default); \
+        pthread_mutex_init(&(mutex).m, &sys_pthread_mutexattr_default); \
         RPC_LOG_MUTEX_INIT_XIT; \
     }
-#else
-#  define RPC_MUTEX_INIT(mutex) \
-    { \
-        RPC_LOG_MUTEX_INIT_NTR; \
-        pthread_mutex_init(&(mutex).m, pthread_mutexattr_default); \
-        RPC_LOG_MUTEX_INIT_XIT; \
-    }
-#endif /* ENABLE_PTHREADS */
 #endif /* RPC_MUTEX_DEBUG or RPC_MUTEX_STATS */
 
 
@@ -388,21 +379,12 @@ typedef struct rpc_cond_t
         } \
     }
 #else
-#ifdef ENABLE_PTHREADS
 #  define RPC_COND_INIT(cond,mutex) \
     { \
         RPC_LOG_COND_INIT_NTR; \
-        pthread_cond_init(&(cond).c, &pthread_condattr_default); \
+        sys_pthread_cond_init(&(cond).c, &sys_pthread_condattr_default); \
         RPC_LOG_COND_INIT_XIT; \
     }
-#else
-#  define RPC_COND_INIT(cond,mutex) \
-    { \
-        RPC_LOG_COND_INIT_NTR; \
-        pthread_cond_init(&(cond).c, pthread_condattr_default); \
-        RPC_LOG_COND_INIT_XIT; \
-    }
-#endif
 #endif  /* RPC_MUTEX_DEBUG or RPC_MUTEX_STATS */
 
 
@@ -427,14 +409,14 @@ typedef struct rpc_cond_t
 		    "RPC_COND_DELETE/rpc__cond_delete" )); \
             } \
         } else { \
-            pthread_cond_destroy(&(cond).c); \
+            sys_pthread_cond_destroy(&(cond).c); \
         } \
     }
 #else
 #  define RPC_COND_DELETE(cond,mutex) \
     { \
       RPC_LOG_COND_DELETE_NTR; \
-      pthread_cond_destroy(&(cond).c); \
+      sys_pthread_cond_destroy(&(cond).c); \
       RPC_LOG_COND_DELETE_XIT; \
   }
 #endif  /* RPC_MUTEX_DEBUG or RPC_MUTEX_STATS */
@@ -461,14 +443,14 @@ typedef struct rpc_cond_t
 		    "RPC_COND_WAIT/rpc__cond_wait" )); \
             } \
         } else { \
-            pthread_cond_wait(&(cond).c, &(mutex).m); \
+            sys_pthread_cond_wait(&(cond).c, &(mutex).m); \
         } \
     }
 #else
 #  define RPC_COND_WAIT(cond,mutex) \
     { \
         RPC_LOG_COND_WAIT_NTR; \
-        pthread_cond_wait(&(cond).c, &(mutex).m); \
+        sys_pthread_cond_wait(&(cond).c, &(mutex).m); \
         RPC_LOG_COND_WAIT_XIT; \
     }
 #endif
@@ -495,7 +477,7 @@ typedef struct rpc_cond_t
             } \
         } else { \
 			  int __istat; \
-            do { __istat = pthread_cond_timedwait(&(cond).c, &(mutex).m, (time)); } while(__istat == EINTR); \
+            do { __istat = sys_pthread_cond_timedwait(&(cond).c, &(mutex).m, (time)); } while(__istat == EINTR); \
         } \
     }
 #else
@@ -503,7 +485,7 @@ typedef struct rpc_cond_t
     { \
 		 int __istat; \
         RPC_LOG_COND_TIMED_WAIT_NTR; \
-	  		do { __istat = pthread_cond_timedwait(&(cond).c, &(mutex).m, (time)); } while(__istat == EINTR); \
+	  		do { __istat = sys_pthread_cond_timedwait(&(cond).c, &(mutex).m, (time)); } while(__istat == EINTR); \
         RPC_LOG_COND_TIMED_WAIT_XIT; \
     }
 #endif  /* RPC_MUTEX_DEBUG or RPC_MUTEX_STATS */
@@ -529,14 +511,14 @@ typedef struct rpc_cond_t
 		    "RPC_COND_SIGNAL/rpc__cond_signal" )); \
             } \
         } else { \
-            pthread_cond_signal(&(cond).c); \
+            sys_pthread_cond_signal(&(cond).c); \
         } \
     }
 #else
 #  define RPC_COND_SIGNAL(cond,mutex) \
     { \
         RPC_LOG_COND_SIGNAL_NTR; \
-        pthread_cond_signal(&(cond).c); \
+        sys_pthread_cond_signal(&(cond).c); \
         RPC_LOG_COND_SIGNAL_XIT; \
     }
 #endif  /* RPC_MUTEX_DEBUG or RPC_MUTEX_STATS */
@@ -562,14 +544,14 @@ typedef struct rpc_cond_t
 		    "RPC_COND_BROADCAST/rpc__cond_broadcast" )); \
             } \
         } else { \
-            pthread_cond_broadcast(&(cond).c); \
+            sys_pthread_cond_broadcast(&(cond).c); \
         } \
     }
 #else
 #  define RPC_COND_BROADCAST(cond,mutex) \
     { \
         RPC_LOG_COND_BROADCAST_NTR; \
-        pthread_cond_broadcast(&(cond).c); \
+        sys_pthread_cond_broadcast(&(cond).c); \
         RPC_LOG_COND_BROADCAST_XIT; \
     }
 #endif  /* RPC_MUTEX_DEBUG or RPC_MUTEX_STATS */

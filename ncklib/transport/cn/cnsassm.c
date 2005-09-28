@@ -2713,8 +2713,8 @@ pointer_t       sm;
      * Queue a dummy fragbuf on the association receive queue. This
      * will wake up any threads blocked waiting for receive data.
      */
-    current_thread_id = pthread_self();
-    if (pthread_equal (current_thread_id,
+    current_thread_id = sys_pthread_self();
+    if (sys_pthread_equal (current_thread_id,
                        assoc->cn_ctlblk.cn_rcvr_thread_id))
     {
         RPC_CN_ASSOC_WAKEUP (assoc);

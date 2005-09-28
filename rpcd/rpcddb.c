@@ -668,11 +668,7 @@ struct db *h;
 PRIVATE void db_init_lock(h)
 struct db *h;
 {
-#ifdef ENABLE_PTHREADS
-    pthread_mutex_init(&h->lock, &pthread_mutexattr_default);
-#else
-    pthread_mutex_init(&h->lock, pthread_mutexattr_default);
-#endif
+    pthread_mutex_init(&h->lock, &sys_pthread_mutexattr_default);
 }
 
 

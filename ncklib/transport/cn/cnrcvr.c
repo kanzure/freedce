@@ -200,7 +200,9 @@ rpc_cn_assoc_p_t        assoc;
 
 	DO_NOT_CLOBBER(done);
 	 
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_receiver);
 
@@ -210,8 +212,6 @@ rpc_cn_assoc_p_t        assoc;
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
                     ("CN: assoc->%x call_rep->none Receiver thread starting...\n",
                      assoc));
-
-    pthread_setcancel(CANCEL_ON);
 
     /*
      * Loop until a cancel is sent to this thread.
@@ -333,7 +333,7 @@ rpc_cn_assoc_p_t        assoc;
                  */
                 TRY
                 {
-                    pthread_testcancel();
+                    sys_pthread_testcancel();
                 }
                 CATCH_ALL
                 {
@@ -353,7 +353,7 @@ rpc_cn_assoc_p_t        assoc;
                  */
                 TRY
                 {
-                    pthread_testcancel();
+                    sys_pthread_testcancel();
                 }
                 CATCH(pthread_cancel_e)
                 {    
@@ -1250,14 +1250,14 @@ unsigned32              *st;
         {
 #ifdef NON_CANCELLABLE_IO
        /*
-        * By posix definition pthread_setasynccancel is not a "cancel
+        * By posix definition sys_pthread_setasynccancel is not a "cancel
         * point" because it must return an error status and an errno.
-        * pthread_setasynccancel(CANCEL_ON) will not deliver
+        * sys_pthread_setasynccancel(CANCEL_ON) will not deliver
         * a pending cancel nor will the cancel be delivered asynchronously,
-        * thus the need for pthread_testcancel.
+        * thus the need for sys_pthread_testcancel.
 	*/
-	    pthread_setasynccancel(CANCEL_ON);
-	    pthread_testcancel();
+	    sys_pthread_setasynccancel(CANCEL_ON);
+	    sys_pthread_testcancel();
 
 #endif
             RPC_SOCKET_RECVMSG (assoc->cn_ctlblk.cn_sock,
@@ -1268,13 +1268,13 @@ unsigned32              *st;
                                 &serr);
 
 #ifdef NON_CANCELLABLE_IO
-	    pthread_setasynccancel(CANCEL_OFF);
+	    sys_pthread_setasynccancel(CANCEL_OFF);
 #endif            
         }
         CATCH (pthread_cancel_e)
         {
 #ifdef NON_CANCELLABLE_IO
-	    pthread_setasynccancel(CANCEL_OFF);
+	    sys_pthread_setasynccancel(CANCEL_OFF);
 #endif            
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
 ("CN: call_rep->%x assoc->%x desc->%x receiver canceled, caught in receive_packet()\n",

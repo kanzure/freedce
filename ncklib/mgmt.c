@@ -375,7 +375,7 @@ unsigned32              *status;
             (binding_h, if_id_vector, status);
 
         if (*status == rpc_s_call_cancelled)
-            pthread_cancel(pthread_self());
+            sys_pthread_cancel(sys_pthread_self());
         
         /*
          * restore the memory allocation scheme in effect before we got here
@@ -502,7 +502,7 @@ unsigned32              *status;
                                                 status);
 
         if (*status == rpc_s_call_cancelled)
-            pthread_cancel(pthread_self());
+            sys_pthread_cancel(sys_pthread_self());
     }
 }
 
@@ -635,7 +635,7 @@ unsigned32              *status;
         (*mgmt_v1_0_c_epv.rpc__mgmt_is_server_listening) (binding_h, status);
 
         if (*status == rpc_s_call_cancelled)
-            pthread_cancel(pthread_self());
+            sys_pthread_cancel(sys_pthread_self());
 
         return (*status == rpc_s_ok ? true : false);
      }
@@ -1051,7 +1051,7 @@ unsigned32              *status;
     *status = rpc_s_not_supported;
 #else
 #  ifndef PTHREAD_EXC
-    if (pthread_attr_setstacksize
+    if (sys_pthread_attr_setstacksize
         (&rpc_g_server_pthread_attr, thread_stack_size) == -1)
     {
         *status = rpc_s_invalid_arg;
@@ -1061,7 +1061,7 @@ unsigned32              *status;
     *status = rpc_s_ok;
 #  else
 
-    pthread_attr_setstacksize
+    sys_pthread_attr_setstacksize
         (&rpc_g_server_pthread_attr, thread_stack_size);
 
     *status = rpc_s_ok;
@@ -1145,7 +1145,7 @@ unsigned32              *status;
         (*mgmt_v1_0_c_epv.rpc__mgmt_stop_server_listening) (binding_h, status);
 
         if (*status == rpc_s_call_cancelled)
-            pthread_cancel(pthread_self());
+            sys_pthread_cancel(sys_pthread_self());
     }
 }
 
@@ -1255,7 +1255,7 @@ unsigned32              *status;
         {
             RPC_MEM_FREE (*server_princ_name, RPC_C_MEM_STRING);
             if (*status == rpc_s_call_cancelled)
-                pthread_cancel(pthread_self());
+                sys_pthread_cancel(sys_pthread_self());
             return;
         }
     }

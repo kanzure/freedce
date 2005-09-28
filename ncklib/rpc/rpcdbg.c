@@ -215,7 +215,7 @@ PRIVATE int rpc__printf (char *format, ...)
     {
         pthread_t self;
 
-        self = pthread_self ();
+        self = sys_pthread_self ();
 #ifdef HAVE_OS_WIN32
         sprintf (s, "[thread: %08x.%08x] ", (unsigned int)self.p, self.x);
 #else
@@ -238,9 +238,9 @@ PRIVATE int rpc__printf (char *format, ...)
 
     {
         int prev;
-		  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &prev);
+	prev = sys_pthread_setcancel(CANCEL_OFF);
         write (2, buff, strlen (buff));
-		  pthread_setcancelstate(prev, NULL);
+	sys_pthread_setcancel(prev);
     }
 	 return 0;
 }

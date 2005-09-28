@@ -271,8 +271,8 @@ unsigned32              *st;
      */
     if (((rpc_cn_binding_rep_t *)binding_r)->being_resolved)
     {
-        current_thread_id = pthread_self ();
-        resolving_thread = pthread_equal 
+        current_thread_id = sys_pthread_self ();
+        resolving_thread = sys_pthread_equal 
             (((rpc_cn_binding_rep_t *)binding_r)->resolving_thread_id,
              current_thread_id);
         if (!resolving_thread)
@@ -318,7 +318,7 @@ unsigned32              *st;
 
             RPC_BINDING_CALL_START ((rpc_binding_rep_t *) binding_r);
             ((rpc_cn_binding_rep_t *)binding_r)->being_resolved = true;
-            ((rpc_cn_binding_rep_t *)binding_r)->resolving_thread_id = pthread_self ();
+            ((rpc_cn_binding_rep_t *)binding_r)->resolving_thread_id = sys_pthread_self ();
 
             RPC_CN_UNLOCK ();
             rpc_ep_resolve_binding ((rpc_binding_handle_t) binding_r, 
@@ -1781,7 +1781,7 @@ unsigned32              *st;
             {
                 RPC_DBG_PRINTF (rpc_e_dbg_cancel, RPC_C_CN_DBG_CANCEL,
                                ("(rpc__cn_call_end) call_rep->%x reposting cancel\n", call_rep));
-                pthread_cancel (pthread_self());
+                sys_pthread_cancel (sys_pthread_self());
             }
             
             /*
@@ -2722,7 +2722,7 @@ rpc_cn_call_rep_p_t     call_rep;
     {
         TRY 
         { 
-            pthread_testcancel (); 
+            sys_pthread_testcancel (); 
         } 
         CATCH (pthread_cancel_e) 
         { 
@@ -3037,7 +3037,7 @@ unsigned32              *st;
                            ("(rpc__cn_call_start_cancel_timer) call_rep->%x starting cancel timer - %d seconds\n", 
                             call_r, call_r->u.client.cancel.timeout_time));
             call_r->u.client.cancel.timer_running = true;
-            call_r->u.client.cancel.thread_h = pthread_self ();
+            call_r->u.client.cancel.thread_h = sys_pthread_self ();
             rpc__timer_set (&call_r->u.client.cancel.timer,
                             (rpc_timer_proc_p_t) rpc__cn_call_cancel_timer,
                             (pointer_t) call_r,
@@ -3161,7 +3161,7 @@ rpc_cn_call_rep_p_t     call_r;
                    ("(rpc__cn_call_cancel_timer) call_rep->%x cancel timer expired\n", call_r));
     RPC_CN_LOCK ();
     call_r->cn_call_status = rpc_s_cancel_timeout;
-    pthread_cancel (call_r->u.client.cancel.thread_h);
+    sys_pthread_cancel (call_r->u.client.cancel.thread_h);
     call_r->u.client.cancel.timer_running = false;
 
     /*

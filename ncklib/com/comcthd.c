@@ -422,23 +422,15 @@ unsigned32              *status;
      * forever zombie'd when it terminates).
      */
     TRY {
-        pthread_create (&cthread->thread_id,
-#ifdef ENABLE_PTHREADS
+        sys_pthread_create (&cthread->thread_id,
                     &rpc_g_server_pthread_attr,
-#else
-                    rpc_g_server_pthread_attr,
-#endif
                     (pthread_startroutine_t)cthread_call_executor,
                     (pthread_addr_t)cthread);
 
         cthread->thread_state = RPC_C_IDLE_CTHREAD;
 
         handle_copy = cthread->thread_id;
-#ifdef ENABLE_PTHREADS
-        pthread_detach(handle_copy);
-#else
-        pthread_detach(&handle_copy);
-#endif
+        sys_pthread_detach(handle_copy);
 
         *status = rpc_s_ok;
     } CATCH_ALL {
@@ -497,14 +489,13 @@ cthread_elt_p_t cthread;
     cthread_pool_elt_p_t    p = cthread->pool;
     boolean                 skip_startup = true;
 
-    pthread_setcancel(CANCEL_ON);
     /*
      * Call executors execute with general cancelability disabled
      * until the stub dispatched to the manager.  This prevents the
      * call executor from having a pending cancel delivered to it before
      * the manager is called.
      */
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+    sys_pthread_setcancel(CANCEL_OFF);
 
     RPC_MUTEX_LOCK (cthread_mutex);
     
@@ -1312,13 +1303,13 @@ unsigned32  *status;
      * in the event of a cancel, queue the pool to the reaper for final
      * cleanup.
      */
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &cs);
+    cs = sys_pthread_setcancel(CANCEL_OFF);
 
     /*
      * Wait for all call threads to complete.
      *
      * We wait on the call thread's private cv; the cthread signals its
-     * cv prior to exiting.  While pthread_join() would have done the
+     * cv prior to exiting.  While sys_pthread_join() would have done the
      * trick; this scheme works just as well and is portable to environments
      * that may have difficulty implementing join (i.e. for Kernel RPC).
      */
@@ -1333,7 +1324,7 @@ unsigned32  *status;
     /*
      * Restore the cancel state.
      */
-    pthread_setcancelstate(cs, NULL);
+    sys_pthread_setcancel(cs);
 
     RPC_DBG_PRINTF (rpc_e_dbg_general, 5,
             ("(cthread_pool_stop) pool %x (%d threads) stopped\n", 
@@ -2656,7 +2647,7 @@ rpc_call_rep_p_t        call;
 
         RPC_MUTEX_LOCK (cthread_mutex);
 
-        pthread_cancel(pvt->thread_h);
+        sys_pthread_cancel(pvt->thread_h);
 
         RPC_MUTEX_UNLOCK (cthread_mutex);
     }
@@ -2732,13 +2723,13 @@ rpc_call_rep_p_t        call;
     if (call->u.server.cancel.count)
     {
 #ifndef _PTHREAD_NO_CANCEL_SUPPORT
-    		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oc);
+    		oc = sys_pthread_setcancel(CANCEL_ON);
         TRY	
-            pthread_testcancel();
+            sys_pthread_testcancel();
         CATCH_ALL
             call->u.server.cancel.had_pending = true;
         ENDTRY
-    		pthread_setcancelstate(oc, NULL);
+    		sys_pthread_setcancel(oc);
 #else
         /*
          * Cancels not supported, so the previously accepted forwarded
@@ -2808,7 +2799,7 @@ rpc_call_rep_p_t        call;
         call->u.server.cancel.queuing = false;
         for (cancel_cnt = call->u.server.cancel.count; cancel_cnt--; )
         {
-            pthread_cancel(pvt->thread_h);
+            sys_pthread_cancel(pvt->thread_h);
         }
     }
 

@@ -973,7 +973,7 @@ typedef struct
  * R P C _ T H R E A D _ C O N T E X T _ T
  *
  * The thread context block data structure. The address of this structure
- * for a given thread can be obtained by doing a pthread_getspecific() call
+ * for a given thread can be obtained by doing a sys_pthread_getspecific() call
  * using the rpc_g_thread_context key. This structure can be extended as
  * needed to store any thread-specific context.
  */
@@ -1000,13 +1000,12 @@ typedef struct
  * key has been initialized (in rpc__init) and will fail if it hasn't
  * been.
  */
-#ifdef ENABLE_PTHREADS
 #define RPC_GET_THREAD_CONTEXT(thread_context, status) \
 { \
     *status = rpc_s_ok; \
 \
     thread_context = (pthread_addr_t) \
-	pthread_getspecific (rpc_g_thread_context_key); \
+	sys_pthread_getspecific (rpc_g_thread_context_key); \
 \
     if (thread_context == NULL) \
     { \
@@ -1021,7 +1020,7 @@ typedef struct
         { \
             (thread_context)->cancel_timeout = rpc_c_cancel_infinite_timeout; \
             (thread_context)->ns_authn_state = true; \
-            pthread_setspecific (rpc_g_thread_context_key, \
+            sys_pthread_setspecific (rpc_g_thread_context_key, \
                 (pthread_addr_t)thread_context); \
         } \
         else \
@@ -1030,40 +1029,6 @@ typedef struct
         } \
     } \
 }
-
-#else
-
-#define RPC_GET_THREAD_CONTEXT(thread_context, status) \
-{ \
-    *status = rpc_s_ok; \
-\
-    pthread_getspecific (rpc_g_thread_context_key, \
-			 (pthread_addr_t*)&thread_context); \
-\
-    if (thread_context == NULL) \
-    { \
-        RPC_MEM_ALLOC ( \
-            thread_context, \
-            rpc_thread_context_p_t, \
-            sizeof (rpc_thread_context_t), \
-            RPC_C_MEM_THREAD_CONTEXT, \
-            RPC_C_MEM_WAITOK); \
-\
-        if (thread_context != NULL) \
-        { \
-            (thread_context)->cancel_timeout = rpc_c_cancel_infinite_timeout; \
-            (thread_context)->ns_authn_state = true; \
-            pthread_setspecific (rpc_g_thread_context_key, \
-                (pthread_addr_t)thread_context); \
-        } \
-        else \
-        { \
-            *status = rpc_s_no_memory; \
-        } \
-    } \
-}
-
-#endif /* ENABLE_PTHREADS */
 
 #define RPC_SET_CANCEL_TIMEOUT(value, status) \
 { \

@@ -1902,15 +1902,15 @@ unsigned32              *st;
 
 #ifdef NON_CANCELLABLE_IO
 	    /*
-             * By posix definition pthread_setasynccancel is not a "cancel
+             * By posix definition sys_pthread_setasynccancel is not a "cancel
              * point" because it must return an error status and an errno.
-             * pthread_setasynccancel(CANCEL_ON) will not deliver
+             * sys_pthread_setasynccancel(CANCEL_ON) will not deliver
              * a pending cancel nor will the cancel be delivered asynchronously,
-             * thus the need for pthread_testcancel.
+             * thus the need for sys_pthread_testcancel.
              * 
 	     */
-            pthread_setasynccancel(CANCEL_ON);
-	    pthread_testcancel();
+            sys_pthread_setasynccancel(CANCEL_ON);
+	    sys_pthread_testcancel();
 #endif
             RPC_SOCKET_SENDMSG (assoc->cn_ctlblk.cn_sock, 
                                 iovp, 
@@ -1920,7 +1920,7 @@ unsigned32              *st;
                                 &serr);
 
 #ifdef NON_CANCELLABLE_IO
-	    pthread_setasynccancel(CANCEL_OFF);
+	    sys_pthread_setasynccancel(CANCEL_OFF);
 #endif
             /*
              * A sendmsg has just completed. Re-aquire the global mutex
@@ -1940,7 +1940,7 @@ unsigned32              *st;
         {
 
 #ifdef NON_CANCELLABLE_IO
-	    pthread_setasynccancel(CANCEL_OFF);
+	    sys_pthread_setasynccancel(CANCEL_OFF);
 #endif
             /*
              * A sendmsg has just completed. Re-aquire the global mutex
@@ -1993,7 +1993,7 @@ unsigned32              *st;
         CATCH (exc_e_SIGPIPE)
         {
 #ifdef NON_CANCELLABLE_IO
-	    pthread_setasynccancel(CANCEL_OFF);
+	    sys_pthread_setasynccancel(CANCEL_OFF);
 #endif
             /*
              * A sendmsg has just completed. Re-aquire the global mutex
@@ -4549,38 +4549,34 @@ rpc_cn_assoc_p_t        assoc;
 
     while(!successful) {
         TRY {
-            pthread_create (&(assoc->cn_ctlblk.cn_rcvr_thread_id),
-#ifdef ENABLE_PTHREADS
+            sys_pthread_create (&(assoc->cn_ctlblk.cn_rcvr_thread_id),
                             &rpc_g_default_pthread_attr,
-#else
-                            rpc_g_default_pthread_attr,
-#endif
                             (pthread_startroutine_t) rpc__cn_network_receiver,
                             (pthread_addr_t) assoc);
             successful = true;
         }
         CATCH (pthread_in_use_e) {
-            fprintf(stderr,"pthread_in_use_e after pthread_create receiver thread");
+            fprintf(stderr,"pthread_in_use_e after sys_pthread_create receiver thread");
             successful=false;
         }
         CATCH (exc_insfmem_e) {
-            fprintf(stderr,"exc_insfmem_e after pthread_create receiver thread");
+            fprintf(stderr,"exc_insfmem_e after sys_pthread_create receiver thread");
             successful=false;
         }
         CATCH (pthread_use_error_e) {
-            fprintf(stderr,"pthread_use_error_e after pthread_create receiver thread");
+            fprintf(stderr,"pthread_use_error_e after sys_pthread_create receiver thread");
         }
         CATCH (exc_nopriv_e) {
-            fprintf(stderr,"exc_nopriv_e after pthread_create receiver thread");
+            fprintf(stderr,"exc_nopriv_e after sys_pthread_create receiver thread");
         }
         CATCH (pthread_unimp_e) {
-            fprintf(stderr,"pthread_unimp_e after pthread_create receiver thread");
+            fprintf(stderr,"pthread_unimp_e after sys_pthread_create receiver thread");
         }
         CATCH (pthread_badparam_e) {
-            fprintf(stderr,"pthread_badparam_e after pthread_create receiver thread");
+            fprintf(stderr,"pthread_badparam_e after sys_pthread_create receiver thread");
         }
         CATCH_ALL {
-            fprintf(stderr,"unhandled exception after pthread_create receiver thread");
+            fprintf(stderr,"unhandled exception after sys_pthread_create receiver thread");
         }
         ENDTRY;
     }
@@ -4634,7 +4630,7 @@ rpc_cn_assoc_p_t        assoc;
 {
     rpc_cn_ctlblk_t     *ccb;
     pthread_t           current_thread_id;
-    void*				      pthread_exit_status;
+    void*				      sys_pthread_exit_status;
     int                 prev_cancel_state;
 
     RPC_LOG_CN_ASSOC_ACB_FR_NTR;
@@ -4649,8 +4645,8 @@ rpc_cn_assoc_p_t        assoc;
     /*
      * Determine whether we are now running in the receiver thread.
      */
-    current_thread_id = pthread_self();
-    if (pthread_equal (current_thread_id,
+    current_thread_id = sys_pthread_self();
+    if (sys_pthread_equal (current_thread_id,
                        assoc->cn_ctlblk.cn_rcvr_thread_id))
     {
         /*
@@ -4664,7 +4660,7 @@ rpc_cn_assoc_p_t        assoc;
         RPC_COND_DELETE (assoc->assoc_msg_cond, rpc_g_global_mutex);
         ccb->exit_rcvr = true;
         TRY {
-            pthread_cancel (ccb->cn_rcvr_thread_id);
+            sys_pthread_cancel (ccb->cn_rcvr_thread_id);
         }
         CATCH (pthread_cancel_e) {
         }
@@ -4684,12 +4680,12 @@ rpc_cn_assoc_p_t        assoc;
          * or connection control block until we're sure the receiver
          * thread has terminated. To ensure this send the receiver thread a
          * cancel and then wait until it exits by using the
-         * pthread_join() function. This function will not return
+         * sys_pthread_join() function. This function will not return
          * until the receiver thread has terminated.
          */
         ccb->exit_rcvr = true;
         TRY {
-            pthread_cancel (ccb->cn_rcvr_thread_id);
+            sys_pthread_cancel (ccb->cn_rcvr_thread_id);
         }
         CATCH (pthread_cancel_e) {
         }
@@ -4711,11 +4707,11 @@ rpc_cn_assoc_p_t        assoc;
          * connection. The process of unblocking from this condition
          * variable by definition acquires the CN mutex. 
          */
-		  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &prev_cancel_state);
+	prev_cancel_state = sys_pthread_setcancel(CANCEL_OFF);
         RPC_CN_UNLOCK ();
         TRY     {
-            pthread_join (ccb->cn_rcvr_thread_id,
-                          &pthread_exit_status);
+            sys_pthread_join (ccb->cn_rcvr_thread_id,
+                          &sys_pthread_exit_status);
         }
         CATCH (pthread_cancel_e) {
         }
@@ -4727,7 +4723,7 @@ rpc_cn_assoc_p_t        assoc;
         }
         ENDTRY
         RPC_CN_LOCK ();
-		  pthread_setcancelstate(prev_cancel_state, NULL);
+	sys_pthread_setcancel(prev_cancel_state);
 
         /*
          * Now that the receiver thread has terminated we can delete the
@@ -4737,11 +4733,7 @@ rpc_cn_assoc_p_t        assoc;
         RPC_COND_DELETE (assoc->assoc_msg_cond, rpc_g_global_mutex);
     }
 	 TRY	{
-#ifdef ENABLE_PTHREADS
-		 pthread_detach (ccb->cn_rcvr_thread_id);
-#else
-		 pthread_detach (&ccb->cn_rcvr_thread_id);
-#endif
+		 sys_pthread_detach (ccb->cn_rcvr_thread_id);
 	 }
 	 CATCH(pthread_use_error_e)	{
 	 }

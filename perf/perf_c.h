@@ -95,7 +95,7 @@ extern char *authz_names[];
     struct timespec delay; \
     delay.tv_sec  = (secs); \
     delay.tv_nsec = 0; \
-    pthread_delay_np(&delay); \
+    sys_pthread_delay_np(&delay); \
 }
 
 #else

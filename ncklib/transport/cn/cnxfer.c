@@ -627,7 +627,7 @@ unsigned32              *status;
             {
                 TRY 
                 {
-                    pthread_testcancel ();
+                    sys_pthread_testcancel ();
                 }
                 CATCH (pthread_cancel_e)
                 {

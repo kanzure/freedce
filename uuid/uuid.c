@@ -487,7 +487,7 @@ unsigned32              *status;
      * CMA is initialized.
      */
     pthread_t   t;
-    t = pthread_self();
+    t = sys_pthread_self();
 #endif /* CMA_INCLUDE */
 
     CODING_ERROR (status);

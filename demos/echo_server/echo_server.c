@@ -33,6 +33,7 @@
 #include <getopt.h>
 #include <dce/rpc.h>
 #include <dce/pthread_exc.h>
+#include <dce/pthreads_rename.h>
 #include <dce/dce_error.h>
 #include <rpcdbg.h>
 #include "echo.h"
@@ -121,6 +122,12 @@ int main(int argc, char *argv[])
   rpc_binding_vector_p_t     server_binding;
   char * string_binding;
   unsigned32 i;
+
+  /*
+#ifdef ENABLE_PTHREADS
+      dcethreads_exc_lib_init();
+#endif
+*/
 
   /*
    * Register the Interface with the local endpoint mapper (rpcd)
@@ -216,7 +223,7 @@ int main(int argc, char *argv[])
      */
 
   printf("Killing the signal handler thread... \n");
-  pthread_cancel(sig_handler_thread);
+  sys_pthread_cancel(sig_handler_thread);
 
   printf ("Unregistering server from the endpoint mapper.... \n");
   rpc_ep_unregister(echo_v1_0_s_ifspec,
@@ -349,17 +356,10 @@ sigset_t old_signal_mask;
 #endif
 
 #ifndef _AIX
-#ifdef ENABLE_PTHREADS
-  pthread_create(&sig_handler_thread, 
-		 &pthread_attr_default,
+  sys_pthread_create(&sig_handler_thread, 
+		 &sys_pthread_attr_default,
 		 (void*)signal_handler,
 		 NULL);
-#else
-  pthread_create(&sig_handler_thread, 
-		 pthread_attr_default,
-		 (void*)signal_handler,
-		 NULL);
-#endif
 #endif
 
 #ifdef _AIX
@@ -387,7 +387,9 @@ signal_handler(void * arg __attribute__((__unused__)))
   pthread_sigmask(SIG_BLOCK,  &catch_signal_mask, &old_signal_mask);
 #endif
 
-  pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+  sys_pthread_setcancel(CANCEL_ON);
+#endif
 
   while (1) 
     {

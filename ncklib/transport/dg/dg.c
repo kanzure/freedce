@@ -110,7 +110,7 @@ rpc_dg_call_p_t call;
 
     TRY
     {
-        pthread_testcancel();
+        sys_pthread_testcancel();
     }
     CATCH_ALL
     {

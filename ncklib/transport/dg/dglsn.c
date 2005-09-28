@@ -461,15 +461,9 @@ INTERNAL void convq_start(void)
     if (! convq_running)
     {
         convq_running = true;
-#ifdef ENABLE_PTHREADS
-        pthread_create(&conv_thread, &pthread_attr_default,
+        sys_pthread_create(&conv_thread, &sys_pthread_attr_default,
                        (pthread_startroutine_t)convq_loop, 
                        NULL);  
-#else
-        pthread_create(&conv_thread, pthread_attr_default,
-                       (pthread_startroutine_t)convq_loop, 
-                       NULL);  
-#endif
     }
     RPC_MUTEX_UNLOCK(convq.m);
 }
@@ -586,7 +580,9 @@ INTERNAL void convq_loop(void)
 {
     rpc_dg_recvq_elt_p_t rqe;
 
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     RPC_DBG_PRINTF(rpc_e_dbg_conv_thread, 1, 
 	("(convq_loop) starting up..\n"));
@@ -671,7 +667,7 @@ PRIVATE void rpc__dg_conv_fork_handler
             RPC_COND_SIGNAL (convq.cv, convq.m);
             RPC_MUTEX_UNLOCK(convq.m);
             TRY {
-                pthread_join (conv_thread, (void **) &st);
+                sys_pthread_join (conv_thread, (void **) &st);
             }
             CATCH(pthread_cancel_e) {
             }
@@ -684,7 +680,7 @@ PRIVATE void rpc__dg_conv_fork_handler
             ENDTRY;
             RPC_MUTEX_LOCK(convq.m);
 				TRY	{
-					pthread_detach(&conv_thread);
+					sys_pthread_detach(&conv_thread);
 				}
 				CATCH(pthread_use_error_e)	{
 				}
@@ -702,7 +698,7 @@ PRIVATE void rpc__dg_conv_fork_handler
             convq_was_running = false;
             convq_stop = false;
             convq_running = true;
-            pthread_create(&conv_thread, pthread_attr_default,
+            sys_pthread_create(&conv_thread, sys_pthread_attr_default,
                            (pthread_startroutine_t)convq_loop, 
                            NULL);  
         }
@@ -1840,7 +1836,7 @@ rpc_dg_recvq_elt_p_t rqe;
      * If the application has disabled general cancelability, we
      * need to turn it on here, temporarily.
      */
-	 pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &prev_cancel_state);
+    prev_cancel_state = sys_pthread_setcancel(CANCEL_OFF);
 
     TRY
     {
@@ -1851,14 +1847,14 @@ rpc_dg_recvq_elt_p_t rqe;
                 "(recv_pkt_private) blocking in recv_pkt\n"));
 
 #ifdef NON_CANCELLABLE_IO
-         pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-         pthread_testcancel();
+         sys_pthread_setasynccance(CANCEL_ON);
+         sys_pthread_testcancel();
 #endif
 
         recv_flag = recv_pkt(sp, rqe);
 
 #ifdef NON_CANCELLABLE_IO
-			pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+	sys_pthread_setasynccancel(CANCEL_OFF);
 #endif
 
         RPC_DG_CALL_LOCK(call);
@@ -1873,13 +1869,13 @@ rpc_dg_recvq_elt_p_t rqe;
         if (call->priv_cond_signal == true)
         {
             RPC_DG_CALL_UNLOCK(call);
-            pthread_testcancel();
+            sys_pthread_testcancel();
         }
     }
     CATCH(pthread_cancel_e)
     {
 #ifdef NON_CANCELLABLE_IO
-			pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+			sys_pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 #endif
 
         RPC_DG_CALL_LOCK(call);
@@ -1924,7 +1920,7 @@ rpc_dg_recvq_elt_p_t rqe;
     CATCH_ALL
     {
 #ifdef NON_CANCELLABLE_IO
-        pthread_setasynccancel(CANCEL_OFF);
+        sys_pthread_setasynccancel(CANCEL_OFF);
 #endif
 
         RPC_DG_CALL_LOCK(call);
@@ -1940,7 +1936,7 @@ rpc_dg_recvq_elt_p_t rqe;
     /*
      * Restore the original cancelability state.
      */
-	 pthread_setcancelstate(prev_cancel_state, NULL);
+    sys_pthread_setcancel(prev_cancel_state);
     return (recv_flag);
 }
 
@@ -3438,7 +3434,7 @@ unsigned32 *st;
                  * data has arrived that we want the call thread to drain its
                  * queue.
                  *
-                 * Formerly, we did a pthread_yield() at this point so that
+                 * Formerly, we did a sys_pthread_yield() at this point so that
                  * the ready-to-run call didn't have to wait for the listener
                  * thread to make it all the way back into select before the 
                  * thread switch occurred.
@@ -3448,7 +3444,7 @@ unsigned32 *st;
                  * In this scenario, the listener thread does not get run often
                  * enough to adequately service data coming in from the network.
                  *
-                 * For this reason, I've removed the pthread_yield() call from
+                 * For this reason, I've removed the sys_pthread_yield() call from
                  * this clause.  However, I'm reluctant to pull out all of the
                  * logic that results in the 'yield' flag being handed back
                  * from the packet handlers, because I'm not convinced that 

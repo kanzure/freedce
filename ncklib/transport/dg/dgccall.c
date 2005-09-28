@@ -320,7 +320,7 @@ unsigned32 *st;
      * a cancel against the thread.
      */
     if (ccall->c.sock_ref->is_private)
-        ccall->c.thread_id = pthread_self();
+        ccall->c.thread_id = sys_pthread_self();
 
     /*
      * Make sure that if the binding doesn't specify a bound server instance,
@@ -961,7 +961,7 @@ rpc_clock_t cancel_timeout_time;
             ("(ccall_initial_cancel_setup) reposting cancels\n"));
 
         for (; cancel_cnt--; )
-            pthread_cancel(pthread_self());
+            sys_pthread_cancel(sys_pthread_self());
         return;
     }
 
@@ -1425,7 +1425,7 @@ unsigned32 *st;
     {
         RPC_DBG_PRINTF(rpc_e_dbg_cancel, 5, 
             ("(rpc__dg_call_end) reposting cancel\n"));
-        pthread_cancel(pthread_self());
+        sys_pthread_cancel(sys_pthread_self());
     }
 
     /*
@@ -1479,9 +1479,9 @@ unsigned32 *st;
                  * in this state because the call failed (call_wait()
                  * would immediately return).
                  */
-                pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oc);
+                oc = sys_pthread_setcancel(CANCEL_OFF);
                 RPC_DG_CALL_COND_WAIT(&ccall->c);
-                pthread_setcancelstate(oc, NULL);
+                sys_pthread_setcancel(oc);
             }
 
             /*
@@ -1500,7 +1500,7 @@ unsigned32 *st;
              * as if a forwarded cancel remains pending.
              */
             if (ccall->cancel.local_count > 0)
-                pthread_cancel(pthread_self());
+                sys_pthread_cancel(sys_pthread_self());
         }
 
         RPC_DG_CCALL_SET_STATE_IDLE(ccall);

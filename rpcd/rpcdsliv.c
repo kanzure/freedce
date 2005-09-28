@@ -102,23 +102,13 @@ PRIVATE void sliv_init(h, status)
 struct db       *h;
 error_status_t  *status;
 {
-#ifdef ENABLE_PTHREADS
-    pthread_cond_init(&h->sliv_task2_cv, &pthread_condattr_default);
+    sys_pthread_cond_init(&h->sliv_task2_cv, &sys_pthread_condattr_default);
 
-    pthread_create(&h->sliv_task1_h, &pthread_attr_default, 
+    sys_pthread_create(&h->sliv_task1_h, &sys_pthread_attr_default, 
             (void*) sliv_task1, (void *) h);
 
-    pthread_create(&h->sliv_task2_h, &pthread_attr_default, 
+    sys_pthread_create(&h->sliv_task2_h, &sys_pthread_attr_default, 
             (void*) sliv_task2, (void *) h);
-#else
-    pthread_cond_init(&h->sliv_task2_cv, pthread_condattr_default);
-
-    pthread_create(&h->sliv_task1_h, pthread_attr_default, 
-            (void*) sliv_task1, (void *) h);
-
-    pthread_create(&h->sliv_task2_h, pthread_attr_default, 
-            (void*) sliv_task2, (void *) h);
-#endif
     *status = error_status_ok;
 }
 
@@ -154,7 +144,9 @@ void    *arg;
     boolean32       server_listening;
     error_status_t  status;
 
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     h = (struct db *) arg;
 
@@ -222,7 +214,7 @@ void    *arg;
                 entp->read_nrefs++;
                 db_unlock(h);
 
-                pthread_testcancel();
+                sys_pthread_testcancel();
 
                 server_listening = ping_server(entp, slive_c_short_comm_timeout, &status);
 
@@ -232,7 +224,7 @@ void    *arg;
                 if (!server_listening)
                 {
                     entp->ncomm_fails++;
-                    pthread_cond_signal(&h->sliv_task2_cv);
+                    sys_pthread_cond_signal(&h->sliv_task2_cv);
                 }
             }
 
@@ -261,7 +253,9 @@ void    *arg;
 	DO_NOT_CLOBBER(waitsecs);
 	DO_NOT_CLOBBER(have_db_lock);
 	 
-    pthread_setcancel(CANCEL_ON);
+#ifdef PTHREAD_CANCEL_DEFAULT_ON
+    sys_pthread_setcancel(CANCEL_ON);
+#endif
 
     h = (struct db *) arg;
 
@@ -290,7 +284,7 @@ void    *arg;
              */
 				
 				do	{
-					__istat = pthread_cond_timedwait(&h->sliv_task2_cv, &h->lock, &waketime);
+					__istat = sys_pthread_cond_timedwait(&h->sliv_task2_cv, &h->lock, &waketime);
 				} while(__istat == EINTR);
     
             /*  have lock now
@@ -314,7 +308,7 @@ void    *arg;
                     have_db_lock = false;
                     db_unlock(h);
     
-                    pthread_testcancel();
+                    sys_pthread_testcancel();
     
                     server_listening = ping_server(entp, rpc_c_binding_default_timeout, &status);
     
