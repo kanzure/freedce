@@ -343,6 +343,14 @@ ReverseIt(h, in_text, out_text, status)
  *
  *=========================================================================*/
 
+#ifdef _AIX
+#define USE_BORING_SIGHANDLER
+#endif
+
+#ifdef HAVE_OS_WIN32
+#define USE_BORING_SIGHANDLER
+#endif
+
 void 
 wait_for_signals()
 {
@@ -355,14 +363,14 @@ sigset_t old_signal_mask;
   pthread_sigmask(SIG_BLOCK,  &default_signal_mask, &old_signal_mask);
 #endif
 
-#ifndef _AIX
+#ifndef USE_BORING_SIGHANDLER
   sys_pthread_create(&sig_handler_thread, 
 		 &sys_pthread_attr_default,
 		 (void*)signal_handler,
 		 NULL);
 #endif
 
-#ifdef _AIX
+#ifdef USE_BORING_SIGHANDLER
   signal(SIGINT, (void (*)(int))signal_handler);
 #endif
 
@@ -387,24 +395,20 @@ signal_handler(void * arg __attribute__((__unused__)))
   pthread_sigmask(SIG_BLOCK,  &catch_signal_mask, &old_signal_mask);
 #endif
 
-#ifdef PTHREAD_CANCEL_DEFAULT_ON
   sys_pthread_setcancel(CANCEL_ON);
-#endif
 
   while (1) 
     {
       
-#ifndef HAVE_OS_WIN32
-#ifndef _AIX
+#ifndef USE_BORING_SIGHANDLER
       /* Wait for a signal to arrive */
       sigwait(&catch_signal_mask, &which_signal);
 
       if ((which_signal == SIGINT) || (which_signal == SIGQUIT))
 	rpc_mgmt_stop_server_listening(NULL, &status);
 #endif
-#endif
 
-#if defined(_AIX) || defined(HAVE_OS_WIN32)
+#ifdef USE_BORING_SIGHANDLER
 	rpc_mgmt_stop_server_listening(NULL, &status);
 #endif
 
