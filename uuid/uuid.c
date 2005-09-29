@@ -51,6 +51,10 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef HAVE_OS_WIN32
+#include <dce/dce_win32mem.h>
+#endif
+
 
 /*
  * structure of universal unique IDs (UUIDs).
@@ -785,7 +789,7 @@ unsigned32              *status;
 #else
     
     /* Use the standard C allocator */
-    *uuid_string = (unsigned_char_p_t)malloc(UUID_C_UUID_STRING_MAX);
+    *uuid_string = (unsigned_char_p_t)sys_malloc(UUID_C_UUID_STRING_MAX);
 
 #endif
 
