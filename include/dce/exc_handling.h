@@ -613,7 +613,7 @@ _exc_pop_buf(_exc_buf * buf)
 #ifndef HAVE_OS_WIN32 /* no idea what do do - heck, comment it out :) */
     _pthread_cleanup_pop(buf->cancel_buf, 0); 
 #else
-    ptw32_pop_cleanup (0); 
+    ptw32_pop_cleanup (0);
 #endif
 }
        
@@ -668,6 +668,7 @@ do \
     _exc_cur = *&_exc_cur; \
     _exc_thread_init(); \
     _exc_alloc_buf(&_eb); \
+    _eb->cancel_buf = _cb; \
     _exc_push_buf(_eb); \
     _setjmp_res = _exc_setjmp(_eb->jb); \
     if (_setjmp_res != 0) \
@@ -680,7 +681,7 @@ do \
     } \
     else { \
              /* we land here from as TRY continues through */ \
-        pthread_setspecific(_exc_key, (void *)_eb); \
+        pthd4_setspecific(_exc_key, (void *)_eb); \
     } \
     if (_setjmp_res == 0) \
     { \

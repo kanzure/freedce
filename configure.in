@@ -40,6 +40,7 @@ if test "x$have_win32" = "x1"; then
         WIN32_PROG_PREFIX=".exe"
         dnl AC_SUBST(WIN32_PROG_PREFIX)
         dnl AC_DEFINE(PTW32_STATIC_LIB, 1, [Define, if using static pthreadwin32])
+        dnl AC_SUBST(PTW32_STATIC_LIB)
 fi
 dnl Checks for programs.
 AM_PROG_LIBTOOL
@@ -51,6 +52,7 @@ AC_PROG_LN_S
 
 dnl Checks for libraries.
 if test "x$have_win32" = "x1"; then
+AC_CHECK_LIB(ws2_32, main)
 AC_CHECK_LIB(pthreadGC2, pthread_create)
 #AC_CHECK_LIB(iphlpapi, main)
 #AC_CHECK_LIB(ws2_32, main)

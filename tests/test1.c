@@ -21,7 +21,9 @@ static EXCEPTION e1, e2;
 
 int main()
 {
-
+#ifdef PTW32_STATIC_LIB
+	ptw32_processInitialize();
+#endif
 	printf ("test1:  General test of EXC_MATCH and RERAISE.\n");
 	EXCEPTION_INIT(e1);
 	EXCEPTION_INIT(e2);

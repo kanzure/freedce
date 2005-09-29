@@ -12,6 +12,7 @@
  */
 
 
+#include <dce/pthreads_rename.h>
 #include <dce/pthread_exc.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,9 +29,9 @@ int main()
 		TRY
 		{
 			printf (" in inner try block. Cancelling myself. \n");
-			pthread_cancel(pthread_self());
+			sys_pthread_cancel(sys_pthread_self());
 			printf("\t... called pthread_cancel(). calling testcancel\n");
-			pthread_testcancel();
+			sys_pthread_testcancel();
 		}
 		CATCH(e1)
 		{

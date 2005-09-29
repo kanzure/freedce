@@ -12,6 +12,7 @@
  */
 
 
+#include <dce/pthreads_rename.h>
 #include <dce/pthread_exc.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,13 +21,15 @@ EXCEPTION e1;
 
 int main()
 {
-
+#ifdef PTW32_STATIC_LIB
+	        ptw32_processInitialize();
+#endif
 	printf("test2:    cancelling inside of CATCH handler\n\n");
 
 	EXCEPTION_INIT(e1);
 
-	pthread_setasynccancel(CANCEL_OFF);
-	pthread_setcancel(CANCEL_ON);
+	sys_pthread_setasynccancel(CANCEL_OFF);
+	sys_pthread_setcancel(CANCEL_ON);
 
 	TRY
 	{
@@ -38,9 +41,9 @@ int main()
 		CATCH(e1)
 		{
 			printf("\t... in inner handler for e1. cancelling myself\n");
-			pthread_cancel(pthread_self());
+			sys_pthread_cancel(sys_pthread_self());
 			printf("\t... called pthread_cancel(). calling testcancel\n");
-			pthread_testcancel();
+			sys_pthread_testcancel();
 		}
 		CATCH(pthread_cancel_e)
 		{
@@ -59,6 +62,6 @@ int main()
 	}
 	ENDTRY
 
-		printf("normal exiting. if get here, somethings wrong. \n");
+	printf("normal exiting. if get here, somethings wrong. \n");
 	return 1;
 }
