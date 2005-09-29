@@ -587,13 +587,13 @@ _exc_push_buf(_exc_buf * buf)
     (buf)->next = (_exc_buf *)__head;
     __head = (buf);
     pthd4_setspecific(_exc_key, __head);
-#ifndef HAVE_OS_WIN32 /* no idea what do do - heck, comment it out :) */
-    _pthread_cleanup_push (buf->cancel_buf, 
-				 _exc_cancel_catcher, NULL);
-#else
+#ifdef HAVE_OS_WIN32 /* no idea what do do here :) */
     ptw32_push_cleanup (&buf->cancel_buf, 
 			 (ptw32_cleanup_callback_t) _exc_cancel_catcher,
 			 NULL);
+#else
+    _pthread_cleanup_push (buf->cancel_buf, 
+				 _exc_cancel_catcher, NULL);
 #endif
 }
 
@@ -610,10 +610,10 @@ _exc_pop_buf(_exc_buf * buf)
     (buf) = (_exc_buf *)__head;
     __head = buf->next;
     pthd4_setspecific(_exc_key, (void *)__head);
-#ifndef HAVE_OS_WIN32 /* no idea what do do - heck, comment it out :) */
-    _pthread_cleanup_pop(buf->cancel_buf, 0); 
-#else
+#ifdef HAVE_OS_WIN32 /* no idea what do do here :) */
     ptw32_pop_cleanup (0);
+#else
+    _pthread_cleanup_pop(buf->cancel_buf, 0); 
 #endif
 }
        
