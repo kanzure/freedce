@@ -52,12 +52,16 @@ INTERNAL rpc_cond_t    rpc_g_timer_cond;
 INTERNAL rpc_clock_t   rpc_timer_high_trigger;
 INTERNAL rpc_clock_t   rpc_timer_cur_trigger;
 INTERNAL rpc_timer_p_t rpc_timer_head, rpc_timer_tail;
+#ifndef NO_RPC_TIMER_THREAD
 INTERNAL unsigned32    stop_timer;
 INTERNAL pthread_t timer_task;
+#endif
 INTERNAL boolean timer_task_running = false;
 INTERNAL boolean timer_task_was_running = false;
 
+#ifndef NO_RPC_TIMER_THREAD
 INTERNAL void timer_loop _DCE_PROTOTYPE_((void));
+#endif
 
 
 INTERNAL void rpc__timer_set_int _DCE_PROTOTYPE_ ((
