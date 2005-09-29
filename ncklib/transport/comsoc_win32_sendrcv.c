@@ -44,7 +44,7 @@
 #include <com.h>
 #include <dce/dce_win32mem.h>
 
-#define HACK_DEBUG
+/*#define HACK_DEBUG*/
 
 #ifdef HACK_DEBUG
 extern void print_data(char *data, int len);
@@ -100,7 +100,7 @@ sendmsg_again:
 	RPC_LOG_SOCKET_SENDMSG_NTR;
 	if ((addrp) != NULL)
 	{
-		RPC_SOCKET_FIX_ADDRLEN(addrp);
+		/*RPC_SOCKET_FIX_ADDRLEN(addrp);*/
 		ad = ((struct sockaddr *) &(addrp)->sa);
 		ad_len = (addrp)->len;
 	}
@@ -126,7 +126,7 @@ void RPC_SOCKET_RECVFROM
 {
 	int *len;
 recvfrom_again:
-	if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);
+	/*if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);*/
 	RPC_LOG_SOCKET_RECVFROM_NTR;
 	len = from != NULL ? (int*)&(from->len) : NULL;
 	*ccp = win32_recvfrom ((int) sock, buf, buflen, 0,
@@ -134,7 +134,7 @@ recvfrom_again:
 			len);
 	*serrp = ((*ccp) == -1) ? win32_socket_err() : RPC_C_SOCKET_OK;
 	RPC_LOG_SOCKET_RECVFROM_XIT;
-	if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);
+	/*if ((from) != NULL) RPC_SOCKET_FIX_ADDRLEN(from);*/
 	if (*serrp == RPC_C_SOCKET_EINTR)
 	{
 		goto recvfrom_again;

@@ -4,7 +4,10 @@
 
 int win32_socket_close(int fd)
 {
-	return closesocket(fd);
+	int ret = closesocket(fd);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 BOOL win32_socksys_init(void)
@@ -48,56 +51,86 @@ int win32_fd_isset(int fd, fd_set *set)
 	return __WSAFDIsSet(fd, set);
 }
 
-int win32_select (int __nfds, fd_set *__restrict __readfds,
-	fd_set *__restrict __writefds,
-	fd_set *__restrict __exceptfds,
-	struct timeval *__restrict __timeout)
+int win32_select (int nfds, fd_set *__restrict readfds,
+	fd_set *__restrict writefds,
+	fd_set *__restrict exceptfds,
+	struct timeval *__restrict timeout)
 {
-	return select (__nfds, __readfds, __writefds, __exceptfds, __timeout);
+	int ret = select (nfds, readfds, writefds, exceptfds, timeout);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int win32_socket(int domain,int type,int protocol)
 {
-	return (SOCKET) socket(domain,type,protocol);
+	int ret = (int)socket(domain,type,protocol);
+	if (ret != (int)INVALID_SOCKET)
+		return ret;
+	return -1;
 }
 
 int  win32_accept(int sock,struct sockaddr* sa,int* len)
 {
-	return accept((SOCKET)sock,sa, len);
+	int ret = accept((SOCKET)sock,sa, len);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int  win32_bind(int sock,struct sockaddr* sa,int len)
 {
-	return bind((SOCKET)sock,sa, len);
+	int ret = bind((SOCKET)sock,sa, len);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 int  win32_close(int sock)
 {
-	return closesocket((SOCKET)sock);
+	int ret = closesocket((SOCKET)sock);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int  win32_connect(int sock,struct sockaddr* sa,int len)
 {
-	return connect((SOCKET)sock,sa, len);
+	int ret = connect((SOCKET)sock,sa, len);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int  win32_ioctlsocket(SOCKET sock,long ioc,unsigned long *ret)
 {
-	return ioctlsocket((SOCKET)sock,ioc,ret);
+	int rv = ioctlsocket((SOCKET)sock,ioc,ret);
+	if (rv != SOCKET_ERROR)
+		return rv;
+	return -1;
 }
 
 int  win32_getpeername(int sock,struct sockaddr* sa,int* len)
 {
-	return getpeername((SOCKET)sock,sa, len);
+	int ret = getpeername((SOCKET)sock,sa, len);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int  win32_getsockname(int sock,struct sockaddr* sa,int* len)
 {
-	return getsockname((SOCKET)sock,sa, len);
+	int ret = getsockname((SOCKET)sock,sa, len);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int  win32_getsockopt(SOCKET sock,int p1,int p2,void* p3,int* p4)
 {
-	return getsockopt((SOCKET)sock,p1,p2,(char*)p3,p4);
+	int ret = getsockopt((SOCKET)sock,p1,p2,(char*)p3,p4);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 unsigned long  win32_inet_addr(const char* a)
@@ -111,20 +144,32 @@ char * win32_inet_ntoa(struct in_addr a)
 }
 int  win32_listen(SOCKET sock,int p1)
 {
-	return listen((SOCKET)sock,p1);
+	int ret = listen((SOCKET)sock,p1);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 
 int  win32_recv(SOCKET sock,char* p1,int p2,int p3)
 {
-	return recv((SOCKET)sock,p1,p2,p3);
+	int ret = recv((SOCKET)sock,p1,p2,p3);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 int  win32_send(SOCKET sock,const char* p1,int p2,int p3)
 {
-	return send((SOCKET)sock,p1,p2,p3);
+	int ret = send((SOCKET)sock,p1,p2,p3);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 int  win32_setsockopt(SOCKET sock,int p1,int p2,const void* p3,int p4)
 {
-	return setsockopt((SOCKET)sock,p1,p2,(const char*)p3,p4);
+	int ret = setsockopt((SOCKET)sock,p1,p2,(const char*)p3,p4);
+	if (ret != SOCKET_ERROR)
+		return ret;
+	return -1;
 }
 int  win32_shutdown(SOCKET sock,int opt)
 {
