@@ -40,8 +40,8 @@ fi
 dnl NON_CANCELLABLE_IO="1"
 dnl AC_SUBST(NON_CANCELLABLE_IO)
 
-NON_CANCELLABLE_IO_SELECT="1"
-AC_SUBST(NON_CANCELLABLE_IO_SELECT)
+dnl NON_CANCELLABLE_IO_SELECT="1"
+dnl AC_SUBST(NON_CANCELLABLE_IO_SELECT)
 
 # show the user what we do
 echo "########################################"
