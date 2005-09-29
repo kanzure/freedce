@@ -413,6 +413,8 @@ typedef struct _exc_buf
 #ifndef HAVE_OS_WIN32
     struct _pthread_cleanup_buffer*
                         cancel_buf;     /* thread cancel handler buffer */
+#else
+    struct ptw32_cleanup_t	cancel_buf;
 #endif
     EXCEPTION           *current_exc;   /* Current exception */
     struct _exc_buf     *next;          /* Next state block */
@@ -586,8 +588,12 @@ _exc_push_buf(_exc_buf * buf)
     __head = (buf);
     pthd4_setspecific(_exc_key, __head);
 #ifndef HAVE_OS_WIN32 /* no idea what do do - heck, comment it out :) */
-    _pthread_cleanup_push_defer (buf->cancel_buf, 
+    _pthread_cleanup_push (buf->cancel_buf, 
 				 _exc_cancel_catcher, NULL);
+#else
+    ptw32_push_cleanup (&buf->cancel_buf, 
+			 (ptw32_cleanup_callback_t) _exc_cancel_catcher,
+			 NULL);
 #endif
 }
 
@@ -605,7 +611,9 @@ _exc_pop_buf(_exc_buf * buf)
     __head = buf->next;
     pthd4_setspecific(_exc_key, (void *)__head);
 #ifndef HAVE_OS_WIN32 /* no idea what do do - heck, comment it out :) */
-    _pthread_cleanup_pop_restore (buf->cancel_buf, 0); 
+    _pthread_cleanup_pop(buf->cancel_buf, 0); 
+#else
+    ptw32_pop_cleanup (0); 
 #endif
 }
        
@@ -651,6 +659,7 @@ _exc_pop_buf(_exc_buf * buf)
 #define TRY \
 do \
 { \
+    struct ptw32_cleanup_t _cb; \
     _exc_buf *_eb = NULL; \
     EXCEPTION *_exc_cur = NULL; \
     volatile char _exc_cur_handled = 0; \
