@@ -326,9 +326,12 @@ unsigned32              *status;
             goto FREE_IT;
         }
 
+	memset(ip_addr, 0, sizeof(ip_addr));
+
         ip_addr->rpc_protseq_id = protseq_id;
         ip_addr->len            = sizeof (struct sockaddr_in);
-	ip_addr->sa.sin_family = AF_INET;
+	ip_addr->sa.sin_family  = AF_INET;
+	ip_addr->sa.sin_port    = 0;
 
         if (netmask_addr_vec != NULL)
         {
@@ -346,9 +349,12 @@ unsigned32              *status;
                 goto FREE_IT;
             }
             
+	    memset(ip_addr, 0, sizeof(ip_addr));
+
             netmask_addr->rpc_protseq_id = protseq_id;
             netmask_addr->len            = sizeof (struct sockaddr_in);
 	    netmask_addr->sa.sin_family = AF_INET;
+	    netmask_addr->sa.sin_port   = 0;
         }
 
 	if (netmask_addr != NULL)
@@ -568,8 +574,9 @@ unsigned32              *status;
     RPC_SOCKET_FIX_ADDRLEN(&loc_ip_addr);
 	
 #ifdef HACK_DEBUG
-    	printf("rpc__ip_desc_inq_addr: getsockname returned %0lx\n",
-	    loc_ip_addr.sa.sin_addr.s_addr);
+    	printf("rpc__ip_desc_inq_addr: getsockname returned addr:%0lx, port:%d\n",
+	    loc_ip_addr.sa.sin_addr.s_addr,
+	    loc_ip_addr.sa.sin_port);
     print_data((char*)&loc_ip_addr.sa, loc_ip_addr.len);
 #endif
 

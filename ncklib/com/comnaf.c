@@ -928,11 +928,16 @@ unsigned32                *status;
 #endif
 {
     rpc_addr_p_t        addr;
+#ifdef HAVE_OS_WIN32
+    unsigned8           buff[20];
+#else
     unsigned8           buff[sizeof (*addr)];
+#endif
     rpc_socket_error_t  serr;
 
     CODING_ERROR (status);
 
+    memset(buff, 0, sizeof(buff));
     /*
      * Get the endpoint info, ie. fill in the rpc_addr_t. We're
      * really only interested in the family returned in the socket
@@ -940,11 +945,16 @@ unsigned32                *status;
      * bytes long.
      */
     addr = (rpc_addr_p_t) buff;
+#ifdef HAVE_OS_WIN32
+    /* stupid winsock: expects full buffer size... */
+    addr->len = sizeof (struct sockaddr);
+#else
 #ifndef AIX32
     addr->len = sizeof (addr->sa.family);
 #else
     addr->len = (long) (&(addr->sa.data) - &(addr->sa));
 #endif /* AIX32 */
+#endif /* HAVE_OS_WIN32 */
     serr = rpc__socket_inq_endpoint (desc, addr);
     if (RPC_SOCKET_IS_ERR (serr))
     {

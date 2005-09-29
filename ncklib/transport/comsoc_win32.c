@@ -73,7 +73,7 @@ int win32_socket(int domain,int type,int protocol)
 int  win32_accept(int sock,struct sockaddr* sa,int* len)
 {
 	int ret = accept((SOCKET)sock,sa, len);
-	if (ret != SOCKET_ERROR)
+	if (ret != (int)INVALID_SOCKET)
 		return ret;
 	return -1;
 }

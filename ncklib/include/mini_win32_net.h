@@ -190,7 +190,7 @@ struct sockaddr {
 #ifdef CAUSES_PROBLEMS
 #define SOMAXCONN      0x7fffffff /* (5) in WinSock1.1 */
 #else
-#define SOMAXCONN      128
+#define SOMAXCONN      5
 #endif
 
 #define SOL_SOCKET      0xffff
