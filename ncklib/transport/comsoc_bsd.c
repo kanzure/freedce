@@ -409,7 +409,7 @@ connect_again:
                      (int) (addr->len))
             == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_LOG_SOCKET_CONNECT_XIT;
-    if (serr == EINTR)
+    if (serr == RPC_C_SOCKET_EINTR)
     {
         goto connect_again;
     }
@@ -449,11 +449,16 @@ accept_again:
     RPC_LOG_SOCKET_ACCEPT_NTR;
     if (addr == NULL)
     {
+#ifdef HAVE_OS_WIN32
+        *newsock = accept
+            ((int) sock, NULL, NULL);
+#else
         int addrlen;
 
         addrlen = 0;
         *newsock = accept
             ((int) sock, (struct sockaddr *) NULL, (int *) &addrlen);
+#endif
     }
     else
     {
@@ -464,7 +469,7 @@ accept_again:
     }
     serr = (*newsock == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_LOG_SOCKET_ACCEPT_XIT;
-    if (serr == EINTR)
+    if (serr == RPC_C_SOCKET_EINTR)
     {
         goto accept_again;
     }
