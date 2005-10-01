@@ -304,6 +304,7 @@ typedef void (*rpc_prot_init_fn_t) _DCE_PROTOTYPE_ ((
         rpc_prot_binding_epv_p_t    * /*binding__epv*/,
         rpc_prot_network_epv_p_t    * /*network__epv*/,
         rpc_prot_fork_handler_fn_t  * /*fork_handler*/,
+        rpc_socket_epv_p_t          * /*socket_epv*/,
         unsigned32                  * /*st*/
     ));
 
@@ -317,6 +318,7 @@ void rpc__ncacn_init _DCE_PROTOTYPE_ ((
         rpc_prot_binding_epv_p_t    * /*binding_epv*/,
         rpc_prot_network_epv_p_t    * /*network_epv*/,
         rpc_prot_fork_handler_fn_t  * /*fork_handler*/,
+        rpc_socket_epv_p_t          * /*socket_epv*/,
         unsigned32                  * /*st*/
     ));
 
@@ -326,6 +328,7 @@ void rpc__ncadg_init _DCE_PROTOTYPE_ ((
         rpc_prot_binding_epv_p_t    * /*binding_epv*/,
         rpc_prot_network_epv_p_t    * /*network_epv*/,
         rpc_prot_fork_handler_fn_t  * /*fork_handler*/,
+        rpc_socket_epv_p_t          * /*socket_epv*/,
         unsigned32                  * /*st*/
     ));
 

@@ -103,6 +103,7 @@ typedef struct
     rpc_prot_mgmt_epv_t         *mgmt_epv;
     rpc_prot_binding_epv_t      *binding_epv;
     rpc_prot_network_epv_t      *network_epv;
+    rpc_socket_epv_t            *socket_epv;
 } rpc_protocol_id_elt_t, *rpc_protocol_id_elt_p_t;
 
 /*
@@ -114,6 +115,7 @@ typedef struct
 #define RPC_PROTOCOL_INQ_MGMT_EPV(id)       rpc_g_protocol_id[id].mgmt_epv
 #define RPC_PROTOCOL_INQ_BINDING_EPV(id)    rpc_g_protocol_id[id].binding_epv
 #define RPC_PROTOCOL_INQ_NETWORK_EPV(id)    rpc_g_protocol_id[id].network_epv
+#define RPC_PROTOCOL_INQ_SOCKET_EPV(id)     rpc_g_protocol_id[id].socket_epv
 
 /***********************************************************************/
 /*

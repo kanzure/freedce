@@ -9,8 +9,8 @@ SUBDIRS=cn dg
 noinst_LTLIBRARIES=libtrans.la
 
 if TARGET_OS_WIN32
-libtrans_la_SOURCES=comsoc_bsd.c comsoc_win32.c comsoc_win32_sendrcv.c
+libtrans_la_SOURCES=comsoc_bsd.c comsoc_win32.c comsoc_win32_sendrcv.c comsoc.c
 else
-libtrans_la_SOURCES=comsoc_bsd.c
+libtrans_la_SOURCES=comsoc_bsd.c comsoc.c
 endif
 

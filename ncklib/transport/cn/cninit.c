@@ -117,7 +117,7 @@ void rpc__module_init_func(void)
 			rpc__ncacn_init,                /* Connection-RPC */
 			NULL,
 			RPC_C_PROTOCOL_ID_NCACN,
-			NULL, NULL, NULL, NULL 
+			NULL, NULL, NULL, NULL , NULL,
 		}
 	};
 	rpc__register_protocol_id(prot, 1);
@@ -165,6 +165,8 @@ void rpc__module_init_func(void)
 **--
 **/
 
+extern void rpc__socket_bsd_init (rpc_socket_epv_p_t *epv);
+
 void rpc__ncacn_init 
 #ifdef _DCE_PROTO_
 (
@@ -173,6 +175,7 @@ void rpc__ncacn_init
     rpc_prot_binding_epv_p_t        *binding_epv,
     rpc_prot_network_epv_p_t        *network_epv,
     rpc_prot_fork_handler_fn_t      *fork_handler,
+    rpc_socket_epv_p_t              *socket_epv,
     unsigned32                      *st
 )
 #else
@@ -182,6 +185,7 @@ rpc_prot_mgmt_epv_p_t           *mgmt_epv;
 rpc_prot_binding_epv_p_t        *binding_epv;
 rpc_prot_network_epv_p_t        *network_epv;
 rpc_prot_fork_handler_fn_t      *fork_handler;
+rpc_socket_epv_p_t              *socket_epv;
 unsigned32                      *st;
 #endif
 {
@@ -308,6 +312,7 @@ unsigned32                      *st;
     *mgmt_epv = &cn_mgmt_epv;
     *binding_epv = &cn_binding_epv;
     *network_epv = &cn_network_epv;
+    rpc__socket_bsd_init (socket_epv);
 
     if (RPC_DBG(rpc_es_dbg_stats, 5))
     {

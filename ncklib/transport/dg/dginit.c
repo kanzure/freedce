@@ -63,14 +63,14 @@ void rpc__module_init_func(void)
 			rpc__ncadg_init,                /* Datagram-RPC */
 			NULL,
 			RPC_C_PROTOCOL_ID_NCADG,
-			NULL, NULL, NULL, NULL 
+			NULL, NULL, NULL, NULL, NULL
 		}
 	};
 	rpc__register_protocol_id(prot, 1);
 }
 
 
-
+extern void rpc__socket_bsd_init (rpc_socket_epv_p_t *epv);
 extern int win32_gettimeofday(struct timeval *tp, void *unused);
 
 void rpc__ncadg_init
@@ -81,6 +81,7 @@ void rpc__ncadg_init
     rpc_prot_binding_epv_t **binding_epv,
     rpc_prot_network_epv_t **network_epv, 
     rpc_prot_fork_handler_fn_t *fork_handler,
+    rpc_socket_epv_p_t         *socket_epv,
     unsigned32 *st
 )
 #else
@@ -90,6 +91,7 @@ rpc_prot_mgmt_epv_t **mgmt_epv;
 rpc_prot_binding_epv_t **binding_epv;
 rpc_prot_network_epv_t **network_epv; 
 rpc_prot_fork_handler_fn_t *fork_handler;
+rpc_socket_epv_t               *socket_epv;
 unsigned32 *st;
 #endif
 {
@@ -140,6 +142,8 @@ unsigned32 *st;
     *mgmt_epv    = &dg_mgmt_epv;
     *binding_epv = &dg_binding_epv;
     *network_epv = &dg_network_epv; 
+    rpc__socket_bsd_init (socket_epv);
+
 #ifdef ATFORK_SUPPORTED
     *fork_handler= rpc__ncadg_fork_handler;
 #else

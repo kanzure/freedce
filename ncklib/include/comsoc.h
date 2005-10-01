@@ -80,6 +80,8 @@
 typedef struct iovec rpc_socket_iovec_t;
 typedef struct iovec *rpc_socket_iovec_p_t;
 
+typedef struct rpc_socket_epv *rpc_socket_epv_p_t;
+
 #include <comsoc_sys.h>
 #include <comnaf.h>
 #include <ipnaf.h>
@@ -88,6 +90,173 @@ typedef struct iovec *rpc_socket_iovec_p_t;
 extern "C" {
 #endif
 
+
+
+/* function pointer definers for the socket endpoints */
+
+typedef rpc_socket_error_t (*rpc__socket_open_fn_t) _DCE_PROTOTYPE_((
+        rpc_protseq_id_t pseq_id,
+        rpc_socket_t * /*sock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_open_basic_fn_t) _DCE_PROTOTYPE_((
+        rpc_naf_id_t  /*naf*/,
+        rpc_network_if_id_t  /*net_if*/,
+        rpc_network_protocol_id_t  /*net_prot*/,
+        rpc_socket_t * /*sock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_close_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t /*sock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_bind_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        rpc_addr_p_t /*addr*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_connect_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        rpc_addr_p_t /*addr*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_accept_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        rpc_addr_p_t  /*addr*/,
+        rpc_socket_t * /*newsock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_listen_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t /*sock*/,
+        int /*backlog*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_sendmsg_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        rpc_socket_iovec_p_t  /*iov*/,   /* array of bufs of data to send */
+        int  /*iov_len*/,        /* number of bufs */
+        rpc_addr_p_t  /*addr*/,  /* addr of receiver */
+        int * /*cc*/             /* returned number of bytes actually sent */
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_recvfrom_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        byte_p_t  /*buf*/,       /* buf for rcvd data */
+        int  /*len*/,            /* len of above buf */
+        rpc_addr_p_t  /*from*/,  /* addr of sender */
+        int * /*cc*/             /* returned number of bytes actually rcvd */
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_recvmsg_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        rpc_socket_iovec_p_t  /*iov*/,   /* array of bufs for rcvd data */
+        int  /*iov_len*/,        /* number of bufs */
+        rpc_addr_p_t  /*addr*/,  /* addr of sender */
+        int * /*cc*/             /* returned number of bytes actually rcvd */
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_inq_endpoint_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        rpc_addr_p_t /*addr*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_set_broadcast_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t /*sock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_set_bufs_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/, 
+        unsigned32  /*txsize*/, 
+        unsigned32  /*rxsize*/, 
+        unsigned32 * /*ntxsize*/, 
+        unsigned32 * /*nrxsize*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_set_nbio_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t /*sock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_set_close_on_exec_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t /*sock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_getpeername_fn_t) _DCE_PROTOTYPE_ ((
+        rpc_socket_t  /*sock*/,
+        rpc_addr_p_t /*addr*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_get_if_id_fn_t) _DCE_PROTOTYPE_ ((
+        rpc_socket_t         /*sock*/,
+        rpc_network_if_id_t * /*network_if_id*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_set_keepalive_fn_t) _DCE_PROTOTYPE_ ((
+        rpc_socket_t        /*sock*/
+    ));
+
+
+typedef rpc_socket_error_t (*rpc__socket_nowriteblock_wait_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/,
+        struct timeval * /*tmo*/
+    ));
+
+typedef rpc_socket_error_t (*rpc__socket_nodelay_fn_t) _DCE_PROTOTYPE_((
+        rpc_socket_t  /*sock*/
+    ));
+
+
+typedef boolean (*rpc__socket_is_valid_fn_t) _DCE_PROTOTYPE_ ((
+        rpc_socket_t        /*sock*/
+    ));
+
+typedef boolean (*rpc__socket_is_equal_fn_t) _DCE_PROTOTYPE_ ((
+        rpc_socket_t        /*sock*/,
+        rpc_socket_t        /*sock*/
+    ));
+
+
+
+typedef struct rpc_socket_epv
+{   
+	rpc__socket_open_fn_t                       sock_open;
+	rpc__socket_open_basic_fn_t                 sock_open_basic;
+	rpc__socket_close_fn_t                      sock_close;
+	rpc__socket_bind_fn_t                       sock_bind;
+	rpc__socket_connect_fn_t                    sock_connect;
+	rpc__socket_accept_fn_t                     sock_accept;
+	rpc__socket_listen_fn_t                     sock_listen;
+	rpc__socket_sendmsg_fn_t                    sock_sendmsg;
+	rpc__socket_recvfrom_fn_t                   sock_recvfrom;
+	rpc__socket_recvmsg_fn_t                    sock_recvmsg;
+	rpc__socket_inq_endpoint_fn_t               sock_inq_endpoint;
+	rpc__socket_set_broadcast_fn_t              sock_set_broadcast;
+	rpc__socket_set_bufs_fn_t                   sock_set_bufs;
+	rpc__socket_set_nbio_fn_t                   sock_set_nbio;
+	rpc__socket_set_close_on_exec_fn_t          sock_set_close_on_exec;
+	rpc__socket_getpeername_fn_t                sock_getpeername;
+	rpc__socket_get_if_id_fn_t                  sock_get_if_id;
+	rpc__socket_set_keepalive_fn_t              sock_set_keepalive;
+	rpc__socket_nowriteblock_wait_fn_t          sock_nowriteblock_wait;
+	rpc__socket_nodelay_fn_t                    sock_nodelay;
+
+} rpc_socket_epv_t;
 
 /*
  * R P C _ _ S O C K E T _ O P E N
@@ -391,6 +560,10 @@ PRIVATE rpc_socket_error_t rpc__socket_set_keepalive _DCE_PROTOTYPE_ ((
 PRIVATE rpc_socket_error_t rpc__socket_nowriteblock_wait _DCE_PROTOTYPE_((
         rpc_socket_t  /*sock*/,
         struct timeval * /*tmo*/
+    ));
+
+PRIVATE rpc_socket_error_t rpc__socket_nodelay _DCE_PROTOTYPE_((
+		        rpc_socket_t  /* sock */
     ));
 
 #ifdef __cplusplus

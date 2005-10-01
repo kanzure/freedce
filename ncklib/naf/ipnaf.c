@@ -1720,25 +1720,7 @@ rpc_socket_t            desc;
 unsigned32              *status;
 #endif
 {
-    int                 err;
-    int                 delay = 1;
-
-    /*
-     * Assume this is a TCP socket and corresponding connection. If
-     * not the setsockopt will fail.
-     */
-    if ((err = setsockopt (desc, 
-                           IPPROTO_TCP, 
-                           TCP_NODELAY, 
-                           (char *) &delay,
-                           sizeof (delay))) < 0)
-    {
-        *status = rpc_s_cannot_set_nodelay;
-    }
-    else
-    {
-        *status = rpc_s_ok;
-    }
+    *status = rpc__socket_nodelay(desc);
 }
 
 

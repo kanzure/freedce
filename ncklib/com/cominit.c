@@ -470,9 +470,13 @@ INTERNAL void init_once(void)
 			if (rpc_protocol->prot_init)
 			{
 				(*rpc_protocol->prot_init)
-					(&(rpc_protocol->call_epv), &(rpc_protocol->mgmt_epv),
-					 &(rpc_protocol->binding_epv), &(rpc_protocol->network_epv),
-					 &(rpc_protocol->prot_fork_handler), &status);
+					(&(rpc_protocol->call_epv),
+					 &(rpc_protocol->mgmt_epv),
+					 &(rpc_protocol->binding_epv),
+					 &(rpc_protocol->network_epv),
+					 &(rpc_protocol->prot_fork_handler),
+					 &(rpc_protocol->socket_epv),
+					 &status);
 				if (status != rpc_s_ok)
 				{
 					dce_error_string_t error_text;
