@@ -48,6 +48,8 @@
 #include <fcntl.h>
 #include <rpcmem.h>
 #include <comsoc.h>
+#include <comsoc_win32_np.h>
+#include <ncacn_np.h>
 /*#include <dce/cma_ux_wrappers.h>*/
 
 #ifdef HAVE_OS_WIN32
@@ -69,7 +71,7 @@
 /* ======================================================================== */
 
 /*
- * What we think a socket's buffering is in case rpc__socket_bsd_set_bufs()
+ * What we think a socket's buffering is in case rpc__socket_np_set_bufs()
  * fails miserably.  The #ifndef is here so that these values can be
  * overridden in a per-system file.
  */
@@ -98,7 +100,7 @@
 /* ======================================================================== */
 
 /*
- * R P C _ _ S O C K E T _ O P E N
+ * R P C _ _ S O C K E T _ O P E N _ S R V
  *
  * Create a new socket for the specified Protocol Sequence.
  * The new socket has blocking IO semantics.
@@ -106,35 +108,64 @@
  * (see BSD UNIX socket(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_open
+PRIVATE rpc_socket_error_t rpc__socket_np_open_srv
 #ifdef _DCE_PROTO_
 (
     rpc_protseq_id_t    pseq_id,
+    rpc_addr_p_t        addr,
     rpc_socket_t        *sock
 )
 #else
-(pseq_id, sp)
+(pseq_id, addr, sp)
 rpc_protseq_id_t    pseq_id;
+rpc_addr_p_t        addr;
 rpc_socket_t        *sock;
 #endif
 {
+    struct sockaddr_np * npsa = (struct sockaddr_np *)&addr->sa;
     RPC_LOG_SOCKET_OPEN_NTR;
-
-#ifdef HAVE_OS_WIN32
-    *sock = win32_socket(
-        (int) RPC_PROTSEQ_INQ_NAF_ID(pseq_id),
-        (int) RPC_PROTSEQ_INQ_NET_IF_ID(pseq_id),
-        (int) RPC_PROTSEQ_INQ_NET_PROT_ID(pseq_id));
-#else
-    *sock = socket(
-        (int) RPC_PROTSEQ_INQ_NAF_ID(pseq_id),
-        (int) RPC_PROTSEQ_INQ_NET_IF_ID(pseq_id),
-        (int) RPC_PROTSEQ_INQ_NET_PROT_ID(pseq_id));
-#endif
-
+    if (pseq_id != RPC_C_PROTSEQ_ID_NCACN_NP)
+	    return rpc_s_cant_create_sock;
+    *sock = rpc__namedpipe_create(npsa->pipe_name);
     RPC_LOG_SOCKET_OPEN_XIT;
-    return ((*sock == -1) ? socket_error : RPC_C_SOCKET_OK);
+    return ((*sock == -1) ? np_socket_error() : RPC_C_SOCKET_OK);
 }
+
+
+
+/*
+ * R P C _ _ S O C K E T _ O P E N _ C L I
+ *
+ * Create a new socket for the specified Protocol Sequence.
+ * The new socket has blocking IO semantics.
+ *
+ * (see BSD UNIX socket(2)).
+ */
+
+PRIVATE rpc_socket_error_t rpc__socket_np_open_cli
+#ifdef _DCE_PROTO_
+(
+    rpc_protseq_id_t    pseq_id,
+    rpc_addr_p_t        addr,
+    rpc_socket_t        *sock
+)
+#else
+(pseq_id, addr, sp)
+rpc_protseq_id_t    pseq_id;
+rpc_addr_p_t        addr;
+rpc_socket_t        *sock;
+#endif
+{
+    struct sockaddr_np * npsa = (struct sockaddr_np *)&addr->sa;
+    RPC_LOG_SOCKET_OPEN_NTR;
+    if (pseq_id != RPC_C_PROTSEQ_ID_NCACN_NP)
+	    return rpc_s_cant_create_sock;
+    *sock = rpc__namedpipe_open_cli(npsa->serv_name, npsa->pipe_name);
+    RPC_LOG_SOCKET_OPEN_XIT;
+    return ((*sock == -1) ? np_socket_error() : RPC_C_SOCKET_OK);
+}
+
+
 
 /*
  * R P C _ _ S O C K E T _ O P E N _ B A S I C
@@ -144,7 +175,7 @@ rpc_socket_t        *sock;
  * determine what network services are supported by the host OS.
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_open_basic
+PRIVATE rpc_socket_error_t rpc__socket_np_open_basic
 #ifdef _DCE_PROTO_
 (
     rpc_naf_id_t        naf,
@@ -160,11 +191,7 @@ rpc_network_protocol_id_t net_prot;
 rpc_socket_t        *sock;
 #endif
 {
-#ifdef HAVE_OS_WIN32
     *sock = win32_socket((int) naf, (int) net_if, (int) net_prot);
-#else
-    *sock = socket((int) naf, (int) net_if, (int) net_prot);
-#endif
 
     return ((*sock == -1) ? socket_error : RPC_C_SOCKET_OK);
 }
@@ -177,7 +204,7 @@ rpc_socket_t        *sock;
  * (see BSD UNIX close(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_close
+PRIVATE rpc_socket_error_t rpc__socket_np_close
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock
@@ -190,193 +217,8 @@ rpc_socket_t        sock;
     rpc_socket_error_t  serr;
 
     RPC_LOG_SOCKET_CLOSE_NTR;
-    serr = (close(sock) == -1) ? socket_error : RPC_C_SOCKET_OK;
+    serr = (rpc__namedpipe_close(sock) == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_LOG_SOCKET_CLOSE_XIT;
-    return (serr);
-}
-
-/*
- * R P C _ _ S O C K E T _ B I N D
- *
- * Bind a socket to a specified local address.
- *
- * (see BSD UNIX bind(2)).
- */
-
-PRIVATE rpc_socket_error_t rpc__socket_bsd_bind
-#ifdef _DCE_PROTO_
-(
-    rpc_socket_t        sock,
-    rpc_addr_p_t        addr
-)
-#else
-(sock, addr)
-rpc_socket_t        sock;
-rpc_addr_p_t        addr;
-#endif
-{
-    rpc_socket_error_t  serr = EINVAL;
-    unsigned32 status;
-    rpc_addr_p_t temp_addr = NULL;
-    boolean has_endpoint = false;
-    int setsock_val = 1;
-
-    RPC_LOG_SOCKET_BIND_NTR;
-
-    /*
-     * Check if the address has a well-known endpoint.
-     */
-    if (addr->rpc_protseq_id == RPC_C_PROTSEQ_ID_NCACN_IP_TCP ||
-			 addr->rpc_protseq_id == RPC_C_PROTSEQ_ID_NCALRPC)
-    {
-        unsigned_char_t *endpoint;
-
-        rpc__naf_addr_inq_endpoint (addr, &endpoint, &status);
-
-        if (status == rpc_s_ok && endpoint != NULL)
-        {
-            if (endpoint[0] != '\0')    /* test for null string */
-                has_endpoint = true;
-
-            rpc_string_free (&endpoint, &status);
-        }
-        status = rpc_s_ok;
-    }
-
-    /* 
-     * If there is no port restriction in this address family, then do a 
-     * simple bind. 
-     */
-    
-    if (! RPC_PROTSEQ_TEST_PORT_RESTRICTION (addr -> rpc_protseq_id))
-    {
-        serr = 
-            (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1) ? 
-		socket_error : RPC_C_SOCKET_OK;
-#if defined(SOL_SOCKET) && defined(SO_REUSEADDR)
-        if (serr == RPC_C_SOCKET_EADDRINUSE && has_endpoint)
-        {
-            if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
-                           &setsock_val, sizeof(setsock_val)) != -1)
-            {
-                serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)
-                    ? socket_error : RPC_C_SOCKET_OK;
-            }
-        }
-#endif
-    }                                   /* no port restriction */
-
-    else                          
-    {
-        /* 
-         * Port restriction is in place.  If the address has a well-known 
-         * endpoint, then do a simple bind.
-         */
-        
-        if (has_endpoint)
-        {
-            serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)?
-                socket_error : RPC_C_SOCKET_OK;
-#if defined(SOL_SOCKET) && defined(SO_REUSEADDR)
-            if (serr == RPC_C_SOCKET_EADDRINUSE)
-            {
-                if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
-                               &setsock_val, sizeof(setsock_val)) != -1)
-                {
-                    serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)
-                        ? socket_error : RPC_C_SOCKET_OK;
-                }
-            }
-#endif
-        }                               /* well-known endpoint */
-        else
-	{
-
-	    unsigned_char_t *endpoint;
-	    unsigned char c;
-
-	    rpc__naf_addr_inq_endpoint (addr, &endpoint, &status);
-
-	    c = endpoint[0];               /* grab first char */
-	    rpc_string_free (&endpoint, &status);
-
-	    if (c != '\0')       /* test for null string */
-	    {
-	        serr = (bind(sock, (struct sockaddr *)&addr->sa, addr->len) == -1)?
-		    socket_error : RPC_C_SOCKET_OK;
-	    }                               /* well-known endpoint */
-
-	    else
-	    {
-	        /* 
-	         * Port restriction is in place and the address doesn't have a 
-	         * well-known endpoint.  Try to bind until we hit a good port, 
-	         * or exhaust the retry count.
-	         * 
-	         * Make a copy of the address to work in; if we hardwire an 
-	         * endpoint into our caller's address, later logic could infer 
-	         * that it is a well-known endpoint. 
-	         */
-	    
-	        unsigned32 i;
-	        boolean found;
-	    
-	        for (i = 0, found = false; 
-		     (i < RPC_PORT_RESTRICTION_INQ_N_TRIES (addr->rpc_protseq_id))
-		     && !found;
-		     i++)   
-	        {
-		    unsigned_char_p_t port_name;
-
-		    rpc__naf_addr_overcopy (addr, &temp_addr, &status);
-
-		    if (status != rpc_s_ok)
-		    {
-		        serr = RPC_C_SOCKET_EIO;
-		        break;
-		    }
-
-		    rpc__naf_get_next_restricted_port (temp_addr -> rpc_protseq_id,
-						   &port_name, &status);
-
-		    if (status != rpc_s_ok)
-		    {
-		        serr = RPC_C_SOCKET_EIO;
-		        break;
-		    }
-    
-		    rpc__naf_addr_set_endpoint (port_name, &temp_addr, &status);
-
-		    if (status != rpc_s_ok)
-		    {
-		        serr = RPC_C_SOCKET_EIO;
-		        rpc_string_free (&port_name, &status);
-		        break;
-		    }
-
-		    if (bind(sock, (struct sockaddr *)&temp_addr->sa, temp_addr->len) == 0)
-		    {
-		        found = true;
-		        serr = RPC_C_SOCKET_OK;
-		    }
-		    else
-		        serr = RPC_C_SOCKET_EIO;
-
-		    rpc_string_free (&port_name, &status);
-	        }                           /* for i */
-
-	        if (!found)
-	        {
-		    serr = RPC_C_SOCKET_EADDRINUSE;
-	        }
-	    }                               /* no well-known endpoint */
-        }				/* has endpoint */
-    }                                   /* port restriction is in place */
-
-    if (temp_addr != NULL)
-        rpc__naf_addr_free (&temp_addr, &status);
-
-    RPC_LOG_SOCKET_BIND_XIT;
     return (serr);
 }
 
@@ -389,7 +231,7 @@ rpc_addr_p_t        addr;
  * (see BSD UNIX connect(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_connect
+PRIVATE rpc_socket_error_t rpc__socket_np_connect
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -431,7 +273,7 @@ connect_again:
  * (see BSD UNIX accept(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_accept
+PRIVATE rpc_socket_error_t rpc__socket_np_accept
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -451,16 +293,8 @@ accept_again:
     RPC_LOG_SOCKET_ACCEPT_NTR;
     if (addr == NULL)
     {
-#ifdef HAVE_OS_WIN32
         *newsock = accept
             ((int) sock, NULL, NULL);
-#else
-        int addrlen;
-
-        addrlen = 0;
-        *newsock = accept
-            ((int) sock, (struct sockaddr *) NULL, (int *) &addrlen);
-#endif
     }
     else
     {
@@ -487,7 +321,7 @@ accept_again:
  * (see BSD UNIX listen(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_listen
+PRIVATE rpc_socket_error_t rpc__socket_np_listen
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -516,7 +350,7 @@ int                 backlog;
  * (see BSD UNIX sendmsg(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_sendmsg
+PRIVATE rpc_socket_error_t rpc__socket_np_sendmsg
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -553,7 +387,7 @@ int                 *cc;        /* returned number of bytes actually sent */
  * (see BSD UNIX recvfrom(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_recvfrom
+PRIVATE rpc_socket_error_t rpc__socket_np_recvfrom
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -589,7 +423,7 @@ int                 *cc;        /* returned number of bytes actually rcvd */
  * (see BSD UNIX recvmsg(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_recvmsg
+PRIVATE rpc_socket_error_t rpc__socket_np_recvmsg
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -624,7 +458,7 @@ int                 *cc;        /* returned number of bytes actually rcvd */
  * !!! NOTE: You should use rpc__naf_desc_inq_addr() !!!
  *
  * This routine is indended for use only by the internal routine:
- * rpc__naf_desc_inq_addr().  rpc__socket_bsd_inq_endpoint() only has the
+ * rpc__naf_desc_inq_addr().  rpc__socket_np_inq_endpoint() only has the
  * functionality of BSD UNIX getsockname() which doesn't (at least not
  * on all systems) return the local network portion of a socket's address.
  * rpc__naf_desc_inq_addr() returns the complete address for a socket.
@@ -632,7 +466,7 @@ int                 *cc;        /* returned number of bytes actually rcvd */
  * (see BSD UNIX getsockname(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_inq_endpoint
+PRIVATE rpc_socket_error_t rpc__socket_np_inq_endpoint
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -661,7 +495,7 @@ rpc_addr_p_t        addr;
  * Used only by Datagram based Protocol Services.
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_set_broadcast
+PRIVATE rpc_socket_error_t rpc__socket_np_set_broadcast
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock
@@ -675,16 +509,11 @@ rpc_socket_t        sock;
     int setsock_val = 1;
     int i;
 
-#ifdef HAVE_OS_WIN32
     i = win32_setsockopt(sock, SOL_SOCKET, SO_BROADCAST, 
             &setsock_val, sizeof(setsock_val));
-#else
-    i = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, 
-            &setsock_val, sizeof(setsock_val));
-#endif
     if (i < 0) 
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_bsd_set_broadcast) error=%d\n", socket_error));
+        RPC_DBG_GPRINTF(("(rpc__socket_np_set_broadcast) error=%d\n", socket_error));
         return (socket_error);
     }
 
@@ -711,7 +540,7 @@ rpc_socket_t        sock;
  * system default (i.e. we don't set anything at all).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_set_bufs
+PRIVATE rpc_socket_error_t rpc__socket_np_set_bufs
     
 #ifdef _DCE_PROTO_
 (
@@ -746,7 +575,7 @@ unsigned32          *nrxsize;
         if (e == -1)
         {
             RPC_DBG_GPRINTF
-(("(rpc__socket_bsd_set_bufs) WARNING: set sndbuf (%d) failed - error = %d\n", 
+(("(rpc__socket_np_set_bufs) WARNING: set sndbuf (%d) failed - error = %d\n", 
                 txsize, socket_error));
         }
     }
@@ -754,15 +583,11 @@ unsigned32          *nrxsize;
     rxsize = MIN(rxsize, RPC_C_SOCKET_MAX_RCVBUF);
     if (rxsize != 0)
     {
-#ifdef HAVE_OS_WIN32
         e = win32_setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &rxsize, sizeof(rxsize));
-#else
-        e = setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &rxsize, sizeof(rxsize));
-#endif
         if (e == -1)
         {
             RPC_DBG_GPRINTF
-(("(rpc__socket_bsd_set_bufs) WARNING: set rcvbuf (%d) failed - error = %d\n", 
+(("(rpc__socket_np_set_bufs) WARNING: set rcvbuf (%d) failed - error = %d\n", 
                 rxsize, socket_error));
         }
     }
@@ -776,7 +601,7 @@ unsigned32          *nrxsize;
     if (e == -1)
     {
         RPC_DBG_GPRINTF
-(("(rpc__socket_bsd_set_bufs) WARNING: get sndbuf failed - error = %d\n", socket_error));
+(("(rpc__socket_np_set_bufs) WARNING: get sndbuf failed - error = %d\n", socket_error));
         *ntxsize = RPC_C_SOCKET_GUESSED_SNDBUF;
     }
 
@@ -786,7 +611,7 @@ unsigned32          *nrxsize;
     if (e == -1)
     {
         RPC_DBG_GPRINTF
-(("(rpc__socket_bsd_set_bufs) WARNING: get rcvbuf failed - error = %d\n", socket_error));
+(("(rpc__socket_np_set_bufs) WARNING: get rcvbuf failed - error = %d\n", socket_error));
         *nrxsize = RPC_C_SOCKET_GUESSED_RCVBUF;
     }
 
@@ -825,50 +650,17 @@ unsigned32          *nrxsize;
  * Return RPC_C_SOCKET_OK on success, otherwise an error value.
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_set_nbio
+PRIVATE rpc_socket_error_t rpc__socket_np_set_nbio
 #ifdef _DCE_PROTO_
 (
-    rpc_socket_t        sock
+    rpc_socket_t        sock  __attribute__((__unused__))
 )
 #else
 (sock)
 rpc_socket_t        sock;
 #endif
 {
-#ifdef HAVE_OS_WIN32
-    unsigned long flag = true;
-    win32_ioctlsocket(sock, FIONBIO, &flag);
     return (RPC_C_SOCKET_OK);
-#else
-#ifndef vms
-
-    int i;
-
-    i = fcntl(sock, F_SETFL, O_NDELAY);
-    if (i == -1)
-    {
-        RPC_DBG_GPRINTF(("(rpc__socket_bsd_set_nbio) error=%d\n", socket_error));
-        return (socket_error);
-    }
-
-    return (RPC_C_SOCKET_OK);
-
-#else
-
-#ifdef DUMMY
-/*
- * Note: This call to select non-blocking I/O is not implemented
- * by UCX on VMS. If this routine is really needed to work in the future
- * on VMS this will have to be done via QIO's.
- */
-    int flag = true;
-    
-    ioctl(sock, FIONBIO, &flag);
-#endif
-    return (RPC_C_SOCKET_OK);
-
-#endif
-#endif
 }
 
 /*
@@ -881,33 +673,16 @@ rpc_socket_t        sock;
  * Return RPC_C_SOCKET_OK on success, otherwise an error value.
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_set_close_on_exec
+PRIVATE rpc_socket_error_t rpc__socket_np_set_close_on_exec
 #ifdef _DCE_PROTO_
 (
-#ifdef HAVE_OS_WIN32
     rpc_socket_t        sock  __attribute__((__unused__))
-#else
-    rpc_socket_t        sock
-#endif
 )
 #else
 (sock)
 rpc_socket_t        sock;
 #endif
 {
-#ifndef vms
-#ifndef HAVE_OS_WIN32
-    int i;
-
-    i = fcntl(sock, F_SETFD, 1);
-    if (i == -1)
-    {
-        RPC_DBG_GPRINTF(("(rpc__socket_bsd_set_close_on_exec) error=%d\n", socket_error));
-        return (socket_error);
-    }
-#endif
-#endif
-
     return (RPC_C_SOCKET_OK);
 }
 
@@ -920,7 +695,7 @@ rpc_socket_t        sock;
  * (see BSD UNIX getpeername(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_getpeername 
+PRIVATE rpc_socket_error_t rpc__socket_np_getpeername 
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t sock,
@@ -949,7 +724,7 @@ rpc_addr_p_t addr;
  * (see BSD UNIX getsockopt(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_get_if_id 
+PRIVATE rpc_socket_error_t rpc__socket_np_get_if_id 
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock,
@@ -984,7 +759,7 @@ rpc_network_if_id_t *network_if_id;
  * (see BSD UNIX setsockopt(2)).
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_set_keepalive
+PRIVATE rpc_socket_error_t rpc__socket_np_set_keepalive
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t        sock
@@ -1002,7 +777,7 @@ rpc_socket_t        sock;
             &setsock_val, sizeof(setsock_val));
     if (i < 0) 
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_bsd_set_keepalive) error=%d\n", socket_error));
+        RPC_DBG_GPRINTF(("(rpc__socket_np_set_keepalive) error=%d\n", socket_error));
         return (socket_error);
     }
 
@@ -1022,7 +797,7 @@ rpc_socket_t        sock;
  * if a timeout occurs.  This operation in not cancellable.
  */
 
-PRIVATE rpc_socket_error_t rpc__socket_bsd_nowriteblock_wait
+PRIVATE rpc_socket_error_t rpc__socket_np_nowriteblock_wait
 #ifdef _DCE_PROTO_
 (
     rpc_socket_t sock,
@@ -1050,20 +825,20 @@ struct timeval *tmo;
 
     if (num_found < 0)
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_bsd_nowriteblock_wait) error=%d\n", socket_error));
+        RPC_DBG_GPRINTF(("(rpc__socket_np_nowriteblock_wait) error=%d\n", socket_error));
         return socket_error;
     }
 
     if (num_found == 0)
     {
-        RPC_DBG_GPRINTF(("(rpc__socket_bsd_nowriteblock_wait) timeout\n"));
+        RPC_DBG_GPRINTF(("(rpc__socket_np_nowriteblock_wait) timeout\n"));
         return RPC_C_SOCKET_ETIMEDOUT;
     }
 
     return RPC_C_SOCKET_OK;
 }
 
-static rpc_socket_error_t rpc__socket_bsd_nodelay (
+static rpc_socket_error_t rpc__socket_np_nodelay (
 		        rpc_socket_t  sock
 			    )
 {
@@ -1086,30 +861,30 @@ static rpc_socket_error_t rpc__socket_bsd_nodelay (
 }
 
 
-rpc_socket_epv_t bsd_sock_fns = 
+static rpc_socket_epv_t np_sock_fns = 
 {
-	rpc__socket_bsd_open,
-	NULL, /* just... don't call it, okay? */
-	NULL, /* just... don't call it, okay? */
-	rpc__socket_bsd_open_basic,
-	rpc__socket_bsd_close,
-	rpc__socket_bsd_bind,
-	rpc__socket_bsd_connect,
-	rpc__socket_bsd_accept,
-	rpc__socket_bsd_listen,
-	rpc__socket_bsd_sendmsg,
-	rpc__socket_bsd_recvfrom,
-	rpc__socket_bsd_recvmsg,
-	rpc__socket_bsd_inq_endpoint,
-	rpc__socket_bsd_set_broadcast,
-	rpc__socket_bsd_set_bufs,
-	rpc__socket_bsd_set_nbio,
-	rpc__socket_bsd_set_close_on_exec,
-	rpc__socket_bsd_getpeername,
-	rpc__socket_bsd_get_if_id,
-	rpc__socket_bsd_set_keepalive,
-	rpc__socket_bsd_nowriteblock_wait,
-	rpc__socket_bsd_nodelay
+	NULL, /* open: just... don't call it.  just don't! */
+	rpc__socket_np_open_cli,
+	rpc__socket_np_open_srv,
+	NULL, /* open_basic: just... don't call it.  just don't! */
+	rpc__socket_np_close,
+	NULL, /* bind: just... don't call it.  just don't! */
+	rpc__socket_np_connect,
+	rpc__socket_np_accept,
+	rpc__socket_np_listen,
+	rpc__socket_np_sendmsg,
+	rpc__socket_np_recvfrom,
+	rpc__socket_np_recvmsg,
+	rpc__socket_np_inq_endpoint,
+	rpc__socket_np_set_broadcast,
+	rpc__socket_np_set_bufs,
+	rpc__socket_np_set_nbio,
+	rpc__socket_np_set_close_on_exec,
+	rpc__socket_np_getpeername,
+	rpc__socket_np_get_if_id,
+	rpc__socket_np_set_keepalive,
+	rpc__socket_np_nowriteblock_wait,
+	rpc__socket_np_nodelay
 };
 
 
@@ -1122,8 +897,8 @@ rpc_socket_epv_t bsd_sock_fns =
  * if a timeout occurs.  This operation in not cancellable.
  */
 
-PRIVATE void rpc__socket_bsd_init
+PRIVATE void rpc__socket_np_init
 (rpc_socket_epv_p_t *epv)
 {
-	*epv = &bsd_sock_fns;
+	*epv = &np_sock_fns;
 }

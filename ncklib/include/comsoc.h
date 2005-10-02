@@ -100,6 +100,31 @@ typedef rpc_socket_error_t (*rpc__socket_open_fn_t) _DCE_PROTOTYPE_((
     ));
 
 
+/* this one is for client-side specialities, yummy, in ncacn_np,
+ * otherwise what you have to do is mess about storing state information
+ * until such time as you know that either a connect or a listen is being
+ * done.  server-side you use CreateNamedPipe, client-side you use
+ * CreateFile and SetNamedPipeHandleState ugh. */
+ 
+typedef rpc_socket_error_t (*rpc__socket_open_cli_fn_t) _DCE_PROTOTYPE_((
+        rpc_protseq_id_t pseq_id,
+        rpc_addr_p_t /*addr*/,
+        rpc_socket_t * /*sock*/
+    ));
+
+/* this one is for server-side specialities, yummy, in ncacn_np 
+ * otherwise what you have to do is mess about storing state information
+ * until such time as you know that either a connect or a listen is being
+ * done.  server-side you use CreateNamedPipe, client-side you use
+ * CreateFile and SetNamedPipeHandleState ugh. */
+ 
+typedef rpc_socket_error_t (*rpc__socket_open_srv_fn_t) _DCE_PROTOTYPE_((
+        rpc_protseq_id_t pseq_id,
+        rpc_addr_p_t /*addr*/,
+        rpc_socket_t * /*sock*/
+    ));
+
+
 typedef rpc_socket_error_t (*rpc__socket_open_basic_fn_t) _DCE_PROTOTYPE_((
         rpc_naf_id_t  /*naf*/,
         rpc_network_if_id_t  /*net_if*/,
@@ -236,6 +261,8 @@ typedef boolean (*rpc__socket_is_equal_fn_t) _DCE_PROTOTYPE_ ((
 typedef struct rpc_socket_epv
 {   
 	rpc__socket_open_fn_t                       sock_open;
+	rpc__socket_open_cli_fn_t                   sock_open_cli;
+	rpc__socket_open_srv_fn_t                   sock_open_srv;
 	rpc__socket_open_basic_fn_t                 sock_open_basic;
 	rpc__socket_close_fn_t                      sock_close;
 	rpc__socket_bind_fn_t                       sock_bind;
@@ -269,6 +296,38 @@ typedef struct rpc_socket_epv
 
 PRIVATE rpc_socket_error_t rpc__socket_open _DCE_PROTOTYPE_((
         rpc_protseq_id_t pseq_id,
+        rpc_socket_t * /*sock*/
+    ));
+
+
+/*
+ * R P C _ _ S O C K E T _ O P E N _ S R V
+ *
+ * Create a new server-side socket for the specified Protocol Sequence.
+ * The new socket has blocking IO semantics.
+ *
+ * (see BSD UNIX socket(2)).
+ */
+
+PRIVATE rpc_socket_error_t rpc__socket_open_srv _DCE_PROTOTYPE_((
+        rpc_protseq_id_t pseq_id,
+        rpc_addr_p_t /*addr*/,
+        rpc_socket_t * /*sock*/
+    ));
+
+
+/*
+ * R P C _ _ S O C K E T _ O P E N _ C L I
+ *
+ * Create a new client-side socket for the specified Protocol Sequence.
+ * The new socket has blocking IO semantics.
+ *
+ * (see BSD UNIX socket(2)).
+ */
+
+PRIVATE rpc_socket_error_t rpc__socket_open_cli _DCE_PROTOTYPE_((
+        rpc_protseq_id_t pseq_id,
+        rpc_addr_p_t /*addr*/,
         rpc_socket_t * /*sock*/
     ));
 

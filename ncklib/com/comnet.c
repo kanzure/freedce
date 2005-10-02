@@ -2325,6 +2325,14 @@ unsigned32          *status;
 
     CODING_ERROR (status);
 
+    if (pseq_id == RPC_C_PROTSEQ_ID_NCACN_NP)
+    {
+	/* XXX: not an appropriate message to say that NamedPipes
+	 * don't have a concept of "local address".  oh well.
+	 */
+        *status = rpc_s_cant_create_sock;
+	return;
+    }
     /*
      * Create a network descriptor for this RPC Protocol Sequence.
      */

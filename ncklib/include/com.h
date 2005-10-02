@@ -151,6 +151,7 @@ EXTERNAL unsigned32    rpc_g_fork_count;
 #ifdef TEST_PROTOCOL
 #define RPC_C_PROTSEQ_ID_NCATP_IP_TCP   6
 #endif /* TEST_PROTOCOL */
+#define RPC_C_PROTSEQ_ID_NCACN_NP       10
 
 /* Allow for dynamic protocols */
 #define RPC_C_PROTSEQ_ID_MAX            16
@@ -179,6 +180,7 @@ typedef unsigned_char_t rpc_protseq_t[RPC_C_PROTSEQ_MAX];
 #define RPC_PROTSEQ_NCADG_IP_UDP        "ncadg_ip_udp"
 #define RPC_PROTSEQ_NCADG_DDS           "ncadg_dds"
 #define RPC_PROTSEQ_NCALRPC             "ncalrpc"
+#define RPC_PROTSEQ_NCACN_NP            "ncacn_np"
 
 #ifdef PROT_NCATP
 #define RPC_PROTSEQ_NCATP_IP_TCP        "ncatp_ip_tcp"
@@ -198,6 +200,7 @@ typedef unsigned_char_t rpc_protseq_t[RPC_C_PROTSEQ_MAX];
 #ifdef PROT_NCATP
 #define RPC_C_PROTOCOL_ID_NCATP         2
 #endif
+#define RPC_C_PROTOCOL_ID_NCACN_NP      3  /* XXX: ohh dearie me ... */
 /* allow for more of these */
 #define RPC_C_PROTOCOL_ID_MAX           16
 
@@ -222,6 +225,8 @@ typedef unsigned32       rpc_protocol_id_t, *rpc_protocol_id_p_t;
 
 #define RPC_C_NAF_ID_UXD     1
 #define RPC_C_NAF_ID_IP      2
+#define RPC_C_NAF_ID_MSNAME  8      /* XXX: just.... take a guess: this one! */
+#define RPC_C_NAF_ID_NP      9      /* XXX: just.... take a guess: this one! */
 #define RPC_C_NAF_ID_DNET    12
 #define RPC_C_NAF_ID_DDS     13         /* ###Check this one ###*/
 #define RPC_C_NAF_ID_OSI     19
@@ -240,6 +245,7 @@ typedef unsigned32       rpc_naf_id_t, *rpc_naf_id_p_t;
 #define RPC_C_NETWORK_PROTOCOL_ID_UXD   0
 #define RPC_C_NETWORK_PROTOCOL_ID_TCP   6
 #define RPC_C_NETWORK_PROTOCOL_ID_UDP   17
+#define RPC_C_NETWORK_PROTOCOL_ID_NP    10 /* XXX: just a guess */
 #define RPC_C_NETWORK_PROTOCOL_ID_NSP   1
 #define RPC_C_NETWORK_PROTOCOL_ID_DDS   0
 #define RPC_C_NETWORK_PROTOCOL_ID_DNASESSION 9

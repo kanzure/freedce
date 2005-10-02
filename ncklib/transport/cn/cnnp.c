@@ -24,7 +24,7 @@
 **
 **  NAME
 **
-**      cnnet.c
+**      cnnp.c
 **
 **  FACILITY:
 **
@@ -32,7 +32,7 @@
 **
 **  ABSTRACT:
 **
-**  The NCA Connection Protocol Service's Network Service.
+**  The NCA Connection Protocol Service's Named Pipe Network Service
 **
 **
  */
@@ -53,25 +53,25 @@
 /*
  * Global variables
  */
-static unsigned32	rpc_g_cn_socket_read_buffer=0;
-static unsigned32	rpc_g_cn_socket_write_buffer=0;
+static unsigned32	rpc_g_np_socket_read_buffer=0;
+static unsigned32	rpc_g_np_socket_write_buffer=0;
 
 
 /***********************************************************************/
 /*
  * Local routines
  */
-INTERNAL void rpc__cn_network_desc_inq_ep _DCE_PROTOTYPE_ ((
+INTERNAL void rpc__cn_namedpipe_desc_inq_ep _DCE_PROTOTYPE_ ((
     rpc_socket_t             /*desc*/,
     rpc_protseq_id_t         /*pseq_id*/,
     unsigned_char_p_t       * /*endpoint*/,
     unsigned32              *status));
 
-INTERNAL void rpc__cn_network_serr_to_status _DCE_PROTOTYPE_ ((
+INTERNAL void rpc__cn_namedpipe_serr_to_status _DCE_PROTOTYPE_ ((
     rpc_socket_error_t       /*serr*/,
     unsigned32              *st));
 
-INTERNAL pointer_t rpc__cn_network_init_desc _DCE_PROTOTYPE_ ((
+INTERNAL pointer_t rpc__cn_namedpipe_init_desc _DCE_PROTOTYPE_ ((
     rpc_socket_t                * /*desc*/,
     boolean32                    /*spawned*/,
     rpc_protseq_id_t             /*pseq_id*/,
@@ -83,7 +83,7 @@ INTERNAL pointer_t rpc__cn_network_init_desc _DCE_PROTOTYPE_ ((
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_desc_inq_ep
+**  ROUTINE NAME:       rpc__cn_namedpipe_desc_inq_ep
 **
 **  SCOPE:              INTERNAL - declared locally.
 **
@@ -117,7 +117,7 @@ INTERNAL pointer_t rpc__cn_network_init_desc _DCE_PROTOTYPE_ ((
 **--
 **/
 
-INTERNAL void rpc__cn_network_desc_inq_ep 
+INTERNAL void rpc__cn_namedpipe_desc_inq_ep 
 #ifdef _DCE_PROTO_
 (
   rpc_socket_t            desc,
@@ -136,7 +136,7 @@ unsigned32              *status;
     rpc_addr_vector_p_t rpc_addr_vec;
     unsigned32          temp_status;
     
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_desc_inq_ep);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_desc_inq_ep);
     CODING_ERROR (status);
 
     /*
@@ -174,7 +174,7 @@ unsigned32              *status;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_use_protseq
+**  ROUTINE NAME:       rpc__cn_namedpipe_use_protseq
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -212,7 +212,7 @@ unsigned32              *status;
 **--
 **/
 
-PRIVATE void rpc__cn_network_use_protseq 
+PRIVATE void rpc__cn_namedpipe_use_protseq 
 #ifdef _DCE_PROTO_
 (
   rpc_protseq_id_t        pseq_id,
@@ -257,7 +257,7 @@ unsigned32              *status;
 
     CODING_ERROR (status);
     
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_use_protseq);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_use_protseq);
 
     /*
      * If the caller specified the default number of max calls use
@@ -380,7 +380,7 @@ unsigned32              *status;
      */
     num_socks = (max_calls + RPC_C_LISTEN_BACKLOG - 1)/RPC_C_LISTEN_BACKLOG;
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                    ("(rpc__cn_network_use_protseq) Creating %d sockets\n", 
+                    ("(rpc__cn_namedpipe_use_protseq) Creating %d sockets\n", 
                      num_socks));
     RPC_MEM_ALLOC (sock_list, 
                    rpc_socket_t *, 
@@ -395,7 +395,7 @@ unsigned32              *status;
          * First, create a socket for this RPC Protocol Sequence.
          */
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                        ("(rpc__cn_network_use_protseq) Created socket #%d\n", 
+                        ("(rpc__cn_namedpipe_use_protseq) Created socket #%d\n", 
                          (i + 1)));
 #ifdef AUTOSTART
         /*
@@ -452,7 +452,7 @@ unsigned32              *status;
         /*
          * Initialize the socket.
          */
-        priv_info = rpc__cn_network_init_desc (&sock,
+        priv_info = rpc__cn_namedpipe_init_desc (&sock,
                                                spawned,
                                                pseq_id,
                                                MIN (RPC_C_LISTEN_BACKLOG, backlog),
@@ -516,7 +516,7 @@ unsigned32              *status;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_init_desc
+**  ROUTINE NAME:       rpc__cn_namedpipe_init_desc
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -565,7 +565,7 @@ unsigned32              *status;
 **--
 **/
 
-INTERNAL pointer_t rpc__cn_network_init_desc 
+INTERNAL pointer_t rpc__cn_namedpipe_init_desc 
 #ifdef _DCE_PROTO_
 (
   rpc_socket_t            *desc,
@@ -594,7 +594,7 @@ unsigned32              *status;
     
     CODING_ERROR (status);
     
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_init_desc);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_init_desc);
 
     /*
      * If we are spawned then we have to do a number of things differently.
@@ -647,7 +647,7 @@ unsigned32              *status;
         if (RPC_SOCKET_IS_ERR(serr))
         {
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                            ("(rpc__cn_network_init_desc) rpc__socket_open failed, error = %d\n",
+                            ("(rpc__cn_namedpipe_init_desc) rpc__socket_open failed, error = %d\n",
                              RPC_SOCKET_ETOI(serr)));
             rpc__naf_addr_vector_free (&rpc_addr_vec, status);
             *desc = -1;
@@ -667,7 +667,7 @@ unsigned32              *status;
         if (RPC_SOCKET_IS_ERR(serr))
         {
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                            ("(rpc__cn_network_init_desc) rpc__socket_bind failed, error = %d\n",
+                            ("(rpc__cn_namedpipe_init_desc) rpc__socket_bind failed, error = %d\n",
                              RPC_SOCKET_ETOI(serr)));
             rpc__naf_addr_vector_free (&rpc_addr_vec, status);
             *status = rpc_s_cant_bind_sock;
@@ -680,23 +680,23 @@ unsigned32              *status;
      * Setup the socket's send and receive buffering
      */
     serr = rpc__socket_set_bufs (*desc, 
-                                 rpc_g_cn_socket_read_buffer,
-                                 rpc_g_cn_socket_write_buffer,
+                                 rpc_g_np_socket_read_buffer,
+                                 rpc_g_np_socket_write_buffer,
                                  &ssize,
                                  &rsize);
     if (RPC_SOCKET_IS_ERR (serr))
     {
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                        ("(rpc__cn_network_init_desc) desc->%x Can't set socket bufs, error=%d\n",
+                        ("(rpc__cn_namedpipe_init_desc) desc->%x Can't set socket bufs, error=%d\n",
                          *desc,
                          RPC_SOCKET_ETOI (serr)));
     }
 
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_BUFFS,
-                    ("(rpc__cn_network_init_desc) desc->%x desired_sndbuf %u, desired_rcvbuf %u\n",
-                     *desc, rpc_g_cn_socket_read_buffer, rpc_g_cn_socket_write_buffer));
+                    ("(rpc__cn_namedpipe_init_desc) desc->%x desired_sndbuf %u, desired_rcvbuf %u\n",
+                     *desc, rpc_g_np_socket_read_buffer, rpc_g_np_socket_write_buffer));
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_BUFFS,
-                    ("(rpc__cn_network_init_desc) desc->%x actual sndbuf %lu, actual rcvbuf %lu\n",
+                    ("(rpc__cn_namedpipe_init_desc) desc->%x actual sndbuf %lu, actual rcvbuf %lu\n",
                      *desc, ssize, rsize));
 
     if (rsize < RPC_C_ASSOC_MUST_RECV_FRAG_SIZE)
@@ -711,13 +711,13 @@ unsigned32              *status;
 	    rpc_svc_cn_errors,
 	    svc_c_sev_fatal | svc_c_action_abort,
 	    rpc_m_recvbuf_toosmall,
-	    "rpc__cn_network_init_desc" ));
+	    "rpc__cn_namedpipe_init_desc" ));
     }
 
     /*
      * Determine the endpoint of the socket.
      */
-    rpc__cn_network_desc_inq_ep (*desc, pseq_id, &endpoint, status);
+    rpc__cn_namedpipe_desc_inq_ep (*desc, pseq_id, &endpoint, status);
     if (*status != rpc_s_ok)
     {
         return (NULL);
@@ -746,7 +746,7 @@ unsigned32              *status;
     if (RPC_SOCKET_IS_ERR(serr))
     {
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                        ("(rpc__cn_network_init_desc) desc->%x rpc__socket_listen failed, error = %d\n", 
+                        ("(rpc__cn_namedpipe_init_desc) desc->%x rpc__socket_listen failed, error = %d\n", 
                          *desc, RPC_SOCKET_ETOI(serr)));
         rpc_string_free (&endpoint, &temp_status);
         *status = rpc_s_cant_listen_sock;
@@ -761,7 +761,7 @@ unsigned32              *status;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_inq_prot_vers
+**  ROUTINE NAME:       rpc__cn_namedpipe_inq_prot_vers
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -792,7 +792,7 @@ unsigned32              *status;
 **--
 **/
 
-PRIVATE void rpc__cn_network_inq_prot_vers 
+PRIVATE void rpc__cn_namedpipe_inq_prot_vers 
 #ifdef _DCE_PROTO_
 (
   unsigned8               *prot_id,
@@ -821,7 +821,7 @@ unsigned32              *status;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_select_dispatch
+**  ROUTINE NAME:       rpc__cn_namedpipe_select_dispatch
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -863,7 +863,7 @@ unsigned32              *status;
 **--
 **/
 
-PRIVATE void rpc__cn_network_select_dispatch 
+PRIVATE void rpc__cn_namedpipe_select_dispatch 
 #ifdef _DCE_PROTO_
 (
   rpc_socket_t            desc,
@@ -883,7 +883,7 @@ unsigned32              *st;
     rpc_cn_assoc_t      *assoc;
     rpc_socket_error_t  serr;
     
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_select_dispatch);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_select_dispatch);
     CODING_ERROR(st);
     
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
@@ -900,7 +900,7 @@ unsigned32              *st;
     if (RPC_SOCKET_IS_ERR(serr))
     {
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                        ("(rpc__cn_network_select_dispatch) desc->%x rpc__socket_accept failed, error = %d\n",
+                        ("(rpc__cn_namedpipe_select_dispatch) desc->%x rpc__socket_accept failed, error = %d\n",
                          desc, RPC_SOCKET_ETOI(serr)));
         
         *st = rpc_s_cannot_accept;
@@ -969,7 +969,7 @@ unsigned32              *st;
                  * The set option failed. We'll continue anyway.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                                ("(rpc__cn_network_select_dispatch) desc->%x rpc__naf_set_pkt_nodelay failed, error = %d\n",
+                                ("(rpc__cn_namedpipe_select_dispatch) desc->%x rpc__naf_set_pkt_nodelay failed, error = %d\n",
                                  newdesc, *st));
             }
 #endif
@@ -1011,7 +1011,7 @@ unsigned32              *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_req_connect
+**  ROUTINE NAME:       rpc__cn_namedpipe_req_connect
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -1050,7 +1050,7 @@ unsigned32              *st;
 **--
 **/
 
-PRIVATE void rpc__cn_network_req_connect 
+PRIVATE void rpc__cn_namedpipe_req_connect 
 #ifdef _DCE_PROTO_
 (
   rpc_addr_p_t            rpc_addr,
@@ -1075,7 +1075,7 @@ unsigned32              *st;
 	DO_NOT_CLOBBER(serr);
 	DO_NOT_CLOBBER(connect_completed);
 	 
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_req_connect);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_req_connect);
     CODING_ERROR(st);
     
     /*
@@ -1087,7 +1087,7 @@ unsigned32              *st;
     if (RPC_SOCKET_IS_ERR(serr))
     {
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                        ("(rpc__cn_network_req_connect) call_rep->%x assoc->%x desc->%x rpc__socket_open failed, error = %d\n",
+                        ("(rpc__cn_namedpipe_req_connect) call_rep->%x assoc->%x desc->%x rpc__socket_open failed, error = %d\n",
                          assoc->call_rep,
                          assoc,
                          assoc->cn_ctlblk.cn_sock,
@@ -1101,14 +1101,14 @@ unsigned32              *st;
          * Setup the socket's send and receive buffering
          */
         serr = rpc__socket_set_bufs (assoc->cn_ctlblk.cn_sock,
-                                     rpc_g_cn_socket_read_buffer,
-                                     rpc_g_cn_socket_write_buffer,
+                                     rpc_g_np_socket_read_buffer,
+                                     rpc_g_np_socket_write_buffer,
                                      &ssize,
                                      &rsize);
         if (RPC_SOCKET_IS_ERR (serr))
         {
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                            ("(rpc__cn_network_req_connect) call_rep->%x assoc->%x desc->%x Can't set socket bufs, error=%d\n",
+                            ("(rpc__cn_namedpipe_req_connect) call_rep->%x assoc->%x desc->%x Can't set socket bufs, error=%d\n",
                              assoc->call_rep,
                              assoc,
                              assoc->cn_ctlblk.cn_sock, 
@@ -1116,10 +1116,10 @@ unsigned32              *st;
         }
         
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_BUFFS,
-                        ("(rpc__cn_network_req_connect) desc->%x desired_sndbuf %u, desired_rcvbuf %u\n",
-                         assoc->cn_ctlblk.cn_sock, rpc_g_cn_socket_read_buffer, rpc_g_cn_socket_write_buffer));
+                        ("(rpc__cn_namedpipe_req_connect) desc->%x desired_sndbuf %u, desired_rcvbuf %u\n",
+                         assoc->cn_ctlblk.cn_sock, rpc_g_np_socket_read_buffer, rpc_g_np_socket_write_buffer));
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_BUFFS,
-                       ("(rpc__cn_network_req_connect) desc->%x actual sndbuf %lu, actual rcvbuf %lu\n",
+                       ("(rpc__cn_namedpipe_req_connect) desc->%x actual sndbuf %lu, actual rcvbuf %lu\n",
                         assoc->cn_ctlblk.cn_sock, ssize, rsize));
         
         if (rsize < RPC_C_ASSOC_MUST_RECV_FRAG_SIZE)
@@ -1134,7 +1134,7 @@ unsigned32              *st;
 	        rpc_svc_cn_errors,
 	        svc_c_sev_fatal | svc_c_action_abort,
 	        rpc_m_recvbuf_toosmall,
-	        "rpc__cn_network_req_connect" ));
+	        "rpc__cn_namedpipe_req_connect" ));
         }
 
         /*
@@ -1163,7 +1163,7 @@ unsigned32              *st;
                  * The socket close failed.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                                ("(rpc__cn_network_req_connect) desc->%x rpc__socket_close failed, error = %d\n", 
+                                ("(rpc__cn_namedpipe_req_connect) desc->%x rpc__socket_close failed, error = %d\n", 
                                  assoc->cn_ctlblk.cn_sock, 
                                  RPC_SOCKET_ETOI(serr)));
             }
@@ -1178,7 +1178,7 @@ unsigned32              *st;
         if (RPC_SOCKET_IS_ERR (serr))
         {
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                            ("(rpc__cn_network_req_connect) desc->%x rpc__socket_bind failed, error = %d\n",
+                            ("(rpc__cn_namedpipe_req_connect) desc->%x rpc__socket_bind failed, error = %d\n",
                              assoc->cn_ctlblk.cn_sock, 
                              RPC_SOCKET_ETOI(serr)));
             *st = rpc_s_cant_bind_sock;
@@ -1194,7 +1194,7 @@ unsigned32              *st;
                  * The socket close failed.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                                ("(rpc__cn_network_req_connect) desc->%x rpc__socket_close failed, error = %d\n", 
+                                ("(rpc__cn_namedpipe_req_connect) desc->%x rpc__socket_close failed, error = %d\n", 
                                  assoc->cn_ctlblk.cn_sock, 
                                  RPC_SOCKET_ETOI(serr)));
             }
@@ -1271,7 +1271,7 @@ unsigned32              *st;
                                            &retry_op,
                                            st);
                 RPC_DBG_PRINTF (rpc_e_dbg_cancel, RPC_C_CN_DBG_CANCEL,
-                                ("(rpc__cn_network_req_connect) call_rep->%x assoc->%x desc->%x cancel caught before association setup\n", 
+                                ("(rpc__cn_namedpipe_req_connect) call_rep->%x assoc->%x desc->%x cancel caught before association setup\n", 
                                  assoc->call_rep,
                                  assoc,
                                  assoc->cn_ctlblk.cn_sock));
@@ -1305,11 +1305,11 @@ unsigned32              *st;
         if (RPC_SOCKET_IS_ERR(serr))
         {
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                            ("(rpc__cn_network_req_connect) desc->%x rpc__socket_connect failed, error = %d\n",
+                            ("(rpc__cn_namedpipe_req_connect) desc->%x rpc__socket_connect failed, error = %d\n",
                              assoc->cn_ctlblk.cn_sock, 
                              RPC_SOCKET_ETOI(serr)));
             
-            rpc__cn_network_serr_to_status (serr, st);
+            rpc__cn_namedpipe_serr_to_status (serr, st);
             
             /*
              * The connect request failed. Close the socket just created
@@ -1322,7 +1322,7 @@ unsigned32              *st;
                  * The socket close failed.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                                ("(rpc__cn_network_req_connect) desc->%x rpc__socket_close failed, error = %d\n", 
+                                ("(rpc__cn_namedpipe_req_connect) desc->%x rpc__socket_close failed, error = %d\n", 
                                  assoc->cn_ctlblk.cn_sock, 
                                  RPC_SOCKET_ETOI(serr)));
             }
@@ -1342,7 +1342,7 @@ unsigned32              *st;
                  * The set option failed. We'll continue anyway.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                                ("(rpc__cn_network_req_connect) desc->%x rpc__naf_set_pkt_nodelay failed, error = %d\n",
+                                ("(rpc__cn_namedpipe_req_connect) desc->%x rpc__naf_set_pkt_nodelay failed, error = %d\n",
                                  assoc->cn_ctlblk.cn_sock, 
                                  *st));
             }
@@ -1376,7 +1376,7 @@ unsigned32              *st;
                  * find this out in the normal manner.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                                ("(rpc__cn_network_req_connect) desc->%x rpc__naf_set_pkt_keepalive failed failed, error = %d\n",
+                                ("(rpc__cn_namedpipe_req_connect) desc->%x rpc__naf_set_pkt_keepalive failed failed, error = %d\n",
                                  assoc->cn_ctlblk.cn_sock, serr));
             }
 
@@ -1393,7 +1393,7 @@ unsigned32              *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_close_connect
+**  ROUTINE NAME:       rpc__cn_namedpipe_close_connect
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -1424,7 +1424,7 @@ unsigned32              *st;
 **--
 **/
 
-PRIVATE void rpc__cn_network_close_connect 
+PRIVATE void rpc__cn_namedpipe_close_connect 
 #ifdef _DCE_PROTO_
 (
   rpc_cn_assoc_p_t        assoc,
@@ -1437,7 +1437,7 @@ unsigned32              *st;
 #endif
 {
 
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_close_connect);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_close_connect);
     CODING_ERROR (st);
     
     /*
@@ -1462,7 +1462,7 @@ unsigned32              *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_mon
+**  ROUTINE NAME:       rpc__cn_namedpipe_mon
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -1499,7 +1499,7 @@ unsigned32              *st;
 **--
 **/
 
-PRIVATE void rpc__cn_network_mon 
+PRIVATE void rpc__cn_namedpipe_mon 
 #ifdef _DCE_PROTO_
 (
   rpc_binding_rep_p_t     binding_r __attribute__((__unused__)),
@@ -1518,7 +1518,7 @@ unsigned32              *st;
     rpc_cn_assoc_grp_t  *assoc_grp;
     rpc_cn_local_id_t   grp_id;
 
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_mon);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_mon);
     CODING_ERROR(st);
     
     /*
@@ -1552,7 +1552,7 @@ unsigned32              *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_stop_mon
+**  ROUTINE NAME:       rpc__cn_namedpipe_stop_mon
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -1587,7 +1587,7 @@ unsigned32              *st;
 **--
 **/
 
-PRIVATE void rpc__cn_network_stop_mon 
+PRIVATE void rpc__cn_namedpipe_stop_mon 
 #ifdef _DCE_PROTO_
 (
   rpc_binding_rep_p_t     binding_r __attribute__((__unused__)),
@@ -1605,7 +1605,7 @@ unsigned32              *st;
     rpc_cn_local_id_t   grp_id;
     
     CODING_ERROR(st);
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_stop_mon);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_stop_mon);
     
     /*
      * Get the association group using the group id provided as a
@@ -1636,7 +1636,7 @@ unsigned32              *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_maint
+**  ROUTINE NAME:       rpc__cn_namedpipe_maint
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -1672,7 +1672,7 @@ unsigned32              *st;
 **--
 **/
 
-PRIVATE void rpc__cn_network_maint 
+PRIVATE void rpc__cn_namedpipe_maint 
 #ifdef _DCE_PROTO_
 (
   rpc_binding_rep_p_t     binding_r,
@@ -1688,7 +1688,7 @@ unsigned32              *st;
     rpc_cn_local_id_t           grp_id;
 
     CODING_ERROR(st);
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_maint);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_maint);
     
     /*
      * Get the association group using the group id contained in the
@@ -1720,7 +1720,7 @@ unsigned32              *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_stop_maint
+**  ROUTINE NAME:       rpc__cn_namedpipe_stop_maint
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -1753,7 +1753,7 @@ unsigned32              *st;
 **--
 **/
 
-PRIVATE void rpc__cn_network_stop_maint 
+PRIVATE void rpc__cn_namedpipe_stop_maint 
 #ifdef _DCE_PROTO_
 (
   rpc_binding_rep_p_t     binding_r,
@@ -1769,7 +1769,7 @@ unsigned32              *st;
     rpc_cn_local_id_t   grp_id;
 
     CODING_ERROR(st);
-    RPC_CN_DBG_RTN_PRINTF (rpc__cn_network_stop_maint);
+    RPC_CN_DBG_RTN_PRINTF (rpc__cn_namedpipe_stop_maint);
     
     /*
      * Get the association group using the group id contained in the
@@ -1802,7 +1802,7 @@ unsigned32              *st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_connect_fail
+**  ROUTINE NAME:       rpc__cn_namedpipe_connect_fail
 **
 **  SCOPE:              PRIVATE - declared in cnnet.h
 **
@@ -1833,7 +1833,7 @@ unsigned32              *st;
 **--
 **/
 
-PRIVATE boolean32 rpc__cn_network_connect_fail 
+PRIVATE boolean32 rpc__cn_namedpipe_connect_fail 
 #ifdef _DCE_PROTO_
 (
 unsigned32              st
@@ -1878,7 +1878,7 @@ unsigned32              st;
 /*
 **++
 **
-**  ROUTINE NAME:       rpc__cn_network_serr_to_status
+**  ROUTINE NAME:       rpc__cn_namedpipe_serr_to_status
 **
 **  SCOPE:              INTERNAL - declared locally
 **
@@ -1908,7 +1908,7 @@ unsigned32              st;
 **--
 **/
 
-INTERNAL void rpc__cn_network_serr_to_status 
+INTERNAL void rpc__cn_namedpipe_serr_to_status 
 #ifdef _DCE_PROTO_
 (
   rpc_socket_error_t      serr,
@@ -1994,7 +1994,7 @@ unsigned32              *st;
 **
 **  DESCRIPTION:
 **
-**  This routine returns the CN global socket buffer sizes.
+**  This routine returns the CN NamedPipe global socket buffer sizes.
 **  A zero value means the operating system default.
 **
 **  INPUTS:		none
@@ -2003,9 +2003,9 @@ unsigned32              *st;
 **
 **  OUTPUTS:            
 **
-**      rsize           The receive buffer size (rpc_g_cn_socket_read_buffer)
+**      rsize           The receive buffer size (rpc_g_np_socket_read_buffer)
 **
-**      ssize           The send buffer size (rpc_g_cn_socket_read_buffer)
+**      ssize           The send buffer size (rpc_g_np_socket_read_buffer)
 **
 **      st              The status code.
 **
@@ -2021,13 +2021,13 @@ unsigned32              *st;
 **/
 
 PRIVATE void
-rpc__cn_inq_sock_buffsize(
+rpc__cn_np_inq_sock_buffsize(
 	unsigned32	*rsize,
 	unsigned32	*ssize,
 	error_status_t	*st)
 {
-    *rsize = rpc_g_cn_socket_read_buffer;
-    *ssize = rpc_g_cn_socket_write_buffer;
+    *rsize = rpc_g_np_socket_read_buffer;
+    *ssize = rpc_g_np_socket_write_buffer;
     *st = rpc_s_ok;
 }
 
@@ -2041,7 +2041,7 @@ rpc__cn_inq_sock_buffsize(
 **
 **  DESCRIPTION:
 **
-**  This routine sets the CN global socket buffer sizes.
+**  This routine sets the CN NamedPipe global socket buffer sizes.
 **  A zero value for either buffer will use the OS default buffering.
 **
 **  INPUTS:
@@ -2068,12 +2068,12 @@ rpc__cn_inq_sock_buffsize(
 **/
 
 PRIVATE void
-rpc__cn_set_sock_buffsize(
+rpc__cn_np_set_sock_buffsize(
 	unsigned32	rsize,
 	unsigned32	ssize,
 	error_status_t	*st)
 {
-    rpc_g_cn_socket_read_buffer = rsize;
-    rpc_g_cn_socket_write_buffer = ssize;
+    rpc_g_np_socket_read_buffer = rsize;
+    rpc_g_np_socket_write_buffer = ssize;
     *st = rpc_s_ok;
 }

@@ -51,15 +51,21 @@
 #define TWR_C_FLR_PROT_ID_TCP           0x07 /* TCP     */
 #define TWR_C_FLR_PROT_ID_UDP           0x08 /* UDP     */
 #define TWR_C_FLR_PROT_ID_IP            0x09 /* IP      */
+#define TWR_C_FLR_PROT_ID_MSNAME        0x0a /* NetBIOS/DNS/IPaddr Name */
+#define TWR_C_FLR_PROT_ID_NP            0x0b /* NamedPipes */
 
 /*
  * Number of lower floors in each address family.
+ *
+ * e.g. ip contains ip address and port number.
+ * e.g. namedpipes contains servername and pipename.
  */
 #define TWR_C_NUM_UXD_LOWER_FLRS      2  /* Number lower flrs in uxd tower  */
 #define TWR_C_NUM_IP_LOWER_FLRS       2  /* Number lower flrs in ip tower  */
 #define TWR_C_NUM_DNA_LOWER_FLRS      3  /* Number lower flrs in dna tower */
 #define TWR_C_NUM_OSI_LOWER_FLRS      3  /* Number lower flrs in osi tower */
 #define TWR_C_NUM_DDS_LOWER_FLRS      2  /* Number lower flrs in dds tower  */
+#define TWR_C_NUM_NP_LOWER_FLRS       2  /* Number lower flrs in np tower */
 
 /*
  * Number of bytes overhead per floor = protocol identifier (lhs) count 
@@ -109,5 +115,11 @@
  */
 #define  TWR_C_IP_PORT_SIZE  2
 #define  TWR_C_IP_ADDR_SIZE  4
+
+/*
+ * Named Pipes family servername and pipe name sizes: don't make too big!
+ */
+#define  TWR_C_NP_SERVNAME_SIZE  64
+#define  TWR_C_NP_PIPENAME_SIZE  32
 
 #endif /* _TWRP_H */
