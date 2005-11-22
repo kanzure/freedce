@@ -26,6 +26,35 @@ Inventory of Goods:
 * Performance, Interoperabilit and Functionality test suite
 * some demonstration code for writing clients and servers
 
+Prerequisites:
+-------------
+
+Pretty much everything will need to be the "latest versions".
+For example, at time of writing, you will likely need a 2.6 kernel
+with NPTL.  You will need glibc6 version 2.3.2.  You will need Flex
+2.5.31, you will need automake 1.9, you will need autoconf 2.53.
+I think that's about it :)
+
+The only exception to this general rule is: don't for pity's sake
+use gcc 4, it has much stricter rules and FreeDCE has always been
+built with -Wall (see include.mk if you absolutely _must_ switch
+this off).
+
+Guidelines for gentoo developers: gentoo doesn't build properly
+with Flex 2.5.31, therefore it is excluded from gentoo.  This is
+rather stupid, because the version of flex that is used to build
+gentoo has nothing to do with the version of flex that you need
+to use for development purposes.  As gentoo merge these two totally
+separate purposes into one (You Must Use The Same Version Of Flex
+For Building Gentoo As Actual Development) you will need to obtain
+the source code for flex 2.5.31 and build it _separately_
+(./configure --prefix=/opt/local) , then specify
+FLEX=/opt/local/bin/flex ./configure .... when building freedce.
+Sorry.  tough luck.  Debian gets round this by having the
+build requirements separate from development requirements,
+and each package is typically built in its own debootstrap
+chrooted environment (!)
+
 How to Build:
 -------------
 This package uses autoconf, so `say' the following at a prompt:
