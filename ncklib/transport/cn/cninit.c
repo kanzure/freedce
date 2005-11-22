@@ -160,6 +160,7 @@ INTERNAL rpc_prot_network_epv_t cn_namedpipe_epv =
 
 extern void rpc__socket_np_init (rpc_socket_epv_p_t *epv);
 
+#ifdef HAVE_OS_WIN32
 static void rpc__ncacn_namedpipe_init 
 #ifdef _DCE_PROTO_
 (
@@ -198,6 +199,7 @@ unsigned32                      *st;
     *fork_handler = NULL;
     *st = rpc_s_ok;
 }
+#endif
 
 /*
 **++
