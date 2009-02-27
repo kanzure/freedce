@@ -9,7 +9,7 @@
 #endif
 
 #include <string>
-#include <iostream.h>
+#include <iostream>
 
 //=============================================================================
 //
@@ -94,7 +94,7 @@ public:
   // Helper operators for STD/iostream
   //
 
-  ostream& operator << (ostream &os);
+  std::ostream& operator << (std::ostream &os);
 
 };
 

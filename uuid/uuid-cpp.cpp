@@ -1,6 +1,8 @@
 
 #include <uuid.hpp>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 //=============================================================================
 //
@@ -245,8 +247,8 @@ uuid::C_uuid()
 //
 
 
-ostream& 
-uuid::operator << (ostream &os)
+std::ostream& 
+uuid::operator << (std::ostream &os)
 {
   return os << s_uuid;
 }

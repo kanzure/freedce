@@ -24,8 +24,9 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
+#include <stdlib.h>
 
-#include <stream.h>
+#include <ostream>
 #include <iostream>
 
 #include "uuid.hpp"
