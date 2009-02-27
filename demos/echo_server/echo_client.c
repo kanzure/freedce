@@ -174,7 +174,7 @@ main(argc, argv)
     {
       printf ("got response from server. results: \n");
       for (i=0; i<outargs->argc; i++)
-	printf("\t[%ld]: %s\n", i, outargs->argv[i]);
+	printf("\t[%d]: %s\n", i, outargs->argv[i]);
       printf("\n===================================\n");
 
     }

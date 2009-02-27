@@ -1024,7 +1024,7 @@ typedef struct
 \
         if (thread_context != NULL) \
         { \
-            (thread_context)->cancel_timeout = rpc_c_cancel_infinite_timeout; \
+            (thread_context)->cancel_timeout = (signed32)rpc_c_cancel_infinite_timeout; \
             (thread_context)->ns_authn_state = true; \
             sys_pthread_setspecific (rpc_g_thread_context_key, \
                 (pthread_addr_t)thread_context); \
@@ -1044,7 +1044,7 @@ typedef struct
 \
     if (*status == rpc_s_ok) \
     { \
-        _thread_context->cancel_timeout = value; \
+        _thread_context->cancel_timeout = (signed32)value; \
     } \
 }    
 

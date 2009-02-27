@@ -645,7 +645,6 @@ unsigned32              *status;
     rpc_ip_addr_p_t         ip_addr;
     rpc_ip_addr_t           loc_ip_addr;
 
-
     CODING_ERROR (status);
 
     /*
@@ -660,7 +659,8 @@ unsigned32              *status;
     loc_ip_addr.len = sizeof (rpc_ip_addr_t);
     RPC_SOCKET_FIX_ADDRLEN(&loc_ip_addr);
 
-    if (getsockname (desc, (struct sockaddr *)&loc_ip_addr.sa, (int *)&loc_ip_addr.len) < 0)
+    if (getsockname (desc, (struct sockaddr *)&loc_ip_addr.sa,
+                     &loc_ip_addr.len) < 0)
     {
         *status = -1;   /* !!! */
         return;

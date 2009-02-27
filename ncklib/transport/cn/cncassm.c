@@ -1712,10 +1712,16 @@ pointer_t       sm;
                                    &dbg_status);
 
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-            ("CN: call_rep->%x assoc->%x desc->%x connection request initiated to %s[%s]\n",
+            ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+	     "desc->%x "
+#endif
+	     "connection request initiated to %s[%s]\n",
              assoc->call_rep,
              assoc,
+#ifdef USE_SOCKETS
              assoc->cn_ctlblk.cn_sock,
+#endif
              netaddr,
              endpoint));
         rpc_string_free (&netaddr, &dbg_status);
@@ -1745,10 +1751,17 @@ pointer_t       sm;
              */
             event.event_id = RPC_C_ASSOC_REQUEST_CONN_ACK;
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                            ("CN: call_rep->%x assoc->%x desc->%x connection established\n",
+                            ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			     "desc->%x "
+#endif
+			     "connection established\n",
                              assoc->call_rep,
-                             assoc,
-                             assoc->cn_ctlblk.cn_sock));
+                             assoc
+#ifdef USE_SOCKETS
+			     , assoc->cn_ctlblk.cn_sock
+#endif
+                             ));
             break;
         }
 
@@ -1763,10 +1776,16 @@ pointer_t       sm;
                  * specification rep contained in the call rep.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                ("CN: call_rep->%x assoc->%x desc->%x connection request failed st = %x\n",
+                                ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+				 "desc->%x "
+#endif
+				 "connection request failed st = %x\n",
                                  assoc->call_rep,
                                  assoc,
+#ifdef USE_SOCKETS
                                  assoc->cn_ctlblk.cn_sock,
+#endif
                                  assoc->assoc_status));
                 
                 event.event_id = RPC_C_ASSOC_REQUEST_CONN_NACK;
@@ -3363,10 +3382,16 @@ pointer_t       sm;
             if (sec_context->sec_status != rpc_s_ok)
             {
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_SECURITY_ERRORS,
-                                ("CN: call_rep->%x assoc->%x desc->%x server verifcation failed security_context->%x auth_type->%x auth_level->%x auth_len->%x st->%x\n",
+                                ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+				 "desc->%x "
+#endif
+				 "server verifcation failed security_context->%x auth_type->%x auth_level->%x auth_len->%x st->%x\n",
                                 assoc->call_rep,
                                 assoc,
+#ifdef USE_SOCKETS
                                 assoc->cn_ctlblk.cn_sock,
+#endif
                                 sec_context,
                                 auth_tlr->auth_type,
                                 auth_tlr->auth_level,
@@ -4822,10 +4847,16 @@ unsigned32              *st;
                             &abstract, 
                             &st);
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                            ("CN: call_rep->%x assoc->%x desc->%x negotiating for abstract syntax->%s,%x context_id->%x call_id->%x\n",
+                            ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			     "desc->%x "
+#endif
+			     "negotiating for abstract syntax->%s,%x context_id->%x call_id->%x\n",
                              assoc->call_rep,
                              assoc,
+#ifdef USE_SOCKETS
                              assoc->cn_ctlblk.cn_sock,
+#endif
                              abstract,
                              pres_context->syntax_abstract_id.version,
                              RPC_CN_ASSOC_CONTEXT_ID (assoc),
@@ -4851,10 +4882,16 @@ unsigned32              *st;
                                 &transfer, 
                                 &st);
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                ("CN: call_rep->%x assoc->%x desc->%x transfer_syntax[%x]->%s,%x\n",
+                                ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+				 "desc->%x "
+#endif
+				 "transfer_syntax[%x]->%s,%x\n",
                                  assoc->call_rep,
                                  assoc,
+#ifdef USE_SOCKETS
                                  assoc->cn_ctlblk.cn_sock,
+#endif
                                  i,
                                  transfer,
                                  pres_context->syntax_vector->syntax_id[i].version));

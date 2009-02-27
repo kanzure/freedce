@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 include $(top_srcdir)/include.mk
 
-CFLAGS+=-I$(top_srcdir)/ncklib/include
+AM_CFLAGS+=-I$(top_srcdir)/ncklib/include
 IDL_FLAGS=-I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include $(DCETHREADINCLUDES)
 
 install-strip:	install
@@ -38,7 +38,7 @@ endif
 
 # XXX ooo, baad.  major hack.  _must_ write a cross-dceidl for mingw32.
 echo.h echo_sstub.o echo_cstub.o: echo.idl
-	$(IDL)                 -cc_cmd "$(CC) -D_BSD $(IDL_FLAGS) $(IDL_CFLAGS) -c" \
+	$(IDL) -I ../../include                -cc_cmd "$(CC) -D_BSD $(IDL_FLAGS) $(IDL_CFLAGS) -c" \
 		$(IDL_INCS) \
 		$(top_srcdir)/demos/echo_server/echo.idl
 

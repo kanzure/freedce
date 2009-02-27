@@ -2,7 +2,7 @@
 include $(top_srcdir)/include.mk
 include $(top_srcdir)/ncklib/ncklib.mk
 
-CFLAGS+=-I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include 
+AM_CFLAGS+=-I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include 
 if PROT_NCADG
 
 idlobjs=conv_cstub.lo convc_cstub.lo convc_sstub.lo

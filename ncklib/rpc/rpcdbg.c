@@ -207,7 +207,7 @@ PRIVATE int rpc__printf (char *format, ...)
 
     if (RPC_DBG (rpc_e_dbg_timestamp, 1))
     {
-        sprintf (s, "[time: %06lu] ", rpc__clock_stamp());
+        sprintf (s, "[time: %06u] ", rpc__clock_stamp());
         s = &buff[strlen(buff)];
     }
 

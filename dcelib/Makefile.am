@@ -2,7 +2,7 @@
 
 include $(top_srcdir)/include.mk
 include $(top_srcdir)/ncklib/ncklib.mk
-CFLAGS+=-D_POSIX_C_SOURCE=1 
+AM_CFLAGS+=-D_POSIX_C_SOURCE=1 
 
 # Build the shared library
 lib_LTLIBRARIES = libdcerpc.la

@@ -572,7 +572,12 @@ typedef struct
     rpc_cond_t                          cn_rcvr_cond;
     pthread_t                           cn_rcvr_thread_id;
     unsigned_char_t                     *cn_listening_endpoint;
+#ifdef USE_SOCKETS /* experiment to only put this here if everything's using sockets*/
     rpc_socket_t                        cn_sock;
+#endif
+#ifdef HAVE_OS_WIN32 /* ncacn_np handle */
+    void                                *cn_hnd;
+#endif
     rpc_addr_p_t                        rpc_addr;
     unsigned                            exit_rcvr : 1;
     unsigned                            in_sendmsg : 1;

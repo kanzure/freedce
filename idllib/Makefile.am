@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 include $(top_srcdir)/include.mk
 
-CFLAGS+=-DMIA -I$(top_srcdir)/ncklib/include/ -I$(top_srcdir)/ncklib/include/$(target_os)
+AM_CFLAGS+=-DMIA -I$(top_srcdir)/ncklib/include/ -I$(top_srcdir)/ncklib/include/$(target_os)
 
 
 noinst_LTLIBRARIES=libidl.la

@@ -4478,7 +4478,7 @@ pointer_t       sm;
 	if (RPC_CN_PKT_INHCTX_CMD(req_header) != 0x0)
 		return rpc_s_class_version_mismatch;
 
-	pipe_name = (char *)(((unsigned)req_header) + RPC_CN_PKT_SIZEOF_INHERIT_CTX_HDR);
+	pipe_name = (char *)(((unsigned long)req_header) + RPC_CN_PKT_SIZEOF_INHERIT_CTX_HDR);
 	host_name = (char *)(pipe_name + strlen(pipe_name) + 1);
 	vuser_info = (void *)(host_name + strlen(host_name) + 1);
 
@@ -4496,8 +4496,8 @@ pointer_t       sm;
 		/* oh, man, here we go.  do i decode the vuser struct, or
 		 * just store it?  nuts to it - just store it.
 		 */
-		vuser_info = (void*)(((unsigned)vuser_info)+sizeof(unsigned32));
-		npsec->Length = pkt_len - ((unsigned)vuser_info - (unsigned)req_header);
+		vuser_info = (void*)(((unsigned long)vuser_info)+sizeof(unsigned32));
+		npsec->Length = pkt_len - ((unsigned long)vuser_info - (unsigned long)req_header);
 
         RPC_MEM_ALLOC(npsec->blob, void *, 
                       npsec->Length,

@@ -37,8 +37,6 @@
 **
 */
 
-#define HACK_DEBUG
-
 #include <dg.h>
 #include <dgpkt.h>
 #include <dgsct.h>
@@ -1578,10 +1576,6 @@ rpc_dg_recvq_elt_p_t rqe;
         iov[i].iov_len  = sizeof(tmp->pkt->body);
     }
     assert(i <= RPC_C_DG_MAX_NUM_PKTS_IN_FRAG);
-
-#ifdef HACK_DEBUG
-    printf("%s: about to call RPC_SOCKET_RECVMSG\n", __FUNCTION__);
-#endif
 
     RPC_SOCKET_RECVMSG(sp->sock, iov, i, (rpc_addr_p_t)(&rqe->from), 
                        &recv_len, &serr);

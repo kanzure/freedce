@@ -123,7 +123,7 @@ unsigned32              *st;
                                  true);
     if (!is_server)
     {
-        ((rpc_cn_binding_rep_t *)brp)->being_resolved = false;
+        brp->being_resolved = false;
         RPC_CN_UNLOCK ();
     }
 
@@ -473,7 +473,9 @@ unsigned32              *st;
     unsigned32          type;
     rpc_cn_local_id_t   grp_id;
     rpc_cn_assoc_grp_t  *assoc_grp;
+#ifdef USE_SOCKETS
     rpc_protseq_id_t    protseq_id;
+#endif
 
     CODING_ERROR (st);
     
@@ -526,6 +528,8 @@ unsigned32              *st;
              * it out using one of the connections attached to the
              * association group.
              */
+#ifdef USE_SOCKETS
+
             rpc__naf_desc_inq_protseq_id 
                 (((rpc_cn_assoc_t *)assoc_grp->grp_assoc_list.next)->cn_ctlblk.cn_sock,
                  RPC_C_PROTOCOL_ID_NCACN,
@@ -545,6 +549,9 @@ unsigned32              *st;
                                         st);
                 }
             }
+#else
+	    *st = rpc_s_cant_inq_socket;
+#endif
         }
         binding_r->rpc_addr = *rpc_addr;
     }

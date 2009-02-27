@@ -2,7 +2,7 @@
 include $(top_srcdir)/include.mk
 include $(top_srcdir)/ncklib/ncklib.mk
 
-CFLAGS+=-DIMAGE_DIR=\"$(libdir)\"
+AM_CFLAGS+=-DIMAGE_DIR=\"$(libdir)\"
 
 noinst_LTLIBRARIES=libcom.la
 

@@ -198,7 +198,7 @@ rpc_ns_binding_import_begin(
 
 	RPC_DBG_PRINTF(rpc_e_dbg_general, 1,
 			("rpc_ns_binding_import_begin\n"));
-	dump_data(10, entry_name, 16);
+	dump_data(10, (char *)entry_name, 16);
 	dump_data(10, (char *)if_spec, 32);
 	dump_data(10, (char *)object_uuid, 16);
 

@@ -68,7 +68,7 @@ PRIVATE void show_st(str, st)
 	        int             tmp_st;
 		    
 		    dce_error_inq_text(*st, estr, &tmp_st);
-		        fprintf(stderr, "(rpcd) %s: (0x%lx) %s\n", str, *st, estr);
+		        fprintf(stderr, "(rpcd) %s: (0x%x) %s\n", str, *st, estr);
 }
 
 PRIVATE boolean32 check_st_bad(str, st)
@@ -286,7 +286,7 @@ ReverseIt(h, in_text, out_text, status)
   printf("\n\nFunction ReverseIt() -- input argments\n");
   
   for (i=0; i<in_text->argc; i++)
-	printf("\t[arg %ld]: %s\n", i, in_text->argv[i]);
+	printf("\t[arg %d]: %s\n", i, in_text->argv[i]);
 
   printf ("\n=========================================\n");
   
@@ -303,7 +303,7 @@ ReverseIt(h, in_text, out_text, status)
   for (i=0; i < in_text->argc; i++)
     {
       result->argv[i] = 
-	(string_t)rpc_ss_allocate(strlen(in_text->argv[i]) + 1);
+	(string_t)rpc_ss_allocate(strlen((char*)in_text->argv[i]) + 1);
     }
 
   /* 
@@ -312,7 +312,7 @@ ReverseIt(h, in_text, out_text, status)
 
   for (i=0; i < in_text->argc; i++)
     {
-      l = strlen(in_text->argv[i]);
+      l = strlen((char*)in_text->argv[i]);
       for (j=0; j<l; j++)
 	{
 	  result->argv[i][j] = in_text->argv[i][l-j-1];

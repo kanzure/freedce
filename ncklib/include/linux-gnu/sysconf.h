@@ -120,8 +120,8 @@
 #define PROT_NCADG	1
 #endif
 
-#ifndef NAF_IP
-#define NAF_IP	1
+#ifdef NAF_IP
+#define USE_SOCKETS 1
 #endif
 
 #define RPC_DEFAULT_NLSPATH "/usr/lib/nls/msg/en_US.ISO8859-1/%s.cat"

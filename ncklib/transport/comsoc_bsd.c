@@ -455,18 +455,18 @@ accept_again:
         *newsock = accept
             ((int) sock, NULL, NULL);
 #else
-        int addrlen;
+        unsigned int addrlen;
 
         addrlen = 0;
         *newsock = accept
-            ((int) sock, (struct sockaddr *) NULL, (int *) &addrlen);
+            ((int) sock, (struct sockaddr *) NULL, &addrlen);
 #endif
     }
     else
     {
         RPC_SOCKET_FIX_ADDRLEN(addr);
         *newsock = accept
-            ((int) sock, (struct sockaddr *) (&addr->sa), (int *) (&addr->len));
+            ((int) sock, (struct sockaddr *) (&addr->sa),  (&addr->len));
         RPC_SOCKET_FIX_ADDRLEN(addr);
     }
     serr = (*newsock == -1) ? socket_error : RPC_C_SOCKET_OK;
@@ -648,7 +648,7 @@ rpc_addr_p_t        addr;
 
     RPC_LOG_SOCKET_INQ_EP_NTR;
     RPC_SOCKET_FIX_ADDRLEN(addr);
-    serr = (getsockname(sock, (void*)&addr->sa, (int*)&addr->len) == -1) ? socket_error : RPC_C_SOCKET_OK;
+    serr = (getsockname(sock, (void*)&addr->sa, (unsigned int*)&addr->len) == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_SOCKET_FIX_ADDRLEN(addr);
     RPC_LOG_SOCKET_INQ_EP_XIT;
     return (serr);
@@ -772,7 +772,7 @@ unsigned32          *nrxsize;
      */
     *ntxsize = 0;
     sizelen = sizeof *ntxsize;
-    e = getsockopt(sock, SOL_SOCKET, SO_SNDBUF, ntxsize, (int *)&sizelen);
+    e = getsockopt(sock, SOL_SOCKET, SO_SNDBUF, ntxsize, (unsigned int *)&sizelen);
     if (e == -1)
     {
         RPC_DBG_GPRINTF
@@ -782,7 +782,7 @@ unsigned32          *nrxsize;
 
     *nrxsize = 0;
     sizelen = sizeof *nrxsize;
-    e = getsockopt(sock, SOL_SOCKET, SO_RCVBUF, nrxsize, (int *)&sizelen);
+    e = getsockopt(sock, SOL_SOCKET, SO_RCVBUF, nrxsize, (unsigned int *)&sizelen);
     if (e == -1)
     {
         RPC_DBG_GPRINTF
@@ -935,7 +935,7 @@ rpc_addr_p_t addr;
     rpc_socket_error_t serr;
 
     RPC_SOCKET_FIX_ADDRLEN(addr);
-    serr = (getpeername(sock, (void*)&addr->sa, (int*)&addr->len) == -1) ? socket_error : RPC_C_SOCKET_OK;
+    serr = (getpeername(sock, (void*)&addr->sa, (unsigned int*)&addr->len) == -1) ? socket_error : RPC_C_SOCKET_OK;
     RPC_SOCKET_FIX_ADDRLEN(addr);
 
     return (serr);
@@ -961,7 +961,7 @@ rpc_socket_t        sock;
 rpc_network_if_id_t *network_if_id;
 #endif
 {
-    int optlen;
+    unsigned int optlen;
     
     optlen = sizeof(rpc_network_if_id_t);
     

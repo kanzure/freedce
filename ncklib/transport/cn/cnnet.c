@@ -49,6 +49,8 @@
 #include <cncall.h>     /* NCA Connection call service */
 #include <cnnet.h>
 
+#ifdef USE_SOCKETS
+
 /***********************************************************************/
 /*
  * Global variables
@@ -2077,3 +2079,4 @@ rpc__cn_set_sock_buffsize(
     rpc_g_cn_socket_write_buffer = ssize;
     *st = rpc_s_ok;
 }
+#endif

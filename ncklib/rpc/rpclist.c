@@ -292,7 +292,7 @@ boolean32               block;
 
                 delta.tv_sec = rpc_g_lookaside_rcb.wait_time;
                 delta.tv_nsec = 0;
-                pthd4_get_expiration_np (&delta, &abstime);
+                sys_pthread_get_expiration_np (&delta, &abstime);
 
                 /*
                  * If we are using the global lookaside list lock

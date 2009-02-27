@@ -715,7 +715,7 @@ unsigned32              *status;
     /*
      * copy other common parts of the binding rep from the source to dest
      */
-    dst_binding_rep->timeout            = src_binding_rep->timeout;
+    dst_binding_rep->timeout         = src_binding_rep->timeout;
     dst_binding_rep->call_timeout_time  = src_binding_rep->call_timeout_time;
     dst_binding_rep->addr_is_dynamic    = src_binding_rep->addr_is_dynamic;
     dst_binding_rep->bound_server_instance
@@ -2585,7 +2585,7 @@ unsigned32              *status;
      * new client handle) probably wants to make calls as its own
      * identity.
      */
-    dst_binding_rep->timeout            = src_binding_rep->timeout;
+    dst_binding_rep->timeout         = src_binding_rep->timeout;
     dst_binding_rep->call_timeout_time  = src_binding_rep->call_timeout_time;
     dst_binding_rep->addr_is_dynamic    = src_binding_rep->addr_is_dynamic;
     

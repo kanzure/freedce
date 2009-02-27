@@ -265,8 +265,8 @@ int                     *status;
 #endif
 }        
 void dce_error_inq_text (
-unsigned long           status_to_convert,
-unsigned char           *error_text,
+unsigned int            status_to_convert,
+char                    *error_text,
 int                     *status
 )
 {

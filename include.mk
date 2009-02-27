@@ -2,7 +2,10 @@ include $(top_builddir)/config.mk
 
 dce_includes=-I$(top_srcdir)/include $(DCETHREADINCLUDES)
 
-CFLAGS= -g -Wall -W -O -pipe -Werror
+# DRAT.  DO_NOT_CLOBBER (gcc being too smart) no longer works
+#CFLAGS= -g -Wall -W -O -pipe -Werror
+AM_CFLAGS= -g -g -Wall -W -pipe
+
 INCLUDES=$(dce_includes)
 
 SUFFIXES=.idl

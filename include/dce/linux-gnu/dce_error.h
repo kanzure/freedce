@@ -27,8 +27,8 @@ extern "C" {
 
 #define dce_c_error_string_len     160
 typedef char dce_error_string_t[dce_c_error_string_len];
-void dce_error_inq_text (unsigned long status_to_convert,
-		unsigned char* error_text, int* status);
+void dce_error_inq_text (unsigned int status_to_convert,
+		                 char* error_text, int* status);
 
 #ifdef __cplusplus
 }

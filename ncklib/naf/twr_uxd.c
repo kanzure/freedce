@@ -164,7 +164,7 @@ unsigned32        *status;
         (byte_p_t) (&((struct sockaddr_un *)sa)->sun_path);
 
     related_data_size[1] = 2;
-    related_data_ptr[1] = ".";
+    related_data_ptr[1] = (byte_p_t)".";
             
     /*  
      * Calculate the length of the tower floors.

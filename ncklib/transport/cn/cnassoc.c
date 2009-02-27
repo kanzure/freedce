@@ -441,10 +441,17 @@ unsigned32              *st;
                          * association state machine if necessary.
                          */
                         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                        ("CN: call_rep->%x assoc->%x desc->%x negotiating presentation syntax over existing association\n",
+                                        ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+					 "desc->%x "
+#endif
+					 "negotiating presentation syntax over existing association\n",
                                          assoc->call_rep,
-                                         assoc,
-                                         assoc->cn_ctlblk.cn_sock));
+                                         assoc
+#ifdef USE_SOCKETS
+					 , assoc->cn_ctlblk.cn_sock
+#endif
+					 ));
                         rpc__cn_assoc_alter_context (assoc, 
                                                      if_r, 
                                                      binding_r->common.auth_info,
@@ -462,10 +469,16 @@ unsigned32              *st;
                              * return NULL.
                              */
                             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                            ("CN: call_rep->%x assoc->%x desc->%x presentation negotiation failed st = %x\n",
+                                            ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+					     "desc->%x "
+#endif
+					     "presentation negotiation failed st = %x\n",
                                              assoc->call_rep,
                                              assoc,
+#ifdef USE_SOCKETS
                                              assoc->cn_ctlblk.cn_sock,
+#endif
                                              *st));
                            rpc__cn_assoc_dealloc (assoc, 
 						  call_r,
@@ -479,10 +492,17 @@ unsigned32              *st;
                              * Return the association.
                              */
                             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                            ("CN: call_rep->%x assoc->%x desc->%x presentation negotiation succeeded\n",
+                                            ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+					     "desc->%x "
+#endif
+					     "presentation negotiation succeeded\n",
                                              assoc->call_rep,
-                                             assoc,
-                                             assoc->cn_ctlblk.cn_sock));
+                                             assoc
+#ifdef USE_SOCKETS
+                                             , assoc->cn_ctlblk.cn_sock
+#endif
+					     ));
                             
                             return (assoc);
                         }
@@ -566,10 +586,17 @@ unsigned32              *st;
                                                    &retry_op, 
                                                    st);
                         RPC_DBG_PRINTF (rpc_e_dbg_cancel, RPC_C_CN_DBG_CANCEL,
-                                        ("(rpc__cn_assoc_request) call_rep->%x assoc->%x desc->%x cancel caught before association setup\n",
+                                        ("(rpc__cn_assoc_request) call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+					 "desc->%x "
+#endif
+					 "cancel caught before association setup\n",
                                          call_r,
-                                         assoc,
-                                         assoc->cn_ctlblk.cn_sock));
+                                         assoc
+#ifdef USE_SOCKETS
+                                         , assoc->cn_ctlblk.cn_sock
+#endif
+                                         ));
                     }
                     ENDTRY
 
@@ -650,10 +677,17 @@ unsigned32              *st;
              */
             assoc->call_rep = call_r;
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                            ("CN: call_rep->%x assoc->%x desc->%x establishing connection & negotiating presentation syntax\n",
+                            ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			     "desc->%x "
+#endif
+			     "establishing connection & negotiating presentation syntax\n",
                              assoc->call_rep,
-                             assoc,
-                             assoc->cn_ctlblk.cn_sock));
+                             assoc
+#ifdef USE_SOCKETS
+                             , assoc->cn_ctlblk.cn_sock
+#endif
+                             ));
 
             rpc__cn_assoc_open (assoc, 
                                 rpc_addr,
@@ -689,10 +723,17 @@ unsigned32              *st;
                  * machine. This will put the association into the active state.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                ("CN: call_rep->%x assoc->%x desc->%x presentation negotiation succeeded\n",
+                                ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			         "desc->%x "
+#endif
+				 "presentation negotiation succeeded\n",
                                  assoc->call_rep,
-                                 assoc,
-                                 assoc->cn_ctlblk.cn_sock));
+                                 assoc
+#ifdef USE_SOCKETS
+                                 , assoc->cn_ctlblk.cn_sock
+#endif
+                                 ));
                 
                 rpc__cn_assoc_alloc (assoc, st);
                 if (*st == rpc_s_ok)
@@ -730,10 +771,16 @@ unsigned32              *st;
                  * association will be placed on a group.
                  */
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                ("CN: call_rep->%x assoc->%x desc->%x presentation negotiation failed st = %x\n",
+                                ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			         "desc->%x "
+#endif
+				 "presentation negotiation failed st = %x\n",
                                  assoc->call_rep,
                                  assoc,
+#ifdef USE_SOCKETS
                                  assoc->cn_ctlblk.cn_sock,
+#endif
                                  *st));
                 
                 if ((*st == rpc_s_connection_closed) &&
@@ -939,13 +986,19 @@ unsigned32              *st;
 PRIVATE rpc_cn_assoc_t *rpc__cn_assoc_listen 
 #ifdef _DCE_PROTO_
 (
+#ifdef USE_SOCKETS
    rpc_socket_t            newsock,
+#endif
    unsigned_char_p_t       endpoint,
    unsigned32              *st
 )
 #else
+#ifdef USE_SOCKETS
 (newsock, endpoint, st)
 rpc_socket_t            newsock;
+#else
+(endpoint, st)
+#endif
 unsigned_char_p_t       endpoint;
 unsigned32              *st;
 #endif
@@ -972,7 +1025,9 @@ unsigned32              *st;
      * Indicate that there is a valid connection.
      */
     assoc->cn_ctlblk.cn_state = RPC_C_CN_OPEN;
+#ifdef USE_SOCKETS
     assoc->cn_ctlblk.cn_sock  = newsock;
+#endif
     assoc->cn_ctlblk.cn_listening_endpoint = endpoint;
 
     /*
@@ -1684,10 +1739,17 @@ unsigned32              *st;
         RPC_LOG_CATCH_POST;
         {
             RPC_DBG_PRINTF (rpc_e_dbg_cancel, RPC_C_CN_DBG_CANCEL,
-                            ("(rpc__cn_assoc_receive_frag) call_rep->%x assoc->%x desc->%x cancel caught\n", 
+                            ("(rpc__cn_assoc_receive_frag) call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			     "desc->%x "
+#endif
+			     "cancel caught\n", 
                              assoc->call_rep,
-                             assoc,
-                             assoc->cn_ctlblk.cn_sock));
+                             assoc
+#ifdef USE_SOCKETS
+                             ,assoc->cn_ctlblk.cn_sock
+#endif
+                             ));
             rpc__cn_call_local_cancel (call_rep,
                                        &retry_op,
                                        st);
@@ -1797,7 +1859,9 @@ unsigned32              *st;
     int                         iovcnt;
     rpc_socket_iovec_t          *iovp;
     rpc_socket_iovec_t          out_iov;
+#ifdef USE_SOCKETS
     static rpc_addr_p_t         addr = NULL;
+#endif
     unsigned32                  bytes_to_send;
     boolean32                   free_iov_buffer;
     volatile boolean32          retry_op;
@@ -1912,12 +1976,17 @@ unsigned32              *st;
             sys_pthread_setasynccancel(CANCEL_ON);
 	    sys_pthread_testcancel();
 #endif
+#ifdef USE_SOCKETS
             RPC_SOCKET_SENDMSG (assoc->cn_ctlblk.cn_sock, 
                                 iovp, 
                                 iovcnt,
                                 addr,
                                 &cc,
                                 &serr);
+#endif
+#ifdef HAVE_OS_WIN32
+#error need to put something here!!!
+#endif
 
 #ifdef NON_CANCELLABLE_IO
 	    sys_pthread_setasynccancel(CANCEL_OFF);
@@ -1984,10 +2053,17 @@ unsigned32              *st;
             }
 
             RPC_DBG_PRINTF (rpc_e_dbg_cancel, RPC_C_CN_DBG_CANCEL,
-                            ("(rpc__cn_assoc_send_frag) call_rep->%x assoc->%x desc->%x cancel caught\n", 
+                            ("(rpc__cn_assoc_send_frag) call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			     "desc->%x "
+#endif
+			     "cancel caught\n", 
                              assoc->call_rep,
-                             assoc,
-                             assoc->cn_ctlblk.cn_sock));
+                             assoc
+#ifdef USE_SOCKETS
+			     , assoc->cn_ctlblk.cn_sock
+#endif
+					 ));
 
         }
         CATCH (exc_e_SIGPIPE)
@@ -2032,10 +2108,16 @@ unsigned32              *st;
         if (RPC_SOCKET_IS_ERR (serr))
         {
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                            ("(rpc__cn_assoc_send_frag) call_rep->%x assoc->%x desc->%x SENDMSG failed, error=%d\n",
+                            ("(rpc__cn_assoc_send_frag) call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			     "desc->%x "
+#endif
+			     "SENDMSG failed, error=%d\n",
                              assoc->call_rep,
                              assoc,
+#ifdef USE_SOCKETS
                              assoc->cn_ctlblk.cn_sock,
+#endif
                              RPC_SOCKET_ETOI(serr)));
             /*
              * The transmit failed. Find out why.
@@ -2055,10 +2137,16 @@ unsigned32              *st;
         }
         
         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                        ("CN: call_rep->%x assoc->%x desc->%x sent %d bytes\n", 
+                        ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			 "desc->%x "
+#endif
+			 "sent %d bytes\n", 
                          assoc->call_rep, 
                          assoc, 
+#ifdef USE_SOCKETS
                          assoc->cn_ctlblk.cn_sock,
+#endif
                          cc));
         bytes_to_send -= cc;
         if (bytes_to_send)
@@ -2312,10 +2400,16 @@ unsigned32                      *st;
         if (*st != rpc_s_ok)
         {
             RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                            ("CN: call_rep->%x assoc->%x desc->%x presentation negotiation failed - abstract syntax not registered - st = %x\n", 
+                            ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+			     "desc->%x "
+#endif
+			     "presentation negotiation failed - abstract syntax not registered - st = %x\n", 
                              assoc->call_rep, 
                              assoc, 
+#ifdef USE_SOCKETS
                              assoc->cn_ctlblk.cn_sock,
+#endif
                              *st));
             
             /*
@@ -2354,10 +2448,17 @@ unsigned32                      *st;
                        &st))
                     {
                         RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                        ("CN: call_rep->%x assoc->%x desc->%x presentation syntax negotiated\n", 
+                                        ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+					 "desc->%x "
+#endif
+					 "presentation syntax negotiated\n", 
                                          assoc->call_rep,
-                                         assoc,
-                                         assoc->cn_ctlblk.cn_sock));
+                                         assoc
+#ifdef USE_SOCKETS
+                                         , assoc->cn_ctlblk.cn_sock
+#endif
+                                         ));
                         
                         /*
                          * We have a transfer syntax which matches.
@@ -2403,10 +2504,17 @@ unsigned32                      *st;
             if (!syntax_match)
             {
                 RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_GENERAL,
-                                ("CN: call_rep->%x assoc->%x desc->%x presentation negotiation failed - no matching transfer syntax\n", 
+                                ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+				 "desc->%x "
+#endif
+				 "presentation negotiation failed - no matching transfer syntax\n", 
                                  assoc->call_rep,
-                                 assoc,
-                                 assoc->cn_ctlblk.cn_sock));
+                                 assoc
+#ifdef USE_SOCKETS
+                                 , assoc->cn_ctlblk.cn_sock
+#endif
+                                         ));
                 
                 /*
                  * No matching syntax was found. Mark the
@@ -2513,10 +2621,16 @@ unsigned32    		        *st;
         RPC_LIST_NEXT (*pres_context, *pres_context, rpc_cn_syntax_p_t);
     }
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                    ("CN: call_rep->%x assoc->%x desc->%x presentation context for context id given not found context_id->%x\n",
+                    ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+		     "desc->%x "
+#endif
+		     "presentation context for context id given not found context_id->%x\n",
                      assoc->call_rep,
                      assoc,
+#ifdef USE_SOCKETS
                      assoc->cn_ctlblk.cn_sock,
+#endif
                      context_id));
     *st = rpc_s_context_id_not_found;
     RPC_LOG_CN_ASSOC_SYN_LKUP_XIT;
@@ -2606,10 +2720,16 @@ unsigned32    		        *st;
         RPC_LIST_NEXT (*pres_context, *pres_context, rpc_cn_syntax_p_t);
     }
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_ERRORS,
-                    ("CN: call_rep->%x assoc->%x desc->%x presentation context for call id given not found call_id->%x\n",
+                    ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+		     "desc->%x "
+#endif
+		     "presentation context for call id given not found call_id->%x\n",
                      assoc->call_rep,
                      assoc,
+#ifdef USE_SOCKETS
                      assoc->cn_ctlblk.cn_sock,
+#endif
                      call_id));
     *st = rpc_s_call_id_not_found;
     RPC_LOG_CN_ASSOC_SYN_LKUP_XIT;
@@ -2701,10 +2821,16 @@ unsigned32    		                *st;
         RPC_LIST_NEXT (sec_context, sec_context, rpc_cn_sec_context_p_t);
     }
     RPC_DBG_PRINTF (rpc_e_dbg_general, RPC_C_CN_DBG_SECURITY_ERRORS,
-                    ("CN: call_rep->%x assoc->%x desc->%x no matching security context element for key id key_id->%x\n",
+                    ("CN: call_rep->%x assoc->%x "
+#ifdef USE_SOCKETS
+		     "desc->%x "
+#endif
+		     "no matching security context element for key id key_id->%x\n",
                      assoc->call_rep,
                      assoc,
+#ifdef USE_SOCKETS
                      assoc->cn_ctlblk.cn_sock,
+#endif
                      key_id));
     *sec = NULL;
     *st = rpc_s_key_id_not_found;

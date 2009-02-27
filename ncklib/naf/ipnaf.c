@@ -803,7 +803,7 @@ unsigned32              *status;
 #ifdef VMS
     ret = RPC__IP_ENDPOINT_SSCANF((char *) endpoint, "%d", &ep);
 #else
-    ret = RPC__IP_ENDPOINT_SSCANF((char *) endpoint, "%ld", &ep);
+    ret = RPC__IP_ENDPOINT_SSCANF((char *) endpoint, "%d", &ep);
 #endif
 
     if (ret != 1)
@@ -1015,7 +1015,7 @@ unsigned32              *status;
      * convert Internet dot notation address to network address
      * formatted unsigned32 - check for validity
      */
-    ip_addr->sa.sin_addr.s_addr = inet_addr (netaddr);
+    ip_addr->sa.sin_addr.s_addr = inet_addr ((char*)netaddr);
     if (ip_addr->sa.sin_addr.s_addr != (unsigned)-1)
     {
         *status = rpc_s_ok;
@@ -2262,10 +2262,10 @@ unsigned32                  *status;
     {
         
         if ((RPC__IP_ENDPOINT_SSCANF
-             ((char *) first_port_name_list[i], "%lu", &range_elements[i].low)
+             ((char *) first_port_name_list[i], "%u", &range_elements[i].low)
              != 1)       ||
             (RPC__IP_ENDPOINT_SSCANF
-             ((char *) last_port_name_list[i], "%lu", &range_elements[i].high) 
+             ((char *) last_port_name_list[i], "%u", &range_elements[i].high) 
              != 1)       ||
             (range_elements[i].low > range_elements[i].high))
         {
@@ -2387,7 +2387,7 @@ unsigned32                 *status;
          RPC_C_MEM_WAITOK);
 
     RPC__IP_ENDPOINT_SPRINTF
-        ((char *) *port_name, "%lu", list_p -> current_port_in_range);
+        ((char *) *port_name, "%u", list_p -> current_port_in_range);
 
     /* 
      * Increment to the next restricted port number.  Handle wrapping 

@@ -147,7 +147,9 @@ rpc_cn_assoc_t *rpc__cn_assoc_request _DCE_PROTOTYPE_ ((
  */
 
 rpc_cn_assoc_t *rpc__cn_assoc_listen _DCE_PROTOTYPE_ ((
+#ifdef USE_SOCKETS
     rpc_socket_t                 /* newsock */,
+#endif
     unsigned_char_p_t            /* endpoint */,
     unsigned32                  * /* st */ ));
     

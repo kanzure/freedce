@@ -45,11 +45,11 @@
  */
 typedef unsigned small  unsigned8;          /* positive 8 bit integer */
 typedef unsigned short  unsigned16;         /* positive 16 bit integer */
-typedef unsigned long   unsigned32;         /* positive 32 bit integer */
+typedef unsigned int    unsigned32;         /* positive 32 bit integer */
 
 typedef small           signed8;            /* signed 8 bit integer */
 typedef short           signed16;           /* signed 16 bit integer */
-typedef long            signed32;           /* signed 32 bit integer */
+typedef int             signed32;           /* signed 32 bit integer */
 
 /*
  * Type definition for 32-bit wide booleans.
@@ -59,8 +59,8 @@ typedef unsigned32      boolean32;
 /*
  * Canonical types for expressing procedure return status.
  */
-typedef unsigned long   error_status_t;
-const long              error_status_ok = 0;
+typedef unsigned int   error_status_t;
+const int              error_status_ok = 0;
 
 /*
  * Universal Unique Identifier (UUID) types.
