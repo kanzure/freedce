@@ -1,0 +1,11 @@
+Makefile
+Makefile.in
+echo.h
+echo_server
+echo_client
+*.lo
+*.la
+.libs
+*.tar.gz
+*.tgz
+.deps

@@ -1,0 +1,88 @@
+/*
+ * Types borrowed from Windows that are used throughout COM.
+ */
+[
+	uuid(26865374-72e8-11d4-bc89-0080c8e3dc3a)
+]
+interface FreeDCEORPCTypes
+{
+	typedef struct _GUID	{
+		unsigned long	Data1;
+		unsigned short	Data2;
+		unsigned short	Data3;
+		unsigned char	Data4[8];
+	} GUID;
+
+	typedef GUID	IID;
+	typedef GUID	CLSID;
+	typedef GUID	FMTID;
+
+	typedef [ref] GUID * REFGUID;
+	typedef [ref] GUID * LPGUID;
+
+	typedef [ref] GUID * REFCLSID;
+	typedef [ref] GUID * LPCLSID;
+
+	typedef [ref] GUID * REFIID;
+	typedef [ref] GUID * LPIID;
+
+	typedef [ref] GUID * REFFMTID;
+	typedef [ref] GUID * LPFMTID;
+
+	typedef unsigned long HRESULT;
+
+	typedef [ptr] void * LPVOID;
+	typedef unsigned short WORD;
+	typedef unsigned long DWORD;
+
+	/* memory context values; passed to CoGetMalloc */
+	/* task (private) memory */
+	const short MEMCTX_TASK = 1;
+	/* shared memory (between processes */
+	const short MEMCTX_SHARED = 2;
+	/* on the mac, the system heap */
+	const short	MEMCTX_MACSYSTEM = 3;
+	/* these are mostly for internal use... */
+	/* unknown context (when asked about it) */
+	const short MEMCTX_UNKNOWN = -1;
+	/* same context (as some other pointer) */
+	const short	MEMCTX_SAME = -2;
+
+	/* class context: used to determine what scope and kind of class object to use
+		NOTE: this is a bitwise enum */
+/*
+	typedef enum tagCLSCTX
+	{
+		CLSCTX_INPROC_SERVER = 0x01,   // server dll (runs in same process as caller)
+		CLSCTX_INPROC_HANDLER = 0x02,  // handler dll (runs in same process as caller)
+		CLSCTX_LOCAL_SERVER = 0x04,    // server exe (runs on same machine; diff proc)
+		CLSCTX_INPROC_SERVER16 = 0x08, // 16-bit server dll (runs in same process as caller)
+		CLSCTX_REMOTE_SERVER = 0x10,    // remote server exe (runs on different machine)
+		CLSCTX_INPROC_HANDLER16 = 0x20, // 16-bit handler dll (runs in same process as caller)
+		CLSCTX_INPROC_SERVERX86 = 0x40, // Wx86 server dll (runs in same process as caller)
+		CLSCTX_INPROC_HANDLERX86 = 0x80, // Wx86 handler dll (runs in same process as caller)
+		CLSCTX_ESERVER_HANDLER = 0x100, // handler dll (runs in the server process)
+	} CLSCTX;
+*/
+/*
+	// marshaling flags; passed to CoMarshalInterface
+	typedef enum tagMSHLFLAGS
+	{
+		MSHLFLAGS_NORMAL = 0,       // normal marshaling via proxy/stub
+		MSHLFLAGS_TABLESTRONG = 1,  // keep object alive; must explicitly release
+		MSHLFLAGS_TABLEWEAK = 2,    // doesn't hold object alive; still must release
+		MSHLFLAGS_NOPING = 4        // remote clients dont 'ping' to keep objects alive
+	} MSHLFLAGS;
+
+
+	// marshal context: determines the destination context of the marshal operation
+	typedef enum tagMSHCTX
+	{
+		MSHCTX_LOCAL = 0,           // unmarshal context is local (eg.shared memory)
+		MSHCTX_NOSHAREDMEM = 1,     // unmarshal context has no shared memory access
+		MSHCTX_DIFFERENTMACHINE = 2,// unmarshal context is on a different machine
+		MSHCTX_INPROC = 3,          // unmarshal context is on different thread
+	} MSHCTX;
+*/
+
+}

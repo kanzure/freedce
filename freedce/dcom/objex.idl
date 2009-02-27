@@ -1,0 +1,65 @@
+/* $Id: objex.idl,v 1.1 2000/09/02 18:19:01 wez Exp $
+ * This file is derived from the COM specification,
+ * Copyright (C) Microsoft Corporation, 1992-1995.
+ * 
+ * Interface Implemented by object exporters.
+ * This is the interface that needs to be supported by hosts that export
+ * objects. Only one instance of the interface can be exported by the host.
+ *
+ * An object exporter needs to be able to:
+ * 1. return string bindings that can be used to talk to objects it has
+ *    exported.
+ * 2. receive pings from object importers to keep the objects alive.
+ * */
+[
+	uuid(99fcfec4-5260-101b-bbcb-00aa0021347a),
+	pointer_default(unique)
+]
+interface IObjectExporter
+{
+	import "obase.idl";
+
+	/* method to get the protocol sequences, string bindings and machine id for
+	 * an object server given its OXID. */
+	[idempotent] error_status_t ResolveOxid
+	(
+	 [in]			handle_t			hRpc,
+	 [in]			OXID				*pOxid,
+	 [in]			unsigned short	cRequestedProtseqs,
+	 [in, ref, size_is(cRequestedProtseqs)]
+	 				unsigned short	arRequestedProtseqs[],
+	 [out, ref]	MID				*pmid,
+	 [out, ref] STRINGARRAY		**psaOxidBindings,
+	 [out, ref] IPID				*pipidRemUnknown
+	);
+
+	/* Simple ping is used to ping a Set. Client machines use this to inform
+	 * the ovject exporter that it is still using the items inside the set.
+	 * Returns S_TRUE if the SetId is known by the object exporter, S_FALSE if
+	 * not. */
+
+	[idempotent] error_status_t	SimplePing
+	(
+	 [in]	handle_t	hRpc,
+	 [in] SETID		*pSetId
+	);
+
+	/* Complex Ping is used to create sets of OIDs to ping. The whole set can
+	 * subsequently be pinged using SimplePing, thus reducing network traffic.
+	 * */
+
+	[idempotent] error_status_t	ComplexPing
+	(
+	 [in]		handle_t			hRpc,
+	 [in]		SETID				*pSetId,
+	 [in]		unsigned short	SequenceNum,
+	 [in]		unsigned short	SetPingPeriod,
+	 [in]		unsigned short SetNumPingsToTimeout,
+	 [out]	unsigned short *pReqSetPingPeriod,
+	 [out]	unsigned short *pReqSetNumPingsToTimeout,
+	 [in]		unsigned short cAddToSet,
+	 [in]		unsigned short cDelFromSet,
+	 [in, unique, size_is(cAddToSet)]	GUID AddToSet[],	/* Add these OIDs to the set */
+	 [in, unique, size_is(cDelFromSet)]	GUID DelFromSet[]	/* Remove these OIDs from the set */
+	);
+}

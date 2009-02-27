@@ -1,0 +1,43 @@
+/* $Id: remact.idl,v 1.1 2001/07/26 18:56:14 wez Exp $ 
+ * This file is derived from the DCOM specification 1.0
+ * Copyright (C) Microsoft Corporation, 1992-1998.
+ * 
+ * Remote Activiation
+ * */
+
+[
+    uuid(4d9f4ab8-7d1c-11cf-861e-0020af6e7c57),
+    pointer_default(unique)
+]
+interface IRemoteActivation
+{
+    import "dce/obase.idl";
+
+    const unsigned long MODE_GET_CLASS_OBJECT = 0xffffffff;
+
+    HRESULT RemoteActivation(
+     [in] handle_t                               hRpc,
+     [in] ORPCTHIS                              *ORPCthis,
+     [out] ORPCTHAT                             *ORPCthat,
+     [in] GUID                                  *Clsid,
+/* should be WCHAR */
+     [in, string, unique] byte                 *pwszObjectName,
+     [in, unique] MInterfacePointer             *pObjectStorage,
+     [in] DWORD                                  ClientImpLevel,
+     [in] DWORD                                  Mode,
+     [in] DWORD                                  Interfaces,
+     [in,unique,size_is(Interfaces)] IID        *pIIDs,
+     [in] unsigned short                         cRequestedProtseqs,
+     [in, size_is(cRequestedProtseqs)]
+          unsigned short                         RequestedProtseqs[],
+     [out] OXID                                 *pOxid,
+     [out] DUALSTRINGARRAY                     **ppdsaOxidBindings,
+     [out] IPID                                 *pipidRemUnknown,
+     [out] DWORD                                *pAuthnHint,
+     [out] COMVERSION                           *pServerVersion,
+     [out] HRESULT                              *phr,
+     [out,size_is(Interfaces)] MInterfacePointer **ppInterfaceData,
+     [out,size_is(Interfaces)] HRESULT          *pResults
+     );
+}
+

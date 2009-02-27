@@ -1,0 +1,7 @@
+#!/bin/sh
+libtoolize --automake
+# avoid problems with libtool 1.4
+touch ltconfig
+aclocal
+automake --foreign -a
+autoconf

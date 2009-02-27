@@ -1,0 +1,211 @@
+okay, there is much blot on landscape to GetThisWorking.
+
+you will first need to have a dceidl unix compiled, and because i haven't
+got time to do things nice, you will need to get the version on the web site
+or check out cvs as of last week:
+
+	cvs co -D "1 sep 2005" freedce
+
+would do the job.
+
+there is one important thing: the ENABLE_DCOM stuff is broken.
+check idl/sysdep.in.h _before_ compiling dceidl on unix, and make
+sure it looks like this:
+
+	/*
+	** Default suffixes for IDL-generated files.
+	*/
+	#ifdef UNIX
+	# ifndef ENABLE_DCOM
+	#  define CSTUB_SUFFIX          "_cstub.c"
+	#  define SSTUB_SUFFIX          "_sstub.c"
+	#  define CAUX_SUFFIX           "_caux.c"
+	#  define SAUX_SUFFIX           "_saux.c"
+	# else
+	#  define CSTUB_SUFFIX  "_cstub.cxx"
+	#  define SSTUB_SUFFIX  "_sstub.cxx"
+	#  define SAUX_SUFFIX    "_saux.cxx"
+	#  define CAUX_SUFFIX    "_caux.cxx"
+	# endif
+	# define HEADER_SUFFIX          ".h"
+	#endif
+
+this stops dceidl from using g++ instead of gcc, because the intermediate
+stub source code has a file extension .c instead of .cxx.  mingw32-g++
+totally does the wrong thing, spewing forth errors, whereas mingw32-gcc
+does the correct thing - cross-compile code.
+
+if you know a better way to get ENABLE_DCOM to do the right thing,
+let me know or send me a patch.
+
+you _shouldn't_ need the usual stuff on how to get freedce to work
+(a 2.6 kernel, NTPL, latest version of libc6 2.3.somethinghigh blah blah)
+because there's no threading in dceidl: it's just a compiler tool.
+
+
+once you have _that_ working, you now have a dceidl compiler tool which
+can be used in cross-compiling for mingw32.  dceidl is neat: it can be
+told what c compiler to use and what options to use, so it can be told
+"use this c cross-compiler, and everything will be Well".  it just
+spews out c code on demand from an IDL file, and passes it over to
+the compiler you requested be used.
+
+unfortunately, i haven't had time to hack that properly into place, so
+/opt/dce/bin/dceidl is now hard-coded into the appropriate Makefile.am
+send me a patch, i'll happily commit it...
+
+download this:
+
+	http://sourceware.org/pthreads-win32
+
+this is a critical component and i am so relieved that it exists.
+the installation instructions, because this is windows, are
+non-existent: as usual you are expected to hand-wave about
+dropping dlls and libraries into the right places.
+
+you will need the "static" libraries - pthreadsGC2 - and therefore
+will need to copy, by hand, pthreads.h and friends into
+/usr/i586-mingw32msvc/include, and libpthreadsGC2.a into
+/usr/i586-mingw32msvc/lib.
+
+if you know of a better way to do this, let me know.
+
+
+so.  onwards.  cvs co dcethreads-win32 and cvs co freedce.
+
+in dcethreads-win32 subdirectory (not the dcethreads one), do this:
+
+	./configure.mingw-cross --prefix=/opt/dce-win32/
+
+remember to do a make; make -i install because i accidentally added
+the "tests" to Makefile.am and it now attempts to build them _before_
+installing: one of the tests doesn't compile, therefore it falls in
+a heap.  use make -i install and everything will Be Well.
+
+and for freedce (win32), do this:
+
+	./configure.mingw-cross --with-dcethreads-dir=/opt/dce-win32/ --prefix=/opt/dce-win32/
+
+
+freedce is set to compile with -Wall.  you should NOT get any errors.
+
+you should end up with an rpcd, an echo_server demo and an echo_client demo.
+
+you _will_ need to run rpcd, it is the endpoint mapper and it binds
+to TCP and UDP ports 135 and to \\PIPE\epmapper once i get round to
+adding in ncacn_np - NamedPipes plugin.
+
+if you don't run rpcd, the endpoint mapper, your programs will fail
+because they will attempt to register with a nonexistant service
+and will fall in a heap on the floor.
+
+
+20 Sep 2005 - what works
+-----------
+
+dcethreads
+----------
+
+well, dcethreads-win32 actually compiles (against pthreads-win32),
+and all but one of the test programs also compile (no i'm not going to
+fix it).  i've tried two of the test programs on reactos: one of them
+actually worked, and the other one failed in exactly the same way it
+does under linux.
+
+so i'm not particularly bothered by that, right now: i'm just glad it
+works at all.
+
+
+enumerating interfaces
+----------------------
+
+i've had to hack out enumerate_interfaces in ipnaf_linux.c and i don't
+really expect things to work properly until there's an equivalent
+version.  i don't exactly know what's required (this is my first mean
+bit of windows programming since 1993 and it's _so_ not MSVC++ :)
+
+GetIpAddrTable() is the closest win32 function that looks
+promising, which i will explore some day real soon now.
+
+20sep2005/18:00 - yes, it's a problem.  rpc_server_inq_bindings()
+is calling the naf_desc_inq_addr vector-table-function, which is
+calling rpc__ip_desc_inq_addr(), which is of course returning
+bugger-all.  oops.  tomorrow's task, methinks.
+
+21sep2005/03:00 - mostly sorted.  at least the code's there, it
+appears to be doing the correct job.  i need to add evaluation
+stuff that checks that the interface is up, and whether it's a
+local interface or not.  actually, you know what: i can't be
+bothered, and i don't believe it matters.  
+
+
+gettimeofday
+------------
+
+i found a function that implements gettimeofday() i hacked it into
+libuuid because libuuid is used absolutely everywhere.  i'm not
+entirely sure where's the best place to put it, and i sure ain't
+gonna substitute code wherever it's used.
+
+win32_sock stuff
+----------------
+
+i added a set of "shim" code to wrap the brain-dead win32 socket code,
+man that stuff is awful.  the reason is because <windows.h> conflicts
+badly with <dce/*.h> due to several #defines, structs and typedefs
+already existing.
+
+i also created a mini_win32_net.h file which contains sufficient bits
+of winsock2.h to compile up the bits of freedce that use tcp/ip.
+this is a trick i picked up from elrond, of samba tng.
+
+it's awful, i know, but it works, and i can't think right now of a
+cleaner way to do this.
+
+dlopen / LoadLibrary
+--------------------
+
+okay.  wez furlong hacked in a loadable module infrastructure into
+freedce back in about 2000/2001.  it's very cool, and it took very
+little effort because freedce is designed so well it already had
+the vector tables, just call one function to initialise them.
+
+i'm running into difficulties with libtool, and have been unable
+to create a shared library (dll) for LoadLibrary to pick out
+the "rpc__module_init_func" from, in order to load the libnaf_ip
+module, ncacn, ncadg, ntlmsspauth module and gssapiauth modules.
+
+therefore i've hacked in static library linking, and manually
+calling the module initialisation.  the function which loads
+TCP and UDP support (IP network address family) is called
+rpc__ipnaf_module_init_func();  the one for ncacn is called
+rpc__cn_module_init_func() and for ncadg, it's
+rpc__dg_module_init_func().
+
+
+uuid_create
+-----------
+
+i cannot be arsed to rewrite uuid_create, so instead i've hacked in
+a win32 shim call to UuidCreate.  ironically, this requires linking
+with -lrpcrt4 - rpcrt4.dll - which is the exact same code that MS
+ported (DCE 1.1 reference implementation) back in the early 1990s
+and is now being reimplemented in Wine.
+
+if the linking with rpcrt4 becomes a problem i will simply hack in
+the reactos code from uuid.c instead!!
+
+
+rpcd's epmapper database
+------------------------
+
+file locking, damn windows file locking.  i've disabled the
+lock stuff (return 0) pending looking up apr runtime and
+hacking in the CreateFile, LockFile etc. code in place of
+open, fcntl, flock and friends.  what an arse.  rpcd is
+multithreaded and will expect to be able to open /tmp/rpcdep.dat
+database, write to it, flush contents back etc. etc.
+
+so - it's highly likely that only one service can register at once
+without messing things up.
+

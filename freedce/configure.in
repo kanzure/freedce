@@ -1,0 +1,180 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(freedce, 1.1.0.7)
+AC_CONFIG_SRCDIR(uuid/uuid.c)
+AC_CANONICAL_SYSTEM
+AM_INIT_AUTOMAKE
+AC_PREFIX_DEFAULT(/opt/dce)
+
+# determine target system
+if test "x$target" = "x"; then
+	echo "warning: target not set, building for host system"
+	target=${host}
+	target_cpu=${host_cpu}
+	target_os=${host_os}
+	target_vendor=${host_vendor}
+fi
+
+
+# reduce iX86 to i386 for target_cpu
+case $target_cpu in
+	i?86)	target_cpu="i386";;
+esac
+# expand linux to linux-gnu
+if test "x$target_os" = "xlinux"; then
+	target_os="linux-gnu";
+fi
+
+case "$target_os" in
+    cygwin* | mingw*)
+            have_win32=1
+	    ;;
+esac
+
+if test "x$have_win32" = "x1"; then
+	AC_DEFINE(HAVE_OS_WIN32, 1, [Define, if target is win32])
+	LIBS="$LIBS -lntdll -lws2_32 -liphlpapi";
+	WIN32_PROG_PREFIX=".exe"
+	AC_SUBST(WIN32_PROG_PREFIX)
+fi
+
+dnl NON_CANCELLABLE_IO="1"
+dnl AC_SUBST(NON_CANCELLABLE_IO)
+
+dnl NON_CANCELLABLE_IO_SELECT="1"
+dnl AC_SUBST(NON_CANCELLABLE_IO_SELECT)
+
+# show the user what we do
+echo "########################################"
+echo "# configuring for target: $target"
+echo "#   CPU $target_cpu"
+echo "#   OS $target_os"
+echo "#   VENDOR $target_vendor"
+echo "# on host: $host"
+echo "#   CPU $host_cpu"
+echo "#   OS $host_os"
+echo "#   VENDOR $host_vendor"
+echo "########################################"
+
+AC_SUBST(target_cpu)
+AC_SUBST(target_os)
+
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_CXX
+AC_PROG_AWK
+AC_LIBTOOL_WIN32_DLL
+AC_LIBTOOL_SETUP
+AM_PROG_LIBTOOL
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AM_PROG_LEX
+AC_PROG_YACC
+AC_PATH_PROG(GENCAT, gencat)
+AC_PATH_PROG(SED, sed)
+AC_SUBST(GENCAT)
+AC_SUBST(SED)
+AC_OBJEXT
+AC_C_INLINE
+
+RPC_ARG_DEFINE(pthreads, ENABLE_PTHREADS, no,Enable pthreads: experimental)
+
+dnl AC_CHECK_HEADERS(windows.h)
+dnl Checks for libraries.
+if test "x$have_win32" = "x1"; then
+AC_CHECK_LIB(pthreadGC2, pthread_create)
+dnl ENABLE_PTHREADS="yes"
+else
+AC_CHECK_LIB(pthread, pthread_create)
+fi
+AC_CHECK_LIB(dl, dlopen)
+
+SAMBA_TNG_DIRS="/usr/local/samba"
+AC_ARG_WITH(dcethreads-dir, [  --with-samba-tng-dir   Specify where you have installed Samba (The Next Generation)],
+[SAMBA_TNG_DIRS="$withval $SAMBA_TNG_DIRS"])
+
+if test "x$have_win32" = "x1"; then
+THREADS_DIRS="/opt/dce-win32"
+else
+THREADS_DIRS="/opt/dce"
+fi
+
+AC_ARG_WITH(dcethreads-dir, [  --with-dcethreads-dir   Specify where you have installed dcethreads],
+[THREADS_DIRS="$withval $THREADS_DIRS"])
+
+
+echo "enable_pthreads: $ENABLE_PTHREADS"
+
+#if test "x$ENABLE_PTHREADS" == "xyes"; then
+RPC_CHECK_LIBDIR(pthd4exc_create, dcethreads, $THREADS_DIRS,,
+AC_MSG_ERROR([freedce requires libdcethreads!]))
+#else
+#RPC_CHECK_LIBDIR(dcethreads_exc_lib_init, dcethreads, $THREADS_DIRS,,
+#AC_MSG_ERROR([freedce requires libdcethreads!]))
+#fi
+
+dnl Checks for header files.
+AC_CHECK_HEADERS(features.h sys/cdefs.h dlfcn.h)
+RPC_CHECK_INCDIR(dce/pthread_exc.h, dcethreads, $THREADS_DIRS,,
+AC_MSG_ERROR([freedce requires dcethreads include files!]))
+DCETHREADINCLUDES="${rpc_incdir_dcethreads+-I$rpc_incdir_dcethreads}"
+AC_SUBST(DCETHREADINCLUDES)
+
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+
+dnl Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+AC_FUNC_MEMCMP
+
+dnl _GNU_SOURCE pulls in the definition of _pthread_push_defer
+AC_DEFINE(_REENTRANT)
+AC_DEFINE(_GNU_SOURCE)
+AC_DEFINE(_BSD)
+
+dnl This allows us to re-use AC_OUTPUT which makes things more maintainable
+dnl and helps us to use automake nicely.
+dnl it is defined here and not in acinclude.m4 because acgeneral.m4 gets
+dnl parsed AFTER acinclude.m4
+pushdef([AC_OUTPUT], 
+[define([RPC_OUTPUT_FILES], ifdef([RPC_OUTPUT_FILES], RPC_OUTPUT_FILES ,)[$1])]
+)
+
+RPC_ARG_DEFINE(debug, DEBUG, yes,Compile with debugging support)
+
+RPC_ARG_DEFINE(dcom, ENABLE_DCOM, no,Enable experimental DCOM support)
+AM_CONDITIONAL(ENABLE_DCOM, test x$rpc_arg_dcom = yes)
+AM_CONDITIONAL(TARGET_OS_LINUX, test x$target_os = xlinux-gnu)
+AM_CONDITIONAL(TARGET_OS_WIN32, test x$have_win32 = x1)
+
+dnl ============= include subdirs here
+sinclude(uuid/config.m4)
+sinclude(include/config.m4)
+sinclude(idl/config.m4)
+sinclude(idllib/config.m4)
+sinclude(ncklib/config.m4)
+sinclude(ncklib/transport/config.m4)
+sinclude(ncklib/auth/config.m4)
+sinclude(ncklib/rpc/config.m4)
+sinclude(ncklib/codeset/config.m4)
+sinclude(ncklib/com/config.m4)
+sinclude(ncklib/naf/config.m4)
+sinclude(dcelib/config.m4)
+sinclude(rpcd/config.m4)
+sinclude(demos/config.m4)
+sinclude(demos/echo_server/config.m4)
+sinclude(dcom/config.m4)
+sinclude(perf/config.m4)
+
+AC_OUTPUT(Makefile config.mk)
+AC_OUTPUT(freedce.spec)
+
+dnl restore original AC_OUTPUT definition
+popdef([AC_OUTPUT])
+
+dnl call AC_OUTPUT with the list of files we accumulated.
+dnl automake will complain about RPC_OUTPUT_FILES.in, so
+dnl we include a dummy file to keep it quiet.
+AC_OUTPUT(RPC_OUTPUT_FILES)
+

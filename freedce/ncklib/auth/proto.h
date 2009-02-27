@@ -1,0 +1,11 @@
+void print_asc(int level, uchar const *buf, int len);
+void dump_data(int level, const char *buf1, int len);
+void dump_data_pw(const char *msg, const uchar * data, size_t len);
+char *tab_depth(int depth);
+char *safe_strcpy(char *dest,const char *src, size_t maxlength);
+char *safe_strcat(char *dest, const char *src, size_t maxlength);
+int memcpy_zero(void *to, const void *from, size_t size);
+void ascii_to_unistr(uint16 *dest, const char *src, int maxlen);
+void unistr_to_ascii(char *dest, const uint16 *src, int len);
+char *ascii_to_unibuf(char *dest, const char *src, int maxlen);
+const char* unibuf_to_ascii(char *dest, const char *src, int maxlen);

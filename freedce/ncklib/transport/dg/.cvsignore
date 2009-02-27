@@ -1,0 +1,10 @@
+Makefile
+Makefile.in
+*.lo
+*.la
+.libs
+*.tar.gz
+*.tgz
+.deps
+conv.h
+convc.h

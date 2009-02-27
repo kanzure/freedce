@@ -1,0 +1,13 @@
+Just got this out from cvs?
+
+you also need the dcethreads package - install that before this one.
+
+you will need to generate the configure/automake files:
+
+% ./buildconf
+
+Now you can run configure and build it.
+
+---------------------------------------
+$Id: README.MAINT,v 1.2 2000/10/14 19:41:32 wez Exp $
+
