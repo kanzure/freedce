@@ -5,7 +5,8 @@ A DCE Threads emulation layer ontop of LinuxThreads.
 Maintainers:	Miroslaw Dobrzanski-Neumann <mirek-dn@t-online.de>	
 					Wez Furlong <wez+dce@thebrainroom.com>
 
-This packages implements pthreads draft 4.
+This packages no longer implements pthreads draft 4.
+Instead, it purely implements dce threading exceptions.
 
 For information about copyrights, see the file `COPYING' included with this
 package.

@@ -80,56 +80,58 @@ AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(gettimeofday)
 
-AC_DEFINE(YIELD_AFTER_PTHREAD_CREATE)
+AC_DEFINE(YIELD_AFTER_PTHREAD_CREATE, 1)
+
+AC_DEFINE(USE_CANCELATION_WRAPPER, 1)
 
 dnl check if glibc functions are true cancellation points
 dnl
 
-if test "x$have_win32" == "x1"; then
-AC_DEFINE(USE_CANCELATION_WRAPPER, 1)
-else
-
-AC_MSG_CHECKING([POSIX cancellation point]); 
-AC_RUN_IFELSE([AC_LANG_SOURCE([[
-#include <pthread.h>
-#include <unistd.h>
-#include <errno.h>
-#include <time.h>
-#include <stdlib.h>
-#include <assert.h>
-
-int eintr=0; 
-
-void*
-thread(void* unused)
-{
-  struct timespec req={5,0}, rem; 
-  int    status; 
-
-  do {
-    status = nanosleep(&req, &rem);
-  }
-  while (status!=-1);
-  
-  eintr = (errno==EINTR);
-  pthread_exit (NULL);
-}
-
-int
-main()
-{
-  pthread_t thrid; 
-
-  assert (pthread_create(&thrid, NULL, thread, NULL)==0);
-  sleep(1);
-  assert (pthread_cancel (thrid)==0);
-  sleep(1);
-  exit (eintr);
-}
-]])],
-	[AC_MSG_RESULT([yes]) ],
-	[AC_MSG_RESULT([no]) AC_DEFINE(USE_CANCELATION_WRAPPER, 1)]	
-)
-fi # have_win32
+dnl  if test "x$have_win32" == "x1"; then
+dnl  AC_DEFINE(USE_CANCELATION_WRAPPER, 1)
+dnl  else
+dnl  
+dnl  AC_MSG_CHECKING([POSIX cancellation point]); 
+dnl  AC_RUN_IFELSE([AC_LANG_SOURCE([[
+dnl  #include <pthread.h>
+dnl  #include <unistd.h>
+dnl  #include <errno.h>
+dnl  #include <time.h>
+dnl  #include <stdlib.h>
+dnl  #include <assert.h>
+dnl  
+dnl  int eintr=0; 
+dnl  
+dnl  void*
+dnl  thread(void* unused)
+dnl  {
+dnl    struct timespec req={5,0}, rem; 
+dnl    int    status; 
+dnl  
+dnl    do {
+dnl      status = nanosleep(&req, &rem);
+dnl    }
+dnl    while (status!=-1);
+dnl    
+dnl    eintr = (errno==EINTR);
+dnl    pthread_exit (NULL);
+dnl  }
+dnl  
+dnl  int
+dnl  main()
+dnl  {
+dnl    pthread_t thrid; 
+dnl  
+dnl    assert (pthread_create(&thrid, NULL, thread, NULL)==0);
+dnl    sleep(1);
+dnl    assert (pthread_cancel (thrid)==0);
+dnl    sleep(1);
+dnl    exit (eintr);
+dnl  }
+dnl  ]])],
+dnl  	[AC_MSG_RESULT([yes]) ],
+dnl  	[AC_MSG_RESULT([no]) AC_DEFINE(USE_CANCELATION_WRAPPER, 1)]	
+dnl  )
+dnl  fi # have_win32
 
 AC_OUTPUT(Makefile include/Makefile include/dce/Makefile src/Makefile tests/Makefile)

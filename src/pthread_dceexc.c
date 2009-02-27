@@ -76,7 +76,7 @@
 #include "dce/dcethreads_conf.h"
 
 #ifndef lint
-static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.4 2005/09/28 22:31:10 lkcl Exp $";
+static const char rcsid[] __attribute__((__unused__)) = "$Id: pthread_dceexc.c,v 1.5 2009/02/27 19:14:07 lkcl Exp $";
 #endif
 
 /*
@@ -289,7 +289,7 @@ pthd4exc_join( pthread_t thread, pthread_addr_t *status )
 	   * jrd added 05-09 PTHREAD_CANCEL
 	   */
 
-	 case ( (int) PTHREAD_CANCELED ):
+	 case ( (long) PTHREAD_CANCELED ):
 	                  RAISE(pthread_cancel_e);
 			  break;
 	 case ESRCH:      

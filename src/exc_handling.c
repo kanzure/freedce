@@ -105,16 +105,16 @@
 
 #define _DCE_PTHREADS_COMPAT_MACROS_
 
-#include "dce/dcethreads_conf.h"
-
-static char rcsid [] __attribute__((__unused__)) = "$Id: exc_handling.c,v 1.3 2005/09/28 22:31:10 lkcl Exp $";
-
-#include "dce/exc_handling.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+
+#include "dce/dcethreads_conf.h"
+
+static char rcsid [] __attribute__((__unused__)) = "$Id: exc_handling.c,v 1.4 2009/02/27 19:14:06 lkcl Exp $";
+
+#include "dce/exc_handling.h"
 
 /**
  **
@@ -761,6 +761,10 @@ exc_raise_status(int s)
   
 }
 
+#if 0
+extern void pthread_kill_other_threads(void);
+#endif
+
 /*
  * E X C _ L I B R A R Y _ F A T A L _ E R R O R
  * 
@@ -808,9 +812,12 @@ exc_library_fatal_error(int failure_reason,
       * Terminate all threads in the process, then exit with 255 
       */
 
+#if 0
 #ifndef HAVE_OS_WIN32
-     pthread_kill_other_threads_np();
+     pthread_kill_other_threads();
 #endif
+#endif
+
      /* raise(SIGABRT); */
      exit(255);
 }

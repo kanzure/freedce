@@ -58,7 +58,7 @@
 
 #include "dce/dcethreads_conf.h"
 
-static char rcsid [] __attribute__((__unused__)) = "$Id: pthd4_libc_wrapers.c,v 1.3 2005/09/28 22:31:10 lkcl Exp $";
+static char rcsid [] __attribute__((__unused__)) = "$Id: pthd4_libc_wrapers.c,v 1.4 2009/02/27 19:14:07 lkcl Exp $";
 
 #ifdef HAVE_OS_WIN32
 #include </usr/i586-mingw32msvc/include/pthread.h>    /* Import platform win32 threads*/
@@ -359,7 +359,7 @@ CANCELABLE_SYSCALL (int, accept,
  * connect(2)                                             *
  *--------------------------------------------------------*/
 CANCELABLE_SYSCALL (int, connect, 
-		    (int fd, struct sockaddr *addr, socklen_t addrlen),
+		    (int fd, const struct sockaddr *addr, socklen_t addrlen),
 		    (fd, addr, addrlen)
 		    );
 
@@ -385,14 +385,14 @@ CANCELABLE_SYSCALL (int, select,
 /*-----------------------------------------*
  * use BSD prototype                       *
  *-----------------------------------------*/ 
-#define net_type int 
+#define net_type ssize_t 
 #else 
 /*-----------------------------------------*
  * use Single Unix Specification prototype *
  *-----------------------------------------*/ 
 #define net_type ssize_t
 #endif 
-  
+
 
 /*--------------------------------------------------------*
  * recv(2)                                                *
@@ -408,8 +408,8 @@ CANCELABLE_SYSCALL (net_type,
  * recvfrom(2)                                            *
  *--------------------------------------------------------*/
 CANCELABLE_SYSCALL (net_type, recvfrom, 
-		    (int fd, __ptr_t buf, size_t n, int flags,
-		     struct sockaddr addr, socklen_t *addr_len),
+		    (int fd, void*__restrict buf, size_t n, int flags,
+		     __SOCKADDR_ARG addr, socklen_t *__restrict addr_len),
 		    (fd, buf, n, flags, addr, addr_len))
 
 /*--------------------------------------------------------*
