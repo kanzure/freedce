@@ -108,17 +108,17 @@ static char DDBE_long_buf[DDBE_MAX_EXPR];
 static char *DDBE_spell_long
 #ifdef PROTO
 (
-    long            val             /* [in] long value */
+    int             val             /* [in] long value */
 )
 #else
 (val)
-    long            val;            /* [in] long value */
+    int             val;            /* [in] long value */
 #endif
 {
     if (DDBE_stub_hex)
-        sprintf(DDBE_long_buf, "0x%04lx", val);
+        sprintf(DDBE_long_buf, "0x%04x", val);
     else
-        sprintf(DDBE_long_buf, "%6ld", val);
+        sprintf(DDBE_long_buf, "%6d", val);
 
     return DDBE_long_buf;
 }
@@ -126,17 +126,17 @@ static char *DDBE_spell_long
 static char *DDBE_spell_long_nf
 #ifdef PROTO
 (
-    long            val             /* [in] long value */
+    int             val             /* [in] long value */
 )
 #else
 (val)
-    long            val;            /* [in] long value */
+    int             val;            /* [in] long value */
 #endif
 {
     if (DDBE_stub_hex)
-        sprintf(DDBE_long_buf, "0x%lx", val);
+        sprintf(DDBE_long_buf, "0x%x", val);
     else
-        sprintf(DDBE_long_buf, "%ld", val);
+        sprintf(DDBE_long_buf, "%d", val);
 
     return DDBE_long_buf;
 }
@@ -222,13 +222,13 @@ static void DDBE_spell_long_bytes
 #ifdef PROTO
 (
     FILE            *fid,           /* [in] output file handle */
-    unsigned long   *val,           /* [in] value to print */
+    unsigned int    *val,           /* [in] value to print */
     boolean         little_endian __attribute__((__unused__))  /* [in] T/F => spell as little/big endian */
 )
 #else
 (fid, val, little_endian)
     FILE            *fid;           /* [in] output file handle */
-    unsigned long   *val;           /* [in] value to print */
+    unsigned int    *val;           /* [in] value to print */
     boolean         little_endian;  /* [in] T/F => spell as little/big endian */
 #endif
 {
@@ -853,7 +853,7 @@ void DDBE_init_offset_vec
 {
     DDBE_vec_rep_t      *vec_p;     /* Ptr to offset vector entry list */
     AST_type_n_t        *type_p;    /* Ptr to AST type node */
-    unsigned long       last_index; /* Last index spelled */
+    unsigned int        last_index; /* Last index spelled */
     char const          *inst_name; /* Name of generated instance of type */
 #ifdef DUMPERS
     char const               *comment;   /* Comment text */
@@ -1036,8 +1036,8 @@ void DDBE_spell_type_vec_preamble
     char const          *oper_name; /* Operation name */
     byte                *bp;        /* Pointer to byte stream */
     char                *getenvres; /* Environment variable translation */
-    unsigned long       index;      /* Type vector index */
-    unsigned long       longint;    /* 4-byte integer data */
+    unsigned int        index;      /* Type vector index */
+    unsigned int        longint;    /* 4-byte integer data */
     unsigned short      shortint;   /* 2-byte integer data */
     boolean         spell_stg_info; /* TRUE => spell storage information list */
 
@@ -1295,7 +1295,7 @@ void DDBE_spell_type_vec_addenda
     void                **cmd_val;  /* [in] array of cmd option values */
 #endif
 {
-    unsigned long size,index,longint; /* 4-byte integer data */
+    unsigned int  size,index,longint; /* 4-byte integer data */
     byte                *p4;        /* Pointer to 4-byte integer */
     boolean             *do_bug;    /* Pointer to array of bug flags */
     char                *getenvres; /* Environment variable translation */
@@ -1561,7 +1561,7 @@ void DDBE_spell_param_vec_def
 {
     DDBE_oper_i_t   *oper_i_p;      /* Ptr to operation info node */
     AST_parameter_n_t *param_p;     /* Ptr to AST parameter node */
-    unsigned long   param_num;      /* Parameter number */
+    unsigned int    param_num;      /* Parameter number */
     char const      *param_name;    /* Parameter name */
 
     oper_i_p = oper_p->be_info.dd_oper;
@@ -1582,7 +1582,7 @@ void DDBE_spell_param_vec_def
             if (param_p->type->kind == AST_short_float_k)
             {
                 NAMETABLE_id_to_string(param_p->name, &param_name);
-                fprintf(fid, "idl_short_float IDL_short_float_%ld = %s;\n",
+                fprintf(fid, "idl_short_float IDL_short_float_%d = %s;\n",
                         param_num, param_name);
             }
         }
@@ -1615,7 +1615,7 @@ void DDBE_spell_param_vec_init
 {
     AST_parameter_n_t *param_p;     /* Ptr to AST parameter node */
     DDBE_oper_i_t   *oper_i_p;      /* Ptr to operation info node */
-    unsigned long   param_num;      /* Parameter number */
+    unsigned int    param_num;      /* Parameter number */
     char const      *param_name;    /* Parameter name */
     boolean         spell_value;    /* TRUE => spell param value not address */
 
@@ -1645,7 +1645,7 @@ void DDBE_spell_param_vec_init
             continue;
 
         NAMETABLE_id_to_string(param_p->name, &param_name);
-        fprintf(fid, "%sparam_vec[%ld] = (rpc_void_p_t)",
+        fprintf(fid, "%sparam_vec[%d] = (rpc_void_p_t)",
                 DDBE_PREFIX_IDL, param_num);
 
         if (AST_HEAP_SET(param_p) && side == BE_server_side
@@ -1663,7 +1663,7 @@ void DDBE_spell_param_vec_init
         else if (param_p->type->kind == AST_short_float_k
                  && side == BE_client_side)
         {
-            fprintf(fid, "&IDL_short_float_%ld;\n", param_num);
+            fprintf(fid, "&IDL_short_float_%d;\n", param_num);
         }
         else
         {

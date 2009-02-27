@@ -880,10 +880,10 @@ typedef struct AST_constant_n_t {
         STRTAB_str_t string_val;
         char         char_val;
         boolean      boolean_val;
-        long int     int_val;
+        int          int_val;
         struct {
-            long int high;
-            unsigned long int low;
+            int high;
+            unsigned int low;
         }            hyper_int_val;
     } value;
 	 boolean int_signed;

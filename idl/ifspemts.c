@@ -171,7 +171,7 @@ void CSPELL_interface_def
 #if defined(_VMS) || defined(__alpha)
     fprintf(fid, "0x%8.8xu, ", ifp->uuid.time_low);
 #else
-    fprintf(fid, "0x%8.8lxu, ", ifp->uuid.time_low);
+    fprintf(fid, "0x%8.8xu, ", ifp->uuid.time_low);
 #endif
     fprintf(fid, "0x%4.4x, ", ifp->uuid.time_mid);
     fprintf(fid, "0x%4.4x, ", ifp->uuid.time_hi_and_version);

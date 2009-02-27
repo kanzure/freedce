@@ -120,10 +120,10 @@ static void CSPELL_constant_def
                 break;
             case AST_int_const_k:
                 /*fprintf (fid, "(%ld)", cp->value.int_val);*/
-                fprintf (fid, "(0x%lx)", cp->value.int_val); /* prevent signed-edness problems with cxx */
+                fprintf (fid, "(0x%x)", cp->value.int_val); /* prevent signed-edness problems with cxx */
                 break;
             case AST_hyper_int_const_k:
-                fprintf (fid, "{%ld,%lu}",
+                fprintf (fid, "{%d,%u}",
                         cp->value.hyper_int_val.high,
                         cp->value.hyper_int_val.low);
                 break;
