@@ -1,0 +1,105 @@
+%define reqprog         %{_builddir}/find-requires-%{name}
+%define _use_internal_dependency_generator     0
+Summary: A free implementation of the DCE Threads 
+Name: DCEthreads
+Version: 2.0.2
+Release: 6
+Distribution: Free DCE
+Vendor: Free DCE and DCOM
+Copyright: GPL
+Group: System/Libraries
+Packager: Thomas Schuetzkowski <Thomas.Schuetzkowski@web.de>
+BuildArchitectures: i386
+URL: http://sourceforge.net/projects/freedce/
+Source: dcethreads-%{version}.tar.gz
+
+BuildRoot: %{_tmppath}/%{name}-root
+#Prereq: 
+Requires: DCEthreads
+BuildPrereq: gcc 
+
+%description
+DCEthreads is a freely distributable implementation of DCE Threads, which maps
+DCEthreads to linux-Threads.
+
+Install DCEthreads if you need to run some packages that use the DCEthreads APIs
+
+%package devel
+Summary: Header files and libraries for developing apps which will use DCEthreads.
+Group: Development/C
+Requires: DCEthreads-devel
+
+%description devel
+The DCEthreads-devel package contains the header files and libraries needed
+to develop programs that use the DCEthreads libraries.
+
+%prep
+%setup -n dcethreads-%{version}
+
+cat <<'EOF' >%{reqprog}
+#! /bin/sh
+%{__find_requires} | grep -v 'libc.so.6(GLIBC_PRIVATE)'
+exit 0
+EOF
+chmod +x '%{reqprog}'
+
+%define __find_requires         %{reqprog}
+
+%build
+CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/opt/dce \
+   --exec_prefix=/opt/dce --bindir=/opt/dce/bin --libexecdir=/opt/dce/lib \
+   --localstatedir=/var --sysconfdir=/etc \
+   
+make -f Makefile
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install  \
+       DESTDIR=$RPM_BUILD_ROOT \
+       prefix=/opt/dce \
+       sysconfdir=/etc \
+       localstatedir=/var \
+       bindir=/opt/dce/bin \
+       libexecdir=/opt/dce/lib
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%dir /opt/dce/lib/
+/opt/dce/lib/lib*.so
+/opt/dce/lib/lib*.so.*
+
+%files devel
+%defattr(-,root,root)
+%dir /opt/dce/lib/
+/opt/dce/lib/libdcethreads.la
+/opt/dce/lib/libdcethreads.a
+%dir /opt/dce/include/dce/
+/opt/dce/include/dce/*.h
+
+%post
+cat /etc/ld.so.conf | grep -q "/opt/dce/lib" || (echo "Adding /opt/dce/lib to ld.so.conf" && echo "/opt/dce/lib" >> /etc/ld.so.conf )
+echo "Running ldconfig"
+/sbin/ldconfig
+
+%postun 
+#  This if test "$1" business is to keep RPM from running our install &
+#  uninstall scripts in the wrong order during an upgrade.
+
+%changelog
+* Mon May 24 2004 Thomas Schuetzkowski <Thomas.Schuetzkowski@web.de> 2.0.2-6
+- build on RHES 3
+* Wed Jul 08 2003 Thomas Schuetzkowski <Thomas.Schuetzkowski@web.de> 2.0.2-5
+- don't strip after build
+* Wed Jun 25 2003 Thomas Schuetzkowski <Thomas.Schuetzkowski@web.de> 2.0.2-4
+- added dceclean during installation
+* Wed May 22 2003 Thomas Schuetzkowski <Thomas.Schuetzkowski@web.de> 2.0.2-3
+- memory leaks: macro implementation changed (see ENDTRY, RERAISE)
+* Tue May  6 2003 Thomas Schuetzkowski <Thomas.Schuetzkowski@web.de> 2.0.2-2
+- memory cleanup after exception inserted (see macro ENDTRY)
+* Mon Apr  7 2003 Thomas Schuetzkowski <Thomas.Schuetzkowski@alcatel.de> 2.0.2-1
+- remove reference to libc.so.6(GLIBC_PRIVATE) in requires section
+- added GLIBC_2.1

@@ -1,0 +1,23 @@
+NOTE: The versions are in libtool style CURRENT[:REVISION[:AGE]]
+      It is the library and not package version
+
+Version 2:0:0 -> 2:1:0
+
+	By Miroslaw Dobrzanski-Neumann
+	* shorten commandline options by introducing autoheader support
+	* all needed defines are in dce/dcethreads_conf.h
+	  which is included by all header files. This guaranties that
+	  _REENTRANT and _GNU_SOURCE are always defined.
+	* dce/dcethreads_conf.h.in gets installed to
+	  this allows the rpm builder to automatically adjust the
+	  dce/dcethreads_conf.h at rpm installation time
+	
+Version 1:1 -> 2:0:0
+
+	By Miroslaw Dobrzanski-Neumann
+	* dce atfork() implemented
+	  because we claim the binary compatibility between both standatds
+	  pthread_atfork() has been reimplemented to work with dce atfork()
+	* pthread_atfork() is not available in dce context
+	* including <dce/exc_handling.h> disables most pthread_* calls
+	  unless you include either <dce/pthread.h> or <dce/pthread_exc.h>
