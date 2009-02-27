@@ -304,18 +304,21 @@ void rpc__module_init_func(void)
 		{
 			rpc__ncacn_sockbased_init, /* BSD Socket-based Connection-RPC */
 			NULL,
-			RPC_C_PROTOCOL_ID_NCACN_NP,
+			RPC_C_PROTOCOL_ID_NCACN,
 			NULL, NULL, NULL, NULL , NULL
 		}
 #ifdef HAVE_OS_WIN32
 		,{
 			rpc__ncacn_namedpipe_init,     /* NamedPipes Connection-RPC */
 			NULL,
-			RPC_C_PROTOCOL_ID_NCACN,
+			RPC_C_PROTOCOL_ID_NCACN_NP,
 			NULL, NULL, NULL, NULL , NULL
 		}
 #endif
 	};
+
+    rpc__ncacn_common_init ();
+
 #ifdef HAVE_OS_WIN32
 	rpc__register_protocol_id(prot, 2);
 #else
