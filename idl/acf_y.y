@@ -66,6 +66,8 @@ This grammar file needs to be built with GNU Bison V1.25 or later.
 #include <checker.h>
 #include <flex_bison_support.h>
 
+#include <stdarg.h>   /* va_list */
+
 extern AST_interface_n_t *the_interface;    /* Ptr to AST interface node */
 extern boolean ASTP_parsing_main_idl;       /* True when parsing main IDL */
 extern int acf_yylineno;
@@ -165,46 +167,32 @@ static void dump_attributes(char *, char const *, acf_attrib_t *);
 **
 **  Issues an error message, and bumps the error count.
 **
-**  Note:       This function is not prototyped since the way we use it allows
-**              it to be called with 1 to 6 arguments.
 */
 
-/* FIXME TODO change param list to va_list */
-static void acf_error(msgid, arg1, arg2, arg3, arg4, arg5)
-    long    msgid;              /* [in] Message id */
-    char    *arg1;              /* [in] 0 to 5 arguments to fill in message */
-    char    *arg2;              /*      directives */
-    char    *arg3;
-    char    *arg4;
-    char    *arg5;
-
+void acf_error(long msgid,/* [in] Message id */
+                        ...)
 {
-    log_error(acf_yylineno, msgid, arg1, arg2, arg3, arg4, arg5);
+    va_list ap;
+    va_start(ap, msgid);
+    log_error(acf_yylineno, msgid, ap);
+    va_end(ap);
 }
-
 
 /*
 **  a c f _ w a r n i n g
 **
 **  Issues a warning message.
 **
-**  Note:       This function is not prototyped since the way we use it allows
-**              it to be called with 1 to 6 arguments.
 */
 
-/* FIXME TODO change param list to va_list */
-static void acf_warning(msgid, arg1, arg2, arg3, arg4, arg5)
-    long    msgid;              /* [in] Message id */
-    char    *arg1;              /* [in] 0 to 5 arguments to fill in message */
-    char    *arg2;              /*      directives */
-    char    *arg3;
-    char    *arg4;
-    char    *arg5;
-
+void acf_warning(long msgid,/* [in] Message id */
+                        ...)
 {
-    log_warning(acf_yylineno, msgid, arg1, arg2, arg3, arg4, arg5);
+    va_list ap;
+    va_start(ap, msgid);
+    log_warning(acf_yylineno, msgid, ap);
+    va_end(ap);
 }
-
 
 %}
 
@@ -402,13 +390,13 @@ acf_interface_attr:
     |   acf_binding_callout_attr
     {
         if (interface_attr.bit.binding_callout)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
+            acf_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         interface_attr.bit.binding_callout = TRUE;
     }
     |   acf_cs_tag_rtn_attr
     {
         if (interface_attr.bit.cs_tag_rtn)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
+            acf_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         interface_attr.bit.cs_tag_rtn = TRUE;
     }
     |   acf_explicit_handle_attr
@@ -432,7 +420,7 @@ acf_interface_attr:
     |   acf_implicit_handle_attr
     {
         if (interface_attr.bit.implicit_handle)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
+            acf_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         interface_attr.bit.implicit_handle = TRUE;
     }
     |   acf_auto_handle_attr
@@ -462,7 +450,7 @@ acf_interface_attr:
             interface_attr.bit.encode = TRUE;
         }
         else
-            log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
+            acf_error(acf_yylineno, NIDL_ERRINATTR, NULL);
     }
     ;
 
@@ -540,9 +528,9 @@ acf_interface_body:
         LBRACE acf_body_elements RBRACE
     |   LBRACE RBRACE
     |   error
-        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
+        { acf_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     |   error RBRACE
-        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
+        { acf_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     ;
 
 acf_body_elements:
@@ -556,7 +544,7 @@ acf_body_element:
     |   acf_operation_declaration SEMI
     |   error SEMI
         {
-            log_error(acf_yylineno, NIDL_SYNTAXERR, NULL);
+            acf_error(acf_yylineno, NIDL_SYNTAXERR, NULL);
             /* Re-initialize attr masks to avoid sticky attributes */
             interface_attr.mask = 0;
             type_attr.mask      = 0;
@@ -575,7 +563,7 @@ acf_include:
         include_list = NULL;
         }
     |   INCLUDE_KW error
-        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
+        { acf_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     ;
 
 acf_include_list:
@@ -628,7 +616,7 @@ acf_include_name:
 
 acf_type_declaration:
         TYPEDEF_KW error
-        { log_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
+        { acf_error(acf_yylineno, NIDL_SYNTAXERR, NULL); }
     |   TYPEDEF_KW acf_type_attr_list acf_named_type_list
     {
         type_attr.mask = 0;             /* Reset attribute mask */
@@ -707,11 +695,11 @@ acf_rest_of_attr_list:
         acf_type_attrs RBRACKET
     |   error SEMI
         {
-        log_error(acf_yylineno, NIDL_MISSONATTR, NULL);
+        acf_error(acf_yylineno, NIDL_MISSONATTR, NULL);
         }
     |   error RBRACKET
         {
-        log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
+        acf_error(acf_yylineno, NIDL_ERRINATTR, NULL);
         }
     ;
 
@@ -724,13 +712,13 @@ acf_type_attr:
         acf_represent_attr
     {
         if (type_attr.bit.represent_as)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
+            acf_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         type_attr.bit.represent_as = TRUE;
     }
     |   acf_cs_char_attr
     {
         if (type_attr.bit.cs_char)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
+            acf_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         type_attr.bit.cs_char = TRUE;
     }
     |   acf_heap_attr
@@ -975,7 +963,7 @@ acf_op_attr:
     |   acf_cs_tag_rtn_attr
     {
         if (operation_attr.bit.cs_tag_rtn)
-            log_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
+            acf_error(acf_yylineno, NIDL_ATTRUSEMULT, NULL);
         operation_attr.bit.cs_tag_rtn = TRUE;
     }
     |   acf_enable_allocate_attr
@@ -1011,7 +999,7 @@ acf_op_attr:
             operation_attr.bit.encode = TRUE;
         }
         else
-            log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
+            acf_error(acf_yylineno, NIDL_ERRINATTR, NULL);
     }
     ;
 
@@ -1148,7 +1136,7 @@ acf_param_attr:
             parameter_attr.bit.cs_rtag = TRUE;
         }
         else
-            log_error(acf_yylineno, NIDL_ERRINATTR, NULL);
+            acf_error(acf_yylineno, NIDL_ERRINATTR, NULL);
     }
     ;
 

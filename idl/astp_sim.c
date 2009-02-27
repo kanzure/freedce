@@ -425,7 +425,7 @@ AST_parameter_n_t  *AST_declarator_to_param
     {
         char const *identifier;
         NAMETABLE_id_to_string(declarator->name, &identifier);
-        log_error(nidl_yylineno, NIDL_ANONTYPE, identifier, NULL);
+        acf_error( NIDL_ANONTYPE, identifier, NULL);
     }
 
     /*
@@ -521,7 +521,7 @@ AST_type_n_t *AST_enumerator_node
      * If there was an overflow, log the error message
      */
     if (overflow)
-        log_error(nidl_yylineno, NIDL_TOOMANYELEM, "enum", NULL) ;
+        acf_error( NIDL_TOOMANYELEM, "enum", NULL) ;
 
 
     /*
@@ -692,7 +692,7 @@ AST_constant_n_t *AST_finish_constant_node
                     if ((constant_ptr->value.int_val > ASTP_C_SMALL_MAX) ||
                         (constant_ptr->value.int_val < ASTP_C_SMALL_MIN))
                     {
-                        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+                        acf_error( NIDL_INTOVERFLOW,
                             KEYWORDS_lookup_text(SMALL_KW), NULL);
                     }
                     break;
@@ -700,7 +700,7 @@ AST_constant_n_t *AST_finish_constant_node
                     if ((constant_ptr->value.int_val > ASTP_C_USMALL_MAX) ||
                         (constant_ptr->value.int_val < ASTP_C_USMALL_MIN))
                     {
-                        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+                        acf_error( NIDL_INTOVERFLOW,
                             KEYWORDS_lookup_text(SMALL_KW), NULL);
                     }
                     break;
@@ -708,7 +708,7 @@ AST_constant_n_t *AST_finish_constant_node
                     if ((constant_ptr->value.int_val > ASTP_C_SHORT_MAX) ||
                         (constant_ptr->value.int_val < ASTP_C_SHORT_MIN))
                     {
-                        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+                        acf_error( NIDL_INTOVERFLOW,
                             KEYWORDS_lookup_text(SHORT_KW), NULL);
                     }
                     break;
@@ -716,7 +716,7 @@ AST_constant_n_t *AST_finish_constant_node
                     if ((constant_ptr->value.int_val > ASTP_C_USHORT_MAX) ||
                         (constant_ptr->value.int_val < ASTP_C_USHORT_MIN))
                     {
-                        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+                        acf_error( NIDL_INTOVERFLOW,
                             KEYWORDS_lookup_text(SHORT_KW), NULL);
                     }
                     break;
@@ -724,7 +724,7 @@ AST_constant_n_t *AST_finish_constant_node
                     if ((constant_ptr->value.int_val > ASTP_C_LONG_MAX) ||
                         (constant_ptr->value.int_val < ASTP_C_LONG_MIN))
                     {
-                        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+                        acf_error( NIDL_INTOVERFLOW,
                             KEYWORDS_lookup_text(LONG_KW), NULL);
                     }
                     break;
@@ -735,7 +735,7 @@ AST_constant_n_t *AST_finish_constant_node
 #endif
 								)
                     {
-                        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+                        acf_error( NIDL_INTOVERFLOW,
                             KEYWORDS_lookup_text(LONG_KW), NULL);
                     }
                     break;
@@ -1011,11 +1011,11 @@ AST_exception_n_t *AST_exception_node
         {
             char const *filename;
             STRTAB_str_to_string(binding->fe_info->file, &filename);
-            log_error(nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
+            acf_error( NIDL_NAMEPREVDECLAT, identifier,
                       filename, binding->fe_info->source_line, NULL);
         }
         else
-            log_error(nidl_yylineno, NIDL_NAMEALRDEC, identifier, NULL);
+            acf_error( NIDL_NAMEALRDEC, identifier, NULL);
         return NULL;
     }
 
@@ -1463,7 +1463,7 @@ AST_operation_n_t *AST_operation_node
     {
         char const *var_name;
         NAMETABLE_id_to_string(declarator->name, &var_name);
-        log_error(nidl_yylineno, NIDL_VARDECLNOSUP, var_name, NULL);
+        acf_error( NIDL_VARDECLNOSUP, var_name, NULL);
         return NULL;
     }
 
@@ -1551,7 +1551,7 @@ AST_operation_n_t *AST_operation_node
     {
         char const *identifier;
         NAMETABLE_id_to_string(operation_node_p->name, &identifier);
-        log_error(nidl_yylineno, NIDL_ANONTYPE, identifier, NULL);
+        acf_error( NIDL_ANONTYPE, identifier, NULL);
     }
 
 
@@ -1741,7 +1741,7 @@ void ASTP_parse_port
     if (protocol_end == NULL)
     {
         /* warn that no endpoint was found */
-        log_warning(1,NIDL_NOENDPOINT,protocol_start, NULL);
+        acf_warning(NIDL_NOENDPOINT,protocol_start, NULL);
         protocol_id = STRTAB_add_string(protocol_start);
         endpoint_id = STRTAB_NULL_STR;
     }
@@ -1767,7 +1767,7 @@ void ASTP_parse_port
             endpoint_end = strchr(endpoint_start,']');  /* Find the close bracket on endpoint field */
             if (endpoint_end == NULL)
             {
-                log_warning(1,NIDL_ENDPOINTSYNTAX,endpoint_start, NULL);
+                acf_warning(NIDL_ENDPOINTSYNTAX,endpoint_start, NULL);
                 protocol_id = STRTAB_add_string(protocol_start);
                 endpoint_id = STRTAB_NULL_STR;
             }
@@ -1779,13 +1779,13 @@ void ASTP_parse_port
                 /* warn that no endpoint was found */
                 if (endpoint_buf[0] == '\0')
                 {
-                    log_warning(1,NIDL_NOENDPOINT,protocol_start, NULL);
+                    acf_warning(NIDL_NOENDPOINT,protocol_start, NULL);
                 }
             }
         }
         else {
             endpoint_id = STRTAB_add_string(endpoint_start);
-            log_warning(1,NIDL_ENDPOINTSYNTAX,endpoint_start, NULL);
+            acf_warning(NIDL_ENDPOINTSYNTAX,endpoint_start, NULL);
         }
     }
 
@@ -1797,7 +1797,7 @@ void ASTP_parse_port
         if (interface_p->protocol[i] == protocol_id)
         {
             found = true;
-            log_warning(1,NIDL_DUPPROTOCOL,protocol_start, NULL);
+            acf_warning(NIDL_DUPPROTOCOL,protocol_start, NULL);
         }
     }
 

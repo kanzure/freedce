@@ -134,11 +134,11 @@ void ASTP_add_name_binding
             (binding->fe_info->file != STRTAB_NULL_STR))
         {
             STRTAB_str_to_string(binding->fe_info->file, &filename);
-            log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
+            acf_error (NIDL_NAMEPREVDECLAT, identifier,
                     filename, binding->fe_info->source_line, NULL);
         }
         else
-            log_error (nidl_yylineno, NIDL_NAMEALRDEC, identifier, NULL);
+            acf_error (NIDL_NAMEALRDEC, identifier, NULL);
     }
 
     return;
@@ -174,7 +174,7 @@ void ASTP_validate_forward_ref
     {
         char const *identifier;
         NAMETABLE_id_to_string(type->fe_info->tag_name, &identifier);
-        log_error(nidl_yylineno, NIDL_DEFNOTCOMP, identifier, NULL);
+        acf_error( NIDL_DEFNOTCOMP, identifier, NULL);
     }
 }
 
@@ -205,7 +205,7 @@ void ASTP_validate_forward_ref_scope
         /* Forward tag reference in this declaration is not ANSI C compliant */
         char const *identifier;
         NAMETABLE_id_to_string(type->fe_info->tag_name, &identifier);
-        log_warning(nidl_yylineno, NIDL_FWDTAGREF, identifier, NULL);
+        acf_warning( NIDL_FWDTAGREF, identifier, NULL);
     }
 }
 
@@ -507,7 +507,7 @@ ASTP_node_t *ASTP_lookup_binding
     if ((bound_node == NULL) && noforward_ref)
     {
         NAMETABLE_id_to_string (name, &identifier);
-        log_error(nidl_yylineno, NIDL_NAMENOTFND, identifier, NULL) ;
+        acf_error( NIDL_NAMENOTFND, identifier, NULL) ;
     }
 #if 0
 	 /* If they are looking for a type and we got an ORPC interface, chase
@@ -532,22 +532,22 @@ ASTP_node_t *ASTP_lookup_binding
             switch (node_kind)
             {
                 case fe_constant_n_k:
-                    log_error(nidl_yylineno, NIDL_NAMENOTCONST, identifier,
+                    acf_error( NIDL_NAMENOTCONST, identifier,
 			      NULL) ;
                     break;
 
                 case fe_type_n_k:
-                    log_error(nidl_yylineno, NIDL_NAMENOTTYPE, identifier,
+                    acf_error( NIDL_NAMENOTTYPE, identifier,
 			      NULL) ;
                     break;
 
                 case fe_field_n_k:
-                    log_error(nidl_yylineno, NIDL_NAMENOTFIELD, identifier,
+                    acf_error( NIDL_NAMENOTFIELD, identifier,
 			      NULL) ;
                     break;
 
                 case fe_parameter_n_k:
-                    log_error(nidl_yylineno, NIDL_NAMENOTPARAM, identifier,
+                    acf_error( NIDL_NAMENOTPARAM, identifier,
 			      NULL) ;
                     break;
 
@@ -562,7 +562,7 @@ ASTP_node_t *ASTP_lookup_binding
             {
                 char const *filename; /* place to receive the filename text pointer */
                 STRTAB_str_to_string(bound_node->fe_info->file, &filename);
-                log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
+                acf_error (NIDL_NAMEPREVDECLAT, identifier,
                         filename, bound_node->fe_info->source_line, NULL);
             }
         }
@@ -957,7 +957,7 @@ static AST_type_n_t *AST_propagate_type_attrs
             ASTP_attr_flag_t attr2 = ASTP_PTR;
             if (!ASTP_TEST_ATTR(attributes,ASTP_REF)) attr1 = ASTP_UNIQUE;
             if (!ASTP_TEST_ATTR(attributes,ASTP_PTR)) attr2 = ASTP_UNIQUE;
-            log_error(nidl_yylineno, NIDL_CONFLICTATTR,
+            acf_error( NIDL_CONFLICTATTR,
                   KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
                   KEYWORDS_lookup_text(AST_attribute_to_token(&attr2)), NULL);
         }
@@ -1026,7 +1026,7 @@ static AST_type_n_t *AST_propagate_type_attrs
                  * Output error, PTR or UNIQUE not valid on parameter
                  * being passed by value.
                  */
-                log_error(nidl_yylineno, NIDL_PRMBYREF,
+                acf_error( NIDL_PRMBYREF,
                   KEYWORDS_lookup_text(AST_attribute_to_token(&ptr_attrs)),
 		  NULL);
             }
@@ -1126,11 +1126,11 @@ static AST_type_n_t *AST_propagate_type_attrs
             if (return_type->name != NAMETABLE_NIL_ID)
             {
                 if (ASTP_TEST_ATTR(attributes,ASTP_REF))
-                    log_error(nidl_yylineno,NIDL_REFATTRPTR, NULL);
+                    acf_error(NIDL_REFATTRPTR, NULL);
                 if (ASTP_TEST_ATTR(attributes,ASTP_PTR))
-                    log_error(nidl_yylineno,NIDL_PTRATTRPTR, NULL);
+                    acf_error(NIDL_PTRATTRPTR, NULL);
                 if (ASTP_TEST_ATTR(attributes,ASTP_UNIQUE))
-                    log_error(nidl_yylineno,NIDL_UNIQATTRPTR, NULL);
+                    acf_error(NIDL_UNIQATTRPTR, NULL);
             }
         }  /* End pointer attributes processing */
 
@@ -1324,7 +1324,7 @@ static AST_type_n_t *AST_propagate_typedef
                                   char const *identifier;
                                   NAMETABLE_id_to_string (
                                       declarator_ptr->name, &identifier);
-                                  log_warning(nidl_yylineno,
+                                  acf_warning(
 					      NIDL_MISSPTRCLASS, identifier,
 					      NULL);
                                   AST_SET_PTR(return_type); /* default: [ptr] */
@@ -1499,7 +1499,7 @@ AST_type_n_t *AST_propagate_type
                               char const *identifier;
                               NAMETABLE_id_to_string (
                                   declarator_ptr->name, &identifier);
-                              log_warning(nidl_yylineno, NIDL_MISSPTRCLASS,
+                              acf_warning( NIDL_MISSPTRCLASS,
 					  identifier, NULL);
                               AST_SET_PTR(return_type); /* default: [ptr] */
                           }
@@ -1851,9 +1851,9 @@ AST_field_attr_n_t *AST_set_field_attrs
             if (attributes->bounds != NULL)	{
                 /* Base the error on the first invalid "bounds" attribute. */
                 if (attributes->bounds->kind == switch_is_k)
-                  log_error(nidl_yylineno, NIDL_SWATTRNEU, NULL);
+                  acf_error( NIDL_SWATTRNEU, NULL);
                 else
-                  log_error(nidl_yylineno, NIDL_SIZEARRTYPE, NULL);
+                  acf_error( NIDL_SIZEARRTYPE, NULL);
 				}
             return (AST_field_attr_n_t *)NULL;
         }
@@ -1928,12 +1928,12 @@ AST_field_attr_n_t *AST_set_field_attrs
     {
         if (attr_ptr->kind != switch_is_k && !array_attr_valid)
         {
-            log_error(nidl_yylineno, NIDL_SIZEARRTYPE, NULL);
+            acf_error( NIDL_SIZEARRTYPE, NULL);
             return (AST_field_attr_n_t *)NULL;
         }
         if (attr_ptr->kind == switch_is_k && !neu_attr_valid)
         {
-            log_error(nidl_yylineno, NIDL_SWATTRNEU, NULL);
+            acf_error( NIDL_SWATTRNEU, NULL);
             return (AST_field_attr_n_t *)NULL;
         }
         /*
@@ -2037,7 +2037,7 @@ AST_field_attr_n_t *AST_set_field_attrs
         {
             if (index_count >= dimension)
             {
-                log_error(nidl_yylineno, NIDL_SIZEMISMATCH, NULL);
+                acf_error( NIDL_SIZEMISMATCH, NULL);
                 break;
             }
 
@@ -2107,7 +2107,7 @@ AST_field_attr_n_t *AST_set_field_attrs
 						)
 						{
 							/* dunno how to handle that */
-							log_error(nidl_yylineno, NIDL_ONLYSIMPLEEXP, NULL);
+							acf_error( NIDL_ONLYSIMPLEEXP, NULL);
 							return NULL;
 						}
 						attr_ptr->is_expr = false;
@@ -2117,7 +2117,7 @@ AST_field_attr_n_t *AST_set_field_attrs
 					}
 					else
 					{
-						log_error(nidl_yylineno, NIDL_ONLYSIMPLEEXP, NULL) ;
+						acf_error( NIDL_ONLYSIMPLEEXP, NULL) ;
 						return NULL;
 					}
 				}
@@ -2180,7 +2180,7 @@ AST_field_attr_n_t *AST_set_field_attrs
 						char const *identifier;
 						NAMETABLE_id_to_string (attr_ptr->b.simple.name,
 								&identifier);
-						log_error(nidl_yylineno, NIDL_NAMENOTFND, identifier, NULL) ;
+						acf_error( NIDL_NAMENOTFND, identifier, NULL) ;
 					}
 				}
 			}
@@ -2260,12 +2260,12 @@ AST_type_n_t *AST_set_type_attrs
     if (ASTP_TEST_ATTR(attributes,ASTP_SWITCH_TYPE))
     {
         if (type_node_ptr->kind != AST_disc_union_k)
-            log_error(nidl_yylineno, NIDL_SWTYPENEU, NULL);        /* non-union type */
+            acf_error( NIDL_SWTYPENEU, NULL);        /* non-union type */
         else if (type_node_ptr->type_structure.disc_union == NULL)
             ASTP_validate_forward_ref(type_node_ptr);   /* incomplete type */
         else if (type_node_ptr->type_structure.disc_union->discrim_name
                  != NAMETABLE_NIL_ID)                   /* encap union type */
-            log_error(nidl_yylineno, NIDL_SWTYPENEU, NULL);
+            acf_error( NIDL_SWTYPENEU, NULL);
         else
         {
             type_node_ptr->type_structure.disc_union->discrim_type
@@ -2748,7 +2748,7 @@ void AST_set_flags
                  case ASTP_ALIGN_LONG:
                  case ASTP_ALIGN_HYPER:
                  {
-                    log_error(nidl_yylineno, NIDL_NYSALIGN, NULL);
+                    acf_error( NIDL_NYSALIGN, NULL);
 #if 0
                     AST_type_n_t *type_node_ptr = (AST_type_n_t *)node_ptr;
 
@@ -2776,7 +2776,7 @@ void AST_set_flags
                         (type_node_ptr->type_structure.array->index_count == 1) &&
                         (type_node_ptr->type_structure.array->element_type->kind == AST_byte_k)))
                     {
-                        log_error(nidl_yylineno, NIDL_ALIGNBYTEARRAY, NULL);
+                        acf_error( NIDL_ALIGNBYTEARRAY, NULL);
                     }
 #endif
                     break;
@@ -2811,7 +2811,7 @@ void AST_set_flags
                 /*
                  * It is not valid on this node type, so issue an error message
                  */
-                log_error(nidl_yylineno, message_number,
+                acf_error( message_number,
                     KEYWORDS_lookup_text(AST_attribute_to_token(&current_attribute)), NULL);
             }
         }
@@ -2836,7 +2836,7 @@ void AST_set_flags
 					 case min_is_k:				token = MIN_IS_KW; break;
 					 case iid_is_k:			token = IID_IS_KW; break;
             }
-            log_error(nidl_yylineno, message_number, KEYWORDS_lookup_text(token), NULL) ;
+            acf_error( message_number, KEYWORDS_lookup_text(token), NULL) ;
         }
 
 }
@@ -2969,7 +2969,7 @@ void ASTP_validate_integer
 {
 
 		  if (!ASTP_evaluate_expr(exp_node, true))	{
-				log_error(nidl_yylineno, NIDL_NONINTEXP, NULL);
+				acf_error( NIDL_NONINTEXP, NULL);
 				return;
 		  }
 	 /*
@@ -2991,7 +2991,7 @@ void ASTP_validate_integer
 				default:
 					 exp_node->exp.constant.type = AST_int_const_k;
 					 exp_node->exp.constant.val.integer = 0;
-					 log_error(nidl_yylineno,NIDL_NONINTEXP, NULL);
+					 acf_error(NIDL_NONINTEXP, NULL);
 					 break;
 		  }
 	 }
@@ -3037,7 +3037,7 @@ static void ASTP_verify_non_anonymous
     {
         char const *identifier;
         NAMETABLE_id_to_string(declarator_ptr->name, &identifier);
-        log_warning(nidl_yylineno, NIDL_ANONTYPE, identifier, NULL);
+        acf_warning( NIDL_ANONTYPE, identifier, NULL);
     }
 
 }

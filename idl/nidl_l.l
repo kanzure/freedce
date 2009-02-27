@@ -224,9 +224,9 @@ other           .
 "~"             {return(TILDE);}
 
 ^"#".*\n            { yymark() ;}
-^"%"(c|C){ws}\n     { log_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
-^"%pascal"{ws}\n    { log_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
-^"%PASCAL"{ws}\n    { log_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
+^"%"(c|C){ws}\n     { acf_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
+^"%pascal"{ws}\n    { acf_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
+^"%PASCAL"{ws}\n    { acf_error(nidl_yylineno-1, NIDL_USETRANS, NULL); }
 
 '\\''   {
     /* Simple escaped single quote character literal */
@@ -243,7 +243,7 @@ other           .
 '\\[^'\n]*' {
     /* Character constants with an escape */
     if ((yyleng > 6) || (yyleng < 4)) {
-          log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
+          acf_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
           return(UNKNOWN);
     }
     switch (yytext[2]) {
@@ -262,11 +262,11 @@ other           .
             /* Hex literal value */
             int char_value;
             if (sscanf((char *)&yytext[3],"%x",&char_value) != 1)
-                log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
+                acf_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
             else
             {
                 nidl_yylval.y_char = (char )char_value;
-                log_warning(nidl_yylineno, NIDL_NONPORTCHAR, NULL);
+                acf_warning(nidl_yylineno, NIDL_NONPORTCHAR, NULL);
             }
             break;
         }
@@ -280,17 +280,17 @@ other           .
             /* Octal literal value */
             int char_value;
             if (sscanf((char *)&yytext[2],"%o",&char_value) != 1)
-                log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
+                acf_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
             else
             {
                 nidl_yylval.y_char = (char )char_value;
-                log_warning(nidl_yylineno, NIDL_NONPORTCHAR, NULL);
+                acf_warning(nidl_yylineno, NIDL_NONPORTCHAR, NULL);
             }
             break;
         }
         default:
             /* all others are illegal */
-            log_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
+            acf_error(nidl_yylineno, NIDL_INVCHARLIT, NULL);
             return(UNKNOWN);
     }
 
@@ -304,7 +304,7 @@ other           .
     else {
     nidl_yylval.y_string = STRTAB_add_string((char *)&yytext[1]);
         if (input() == '\n')
-            log_error(nidl_yylineno, NIDL_STRUNTERM, NULL);
+            acf_error(nidl_yylineno, NIDL_STRUNTERM, NULL);
         return(STRING);
     }
 }
@@ -321,7 +321,7 @@ other           .
         char const *identifier;
         id = NAMETABLE_add_id((char *)yytext);
         NAMETABLE_id_to_string(id, &identifier);
-        log_warning(nidl_yylineno, NIDL_IDTOOLONG, identifier, MAX_ID, NULL);
+        acf_warning(nidl_yylineno, NIDL_IDTOOLONG, identifier, MAX_ID, NULL);
         /* Truncate the string */
         yytext[MAX_ID] = '\0';
         id = NAMETABLE_add_id((char *)yytext);
@@ -386,13 +386,13 @@ other           .
         || (fval > (FLOAT)ASTP_C_ULONG_MAX)
         || (fval < (FLOAT)ASTP_C_ULONG_MIN)
         ))
-        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+        acf_error(nidl_yylineno, NIDL_INTOVERFLOW,
 		  KEYWORDS_lookup_text(LONG_KW), NULL);
     else if ((strlen((char *)yytext) > 11) ||
         (fval > (FLOAT)ASTP_C_LONG_MAX) ||
         (fval < (FLOAT)ASTP_C_LONG_MIN)
         )
-        log_error(nidl_yylineno, NIDL_INTOVERFLOW,
+        acf_error(nidl_yylineno, NIDL_INTOVERFLOW,
 		  KEYWORDS_lookup_text(LONG_KW), NULL);
     else {
         sscanf((char *)yytext, "%ld", &nidl_yylval.y_int_info.int_val);
@@ -404,7 +404,7 @@ other           .
         STRTAB_str_t string_id;         /* Entry in string table of integer */
         string_id = STRTAB_add_string(yytext);
         STRTAB_str_to_string(string_id, &int_text);
-        log_error(nidl_yylineno, NIDL_INVOCTDIGIT, int_text, NULL);
+        acf_error(nidl_yylineno, NIDL_INVOCTDIGIT, int_text, NULL);
     }
 
     return(INTEGER_NUMERIC);
@@ -472,7 +472,7 @@ static void yymark()
     {
 	if (sscanf((char *)yytext, "# %d %s", &nidl_yylineno, source) < 1)
         {
-            log_warning(prev_lineno, NIDL_CPPCMDOPT,
+            acf_warning(prev_lineno, NIDL_CPPCMDOPT,
 #ifdef VMS
                 (CMD_DCL_interface) ? "/PREPROCESS" :
 #endif
@@ -529,11 +529,11 @@ nidl_uuid_t *uuid;
     int        i;
     char *uuid_str;
 
-    if (sscanf(s, "%8lX%4lX.%2lX.%2lX.%2lX.%2lX.%2lX.%2lX.%2lX.%2lX",
+    if (sscanf(s, "%8X%4X.%2X.%2X.%2X.%2X.%2X.%2X.%2X.%2X",
               &v1_time_high, &v1_time_low, &v1_family,
               &v1_host[0], &v1_host[1], &v1_host[2], &v1_host[3],
               &v1_host[4], &v1_host[5], &v1_host[6]) != 10)
-        log_error(nidl_yylineno, NIDL_SYNTAXUUID, NULL);
+        acf_error(nidl_yylineno, NIDL_SYNTAXUUID, NULL);
 
     /* scanf only returns ints, so scan into ints and copy into smaller types */
     uuid->time_low                  = v1_time_high;
@@ -547,14 +547,14 @@ nidl_uuid_t *uuid;
 
     uuid_str = (char *)malloc(sizeof("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
 
-    sprintf(uuid_str, "%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+    sprintf(uuid_str, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
               uuid->time_low, uuid->time_mid, uuid->time_hi_and_version,
               uuid->clock_seq_hi_and_reserved, uuid->clock_seq_low,
               uuid->node[0], uuid->node[1], uuid->node[2],
               uuid->node[3], uuid->node[4], uuid->node[5]);
 
-    log_warning(nidl_yylineno, NIDL_OLDUUID, NULL);
-    log_warning(nidl_yylineno, NIDL_NEWUUID, uuid_str, NULL);
+    acf_warning(nidl_yylineno, NIDL_OLDUUID, NULL);
+    acf_warning(nidl_yylineno, NIDL_NEWUUID, uuid_str, NULL);
     return (UUID_REP) ;
 }
 
@@ -567,12 +567,12 @@ nidl_uuid_t *uuid;
               clock_seq_hi_and_reserved, clock_seq_low,
               node[6];
 
-    if (sscanf(s, "%08lX-%04lX-%04lX-%02lX%02lX-%02lX%02lX%02lX%02lX%02lX%02lX",
+    if (sscanf(s, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
               &time_low, &time_mid, &time_hi_and_version,
               &clock_seq_hi_and_reserved, &clock_seq_low,
               &node[0], &node[1], &node[2],
               &node[3], &node[4], &node[5]) != 11)
-        log_error(nidl_yylineno, NIDL_SYNTAXUUID, NULL);
+        acf_error(nidl_yylineno, NIDL_SYNTAXUUID, NULL);
 
     /* scanf only returns ints, so scan into ints and copy into smaller types */
     uuid->time_low = time_low;
@@ -837,7 +837,7 @@ init_new_nidl_flexxer_activation(void)
     yyensure_buffer_stack();
     YY_CURRENT_BUFFER_LVALUE = 0;
     yy_c_buf_p = (char *) 0;
-    yy_init = 1;
+    yy_init = 0;
     yy_start = 0;
     yy_more_flag = 0;
     yy_more_len = 0;

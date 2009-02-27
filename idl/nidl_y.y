@@ -327,7 +327,7 @@ interface_tail:
     |   error
         {
             $<y_interface>$ = NULL;
-            log_error(nidl_yylineno,NIDL_MISSONINTER, NULL);
+            acf_error(nidl_yylineno,NIDL_MISSONINTER, NULL);
         }
     |   error RBRACE
         {
@@ -456,7 +456,7 @@ const_exp:  expression
         {
 				$<y_constant>$ = AST_constant_from_exp($<y_exp>1);
 				if ($<y_constant>$ == NULL)	{
-					 log_error(nidl_yylineno, NIDL_EXPNOTCONST, NULL);
+					 acf_error(nidl_yylineno, NIDL_EXPNOTCONST, NULL);
 				}
         }
     ;
@@ -525,13 +525,13 @@ floating_point_type_spec:
 extraneous_comma:
         /* Nothing */
     |   COMMA
-        { log_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ",", NULL);}
+        { acf_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ",", NULL);}
     ;
 
 extraneous_semi:
         /* Nothing */
     |   SEMI
-        { log_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ";", NULL);}
+        { acf_warning(nidl_yylineno, NIDL_EXTRAPUNCT, ";", NULL);}
     ;
 
 optional_unsigned_kw:
@@ -584,7 +584,7 @@ integer_type_spec:
         { $<y_type>$ = AST_lookup_integer_type_node($<y_int_info>1.int_size,$<y_int_info>1.int_signed); }
     |   optional_unsigned_kw INT_KW
         {
-            log_warning(nidl_yylineno,NIDL_INTSIZEREQ, NULL);
+            acf_warning(nidl_yylineno,NIDL_INTSIZEREQ, NULL);
             $<y_type>$ = AST_lookup_integer_type_node(AST_long_integer_k,$<y_int_info>1.int_signed);
         }
     ;
@@ -795,14 +795,14 @@ union_member:
             if (ASTP_TEST_ATTR(&$<y_attributes>1, ASTP_CASE))
             {
                 ASTP_attr_flag_t attr1 = ASTP_CASE;
-                log_error(nidl_yylineno, NIDL_EUMEMATTR,
+                acf_error(nidl_yylineno, NIDL_EUMEMATTR,
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
 		      NULL);
             }
             if (ASTP_TEST_ATTR(&$<y_attributes>1, ASTP_DEFAULT))
             {
                 ASTP_attr_flag_t attr1 = ASTP_DEFAULT;
-                log_error(nidl_yylineno, NIDL_EUMEMATTR,
+                acf_error(nidl_yylineno, NIDL_EUMEMATTR,
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
 		      NULL);
             }
@@ -1033,7 +1033,7 @@ operation_dcl:
         }
     | error declarators
         {
-        log_error(nidl_yylineno,NIDL_MISSONOP, NULL);
+        acf_error(nidl_yylineno,NIDL_MISSONOP, NULL);
         $<y_operation>$ = NULL;
         }
     ;
@@ -1112,7 +1112,7 @@ param_dcl:
         }
     |    error old_attribute_syntax declarator_or_null
         {
-            log_error(nidl_yylineno, NIDL_MISSONPARAM, NULL);
+            acf_error(nidl_yylineno, NIDL_MISSONPARAM, NULL);
             $<y_parameter>$ = (AST_parameter_n_t *)NULL;
         }
     ;
@@ -1175,7 +1175,7 @@ old_attribute_syntax:
             if (($<y_attributes>1.bounds != NULL) ||
                ($<y_attributes>1.attr_flags != 0))
             {
-                log_error(nidl_yylineno,NIDL_ATTRTRANS, NULL);
+                acf_error(nidl_yylineno,NIDL_ATTRTRANS, NULL);
                 ASTP_free_simple_list((ASTP_node_t *)$<y_attributes>1.bounds);
             }
         }
@@ -1192,7 +1192,7 @@ interface_attributes:
         attribute_opener interface_attr_list extraneous_comma attribute_closer
     |   attribute_opener error attribute_closer
         {
-            log_error(nidl_yylineno,NIDL_ERRINATTR, NULL);
+            acf_error(nidl_yylineno,NIDL_ERRINATTR, NULL);
         }
 
     |   /* Nothing */
@@ -1207,13 +1207,13 @@ interface_attr_list:
 interface_attr:
         UUID_KW error
         {
-            log_error(nidl_yylineno,NIDL_SYNTAXUUID, NULL);
+            acf_error(nidl_yylineno,NIDL_SYNTAXUUID, NULL);
         }
     |   UUID_KW UUID_REP
         {
             {
                 if (ASTP_IF_AF_SET(the_interface,ASTP_IF_UUID))
-                        log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+                        acf_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
                 ASTP_SET_IF_AF(the_interface,ASTP_IF_UUID);
                 the_interface->uuid = $<y_uuid>2;
             }
@@ -1221,20 +1221,20 @@ interface_attr:
     |   ENDPOINT_KW LPAREN port_list extraneous_comma RPAREN
         {
             if (ASTP_IF_AF_SET(the_interface,ASTP_IF_PORT))
-                    log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+                    acf_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
             ASTP_SET_IF_AF(the_interface,ASTP_IF_PORT);
         }
     |   EXCEPTIONS_KW LPAREN excep_list extraneous_comma RPAREN
         {
             if (ASTP_IF_AF_SET(the_interface, ASTP_IF_EXCEPTIONS))
-                log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+                acf_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
             ASTP_SET_IF_AF(the_interface, ASTP_IF_EXCEPTIONS);
         }
     |   VERSION_KW LPAREN version_number RPAREN
         {
             {
                 if (ASTP_IF_AF_SET(the_interface,ASTP_IF_VERSION))
-                        log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+                        acf_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
                 ASTP_SET_IF_AF(the_interface,ASTP_IF_VERSION);
             }
 
@@ -1243,21 +1243,21 @@ interface_attr:
         {
             {
                 if (AST_LOCAL_SET(the_interface))
-                        log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
+                        acf_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
                 AST_SET_LOCAL(the_interface);
             }
         }
     |   POINTER_DEFAULT_KW LPAREN pointer_class RPAREN
         {
             if (the_interface->pointer_default != 0)
-                    log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+                    acf_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
             the_interface->pointer_default = $<y_ptrclass>3;
         }
 	 /* extensions to osf */
 	 |	  OBJECT_KW
 	 		{
 				if (AST_OBJECT_SET(the_interface))
-					 log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
+					 acf_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
 				AST_SET_OBJECT(the_interface);
 			}
 	 |		acf_interface_attr
@@ -1270,7 +1270,7 @@ acf_interface_attr:
 	IMPLICIT_HANDLE_KW LPAREN HANDLE_T_KW IDENTIFIER RPAREN
 	{
 		if (the_interface->implicit_handle_name != NAMETABLE_NIL_ID)
-			 log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+			 acf_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
 
 		ASTP_set_implicit_handle(the_interface, NAMETABLE_NIL_ID, $<y_id>4);
 	}
@@ -1279,7 +1279,7 @@ acf_interface_attr:
 	{
 		/*AST_type_n_t * type_p;*/
 		if (the_interface->implicit_handle_name != NAMETABLE_NIL_ID)
-			log_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
+			acf_error(nidl_yylineno, NIDL_ATTRUSEMULT, NULL);
 	
 		ASTP_set_implicit_handle(the_interface, $<y_id>3, $<y_id>4);
 	}
@@ -1296,7 +1296,7 @@ version_number:
         {
             the_interface->version = $<y_int_info>1.int_val;
             if (the_interface->version > /*(unsigned int)*/ASTP_C_USHORT_MAX)
-                log_error(nidl_yylineno, NIDL_MAJORTOOLARGE,
+                acf_error(nidl_yylineno, NIDL_MAJORTOOLARGE,
 			  ASTP_C_USHORT_MAX, NULL);
         }
    |    FLOAT_NUMERIC
@@ -1306,10 +1306,10 @@ version_number:
             STRTAB_str_to_string($<y_string>1, &float_text);
             sscanf(float_text,"%d.%d",&major_version,&minor_version);
             if (major_version > (unsigned int)ASTP_C_USHORT_MAX)
-                log_error(nidl_yylineno, NIDL_MAJORTOOLARGE,
+                acf_error(nidl_yylineno, NIDL_MAJORTOOLARGE,
 			  ASTP_C_USHORT_MAX, NULL);
             if (minor_version > (unsigned int)ASTP_C_USHORT_MAX)
-                log_error(nidl_yylineno, NIDL_MINORTOOLARGE,
+                acf_error(nidl_yylineno, NIDL_MINORTOOLARGE,
 			  ASTP_C_USHORT_MAX, NULL);
             the_interface->version = (minor_version * 65536) + major_version;
         }
@@ -1464,7 +1464,7 @@ rest_of_attribute_list:
          */
         $<y_attributes>$.bounds = NULL;
         $<y_attributes>$.attr_flags = 0;
-        log_error(nidl_yylineno, NIDL_ERRINATTR, NULL);
+        acf_error(nidl_yylineno, NIDL_ERRINATTR, NULL);
         }
      |  error SEMI
         {
@@ -1473,7 +1473,7 @@ rest_of_attribute_list:
          */
         $<y_attributes>$.bounds = NULL;
         $<y_attributes>$.attr_flags = 0;
-        log_error(nidl_yylineno, NIDL_MISSONATTR, NULL);
+        acf_error(nidl_yylineno, NIDL_MISSONATTR, NULL);
         search_attributes_table = false;
         }
      ;
@@ -1490,7 +1490,7 @@ attribute_list:
            * a message.
            */
           if (($<y_attributes>1.attr_flags & $<y_attributes>3.attr_flags) != 0)
-                log_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
+                acf_warning(nidl_yylineno, NIDL_MULATTRDEF, NULL);
           $<y_attributes>$.attr_flags = $<y_attributes>1.attr_flags |
                                         $<y_attributes>3.attr_flags;
           $<y_attributes>$.bounds = (ASTP_type_attr_n_t *) AST_concat_element (
@@ -1602,7 +1602,7 @@ attribute:
         {
                 char const *identifier; /* place to receive the identifier text */
                 NAMETABLE_id_to_string ($<y_id>1, &identifier);
-                log_error (nidl_yylineno, NIDL_UNKNOWNATTR, identifier, NULL);
+                acf_error (nidl_yylineno, NIDL_UNKNOWNATTR, identifier, NULL);
                 $<y_attributes>$.attr_flags = 0;
                 $<y_attributes>$.bounds = NULL;
         }
@@ -1745,7 +1745,7 @@ multiplicative_expression:
 				/*
             if (($<y_exp>$.exp.constant.val.integer < $<y_exp>1.exp.constant.val.integer) &&
                 ($<y_exp>$.exp.constant.val.integer < $<y_exp>3.exp.constant.val.integer))
-                log_error (nidl_yylineno, NIDL_INTOVERFLOW,
+                acf_error (nidl_yylineno, NIDL_INTOVERFLOW,
 			   KEYWORDS_lookup_text(LONG_KW), NULL);
 					*/
         }
@@ -1756,7 +1756,7 @@ multiplicative_expression:
    |    multiplicative_expression PERCENT cast_expression
         {
 				$<y_exp>$ = AST_expression(AST_EXP_BINARY_PERCENT, $<y_exp>1, $<y_exp>3, NULL);
-            /*    log_error (nidl_yylineno, NIDL_INTDIVBY0, NULL); */
+            /*    acf_error (nidl_yylineno, NIDL_INTDIVBY0, NULL); */
         }
    ;
 
@@ -1827,7 +1827,7 @@ primary_expression:
    |    FLOAT_NUMERIC
         {
 				$<y_exp>$ = AST_exp_integer_constant(0,0);
-            log_error(nidl_yylineno, NIDL_FLOATCONSTNOSUP, NULL);
+            acf_error(nidl_yylineno, NIDL_FLOATCONSTNOSUP, NULL);
         }
    ;
 %%

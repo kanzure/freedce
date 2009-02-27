@@ -128,11 +128,11 @@ static void ASTP_add_tag_binding
             (binding->fe_info->file != STRTAB_NULL_STR))
         {
             STRTAB_str_to_string(binding->fe_info->file, &filename);
-            log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier,
+            acf_error( NIDL_NAMEPREVDECLAT, identifier,
                     filename, binding->fe_info->source_line, NULL);
         }
         else
-            log_error (nidl_yylineno, NIDL_NAMEALRDEC, identifier, NULL);
+            acf_error( NIDL_NAMEALRDEC, identifier, NULL);
     }
 
     return;
@@ -423,7 +423,7 @@ AST_type_n_t *AST_structure_node
             {
                 char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
-                log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text,
+                acf_error( NIDL_BADTAGREF, identifier_text,
 			   NULL);
 
                 /* State where the name was previously declared, if known */
@@ -432,7 +432,7 @@ AST_type_n_t *AST_structure_node
                 {
                     char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+		    acf_error( NIDL_NAMEPREVDECLAT,
 			       identifier_text, filename,
 			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
@@ -452,12 +452,12 @@ AST_type_n_t *AST_structure_node
                 {
                     char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+		    acf_error( NIDL_NAMEPREVDECLAT,
 			       identifier_text, filename,
 			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
                 else
-                    log_error (nidl_yylineno, NIDL_NAMEALRDEC,
+                    acf_error( NIDL_NAMEALRDEC,
 			       identifier_text, NULL);
 
                 /* recovery is to return a bogus type node */
@@ -701,7 +701,7 @@ AST_type_n_t *AST_disc_union_node
             {
                 char const *identifier_text; /* place to receive the identifier text */
                 NAMETABLE_id_to_string (identifier, &identifier_text);
-                log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text,
+                acf_error( NIDL_BADTAGREF, identifier_text,
 			   NULL);
 
                 /* State where the name was previously declared, if known */
@@ -710,7 +710,7 @@ AST_type_n_t *AST_disc_union_node
                 {
                     char const *filename;             /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+		    acf_error( NIDL_NAMEPREVDECLAT,
 			       identifier_text, filename,
 			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
@@ -730,12 +730,12 @@ AST_type_n_t *AST_disc_union_node
                 {
                     char const *filename; /* place to receive the filename text pointer */
                     STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-		    log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT,
+		    acf_error( NIDL_NAMEPREVDECLAT,
 			       identifier_text, filename,
 			       tag_type_node_ptr->fe_info->source_line, NULL);
                 }
                 else
-                    log_error (nidl_yylineno, NIDL_NAMEALRDEC,
+                    acf_error( NIDL_NAMEALRDEC,
 			       identifier_text, NULL);
 
                 /* recovery is to return a bogus type node */
@@ -1002,7 +1002,7 @@ AST_arm_n_t *AST_declarator_to_arm
             {
                 ASTP_attr_flag_t attr1 = ASTP_CASE;
                 ASTP_attr_flag_t attr2 = ASTP_DEFAULT;
-                log_error(nidl_yylineno, NIDL_CONFLICTATTR,
+                acf_error( NIDL_CONFLICTATTR,
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr2)),
 		      NULL);
@@ -1033,7 +1033,7 @@ AST_arm_n_t *AST_declarator_to_arm
             {
                 ASTP_attr_flag_t attr1 = ASTP_CASE;
                 ASTP_attr_flag_t attr2 = ASTP_DEFAULT;
-                log_error(nidl_yylineno, NIDL_CONFLICTATTR,
+                acf_error( NIDL_CONFLICTATTR,
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr1)),
                       KEYWORDS_lookup_text(AST_attribute_to_token(&attr2)),
 		      NULL);
@@ -1118,7 +1118,7 @@ AST_type_n_t *AST_type_from_tag
         {
             char const *identifier_text; /* place to receive the identifier text */
             NAMETABLE_id_to_string (identifier, &identifier_text);
-            log_error (nidl_yylineno, NIDL_BADTAGREF, identifier_text, NULL);
+            acf_error( NIDL_BADTAGREF, identifier_text, NULL);
 
             /* State where the name was previously declared, if known */
             if ((tag_type_node_ptr->fe_info->source_line != 0) &&
@@ -1126,7 +1126,7 @@ AST_type_n_t *AST_type_from_tag
             {
                 char const *filename;         /* place to receive the filename text pointer */
                 STRTAB_str_to_string(tag_type_node_ptr->fe_info->file, &filename);
-                log_error (nidl_yylineno, NIDL_NAMEPREVDECLAT, identifier_text,
+                acf_error( NIDL_NAMEPREVDECLAT, identifier_text,
                         filename, tag_type_node_ptr->fe_info->source_line,
 			NULL);
             }

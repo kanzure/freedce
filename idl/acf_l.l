@@ -190,7 +190,7 @@ other           .
                     char const *identifier;
                     id = NAMETABLE_add_id((char *)yytext);
                     NAMETABLE_id_to_string(id, &identifier);
-                    log_warning(acf_yylineno, NIDL_IDTOOLONG, identifier,
+                    acf_warning(acf_yylineno, NIDL_IDTOOLONG, identifier,
 				MAX_ID, NULL);
                     /* Truncate the string */
                     yytext[MAX_ID] = '\0';
@@ -225,7 +225,7 @@ static void acf_yymark()
     {
 	if (sscanf((char *)yytext, "# %d %s", &acf_yylineno, source) < 1)
         {
-            log_warning(prev_lineno, NIDL_CPPCMDOPT,
+            acf_warning(prev_lineno, NIDL_CPPCMDOPT,
 #ifdef VMS
                 (CMD_DCL_interface) ? "/PREPROCESS" :
 #endif
@@ -589,7 +589,7 @@ init_new_acf_flexxer_activation()
     yyensure_buffer_stack();
     YY_CURRENT_BUFFER_LVALUE = 0;
     yy_c_buf_p = (char *) 0;
-    yy_init = 1;
+    yy_init = 0;
     yy_start = 0;
 
     /* FLEX 2.5 does not have these variables.

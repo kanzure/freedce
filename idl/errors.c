@@ -51,6 +51,8 @@
 #define MAX_WARNINGS    5
 #define MAX_ERROR_FILES 10
 
+static void _log_error(int lineno, long msgid, ...);
+
 
 /*
  *  Error log record format.
@@ -91,7 +93,7 @@ static  int              warnings = 0;      /* Warning count */
 static  STRTAB_str_t    error_files[MAX_ERROR_FILES]; /* List of all files with errors */
 static  int     error_file_count = 0;       /* Number of files with errors */
 static  int     last_error_line = 0;        /* Line of last error */
-static  char const *current_file   = NULL;     /* Current source file name */
+char const *current_file   = NULL;     /* Current source file name */
         error_log_rec_t  *errors = NULL;    /* Tree root for error nodes */
         int     error_count     = 0;        /* Error count */
         STRTAB_str_t    error_file_name_id; /* Id of current source file */
@@ -165,7 +167,7 @@ void yywhere
 			msg_id = NIDL_SYNTAXERR;
 	}
 
-	log_error(lineno, msg_id, text_len, near_text, NULL);
+	_log_error(lineno, msg_id, text_len, near_text, NULL);
 }
 
 /*
@@ -553,16 +555,10 @@ void log_error
 (
     int lineno,
     long msg_id,
-    ...
+    va_list ap
 )
 {
-    va_list ap;
-
-    va_start(ap, msg_id);
-
     log_source_va(&error_count, error_file_name_id, lineno, msg_id, ap);
-
-    va_end(ap);
 }
 
 
@@ -587,17 +583,27 @@ void log_warning
 (
     int lineno,
     long msg_id,
-    ...
+    va_list ap
 )
 {
-    va_list ap;
-
     if (ERR_no_warnings)
 	return;
-    va_start(ap, msg_id);
-
     log_source_va(&warnings, error_file_name_id, lineno, msg_id, ap);
+}
 
+/*
+**  l o g _ e r r o r
+**
+**  Issues an error message, and bumps the error count.
+**
+*/
+
+static void _log_error(int lineno, long msgid,/* [in] Message id */
+                        ...)
+{
+    va_list ap;
+    va_start(ap, msgid);
+    log_error(lineno, msgid, ap);
     va_end(ap);
 }
 

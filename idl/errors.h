@@ -78,7 +78,7 @@ void log_error
 	/* it is not a nonsense */
 	int lineno, /* Source line number */
 	long msg_id, /* Message ID */
-	... /* 0..5 args terminated by NULL if less than five */
+    va_list args
 );
 
 void log_warning
@@ -86,7 +86,18 @@ void log_warning
 	/* it is not a nonsense */
 	int lineno, /* Source line number */
 	long msg_id, /* Message ID */
-	... /* 0..5 args terminated by NULL if less than five */
+    va_list args
+);
+
+void acf_error
+(
+    long msgid,/* [in] Message id */
+    ...
+);
+
+void acf_warning(
+    long msgid,/* [in] Message id */
+    ...
 );
 
 

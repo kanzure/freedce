@@ -266,7 +266,7 @@ boolean ASTP_evaluate_expr(AST_exp_n_t * exp, boolean constant_only)
 		case AST_EXP_BINARY_PERCENT:
 			val = ASTP_expr_integer_value(op2);
 			if (val == 0)
-				log_error(nidl_yylineno, NIDL_INTDIVBY0, NULL);
+				acf_error( NIDL_INTDIVBY0, NULL);
 			else
 				val = ASTP_expr_integer_value(op1) % val;
 			exp->exp.constant.val.integer = val;
@@ -274,7 +274,7 @@ boolean ASTP_evaluate_expr(AST_exp_n_t * exp, boolean constant_only)
 		case AST_EXP_BINARY_SLASH:
 			val = ASTP_expr_integer_value(op2);
 			if (val == 0)
-				log_error(nidl_yylineno, NIDL_INTDIVBY0, NULL);
+				acf_error( NIDL_INTDIVBY0, NULL);
 			else
 				val = ASTP_expr_integer_value(op1) / val;
 			exp->exp.constant.val.integer = val;
@@ -284,7 +284,7 @@ boolean ASTP_evaluate_expr(AST_exp_n_t * exp, boolean constant_only)
 			val2 = ASTP_expr_integer_value(op2);
 			val = val1 * val2;
 			if (val < val1 && val > val2)
-				log_error(nidl_yylineno, NIDL_INTOVERFLOW, KEYWORDS_lookup_text(LONG_KW), NULL);
+				acf_error( NIDL_INTOVERFLOW, KEYWORDS_lookup_text(LONG_KW), NULL);
 			exp->exp.constant.val.integer = val;
 			break;
 		case AST_EXP_BINARY_MINUS:
