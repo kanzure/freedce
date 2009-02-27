@@ -35,7 +35,7 @@ idl_ulong_int largest_free;
 } dsm_stats_t;
 #define dsm_version (0x1)
 #define dsm_hdr_size (0x30)
-#define dsm_magic_marker (0xfffffffff000000f)
+#define dsm_magic_marker (0xf000000f)
 extern void dsm_create(
 #ifdef IDL_PROTOTYPES
     /* [in] */ idl_char *fname,
