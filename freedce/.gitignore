@@ -22,3 +22,15 @@ ltconfig
 *.tar.gz
 *.tgz
 .deps
+INSTALL
+autom4te.cache/
+config.guess
+config.sub
+depcomp
+include/dce/dce.h
+include/dce/dce_error.h
+include/dce/dce_utils.h
+include/dce/pthreads_rename.h
+include/dce/sec_authn.h
+ltmain.sh
+ylwrap
