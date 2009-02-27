@@ -91,7 +91,7 @@ fi
 AC_CHECK_LIB(dl, dlopen)
 
 SAMBA_TNG_DIRS="/usr/local/samba"
-AC_ARG_WITH(dcethreads-dir, [  --with-samba-tng-dir   Specify where you have installed Samba (The Next Generation)],
+AC_ARG_WITH(samba-tng-dir, [  --with-samba-tng-dir   Specify where you have installed Samba (The Next Generation)],
 [SAMBA_TNG_DIRS="$withval $SAMBA_TNG_DIRS"])
 
 if test "x$have_win32" = "x1"; then
