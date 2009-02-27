@@ -1,0 +1,170 @@
+/* include/dce/dcethreads_conf.h.in.  Generated from configure.in by autoheader.  */
+#ifndef __DCETHREADS_CONF_H
+#define __DCETHREADS_CONF_H
+
+#ifdef COMPILING_DCETHREADS
+/*
+ * this definitions are only needed when compiling
+ * the library itself
+ */
+#undef YIELD_AFTER_PTHREAD_CREATE
+#undef USE_CANCELATION_WRAPPER
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <features.h> header file. */
+#undef HAVE_FEATURES_H
+
+/* Define to 1 if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `pthread' library (-lpthread). */
+#undef HAVE_LIBPTHREAD
+
+/* Define to 1 if you have the `pthreadGC2' library (-lpthreadGC2). */
+#undef HAVE_LIBPTHREADGC2
+
+/* Define to 1 if you have the `ws2_32' library (-lws2_32). */
+#undef HAVE_LIBWS2_32
+
+/* Define to 1 if you have the <malloc.h> header file. */
+#undef HAVE_MALLOC_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define, if target is win32 */
+#undef HAVE_OS_WIN32
+
+/* Define to 1 if the system has the type `ssize_t'. */
+#undef HAVE_SSIZE_T
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/cdefs.h> header file. */
+#undef HAVE_SYS_CDEFS_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Version number of package */
+#undef VERSION
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef mode_t
+
+/* Define to `long int' if <sys/types.h> does not define. */
+#undef off_t
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
+/*
+ * end of private configuration
+ */
+#endif /* COMPILING_DCETHREADS */
+
+#ifndef _GNU_SOURCE
+#  define _GNU_SOURCE 1
+#endif
+
+#ifndef _REENTRANT
+#  define _REENTRANT 1
+#endif
+
+#ifndef HAVE_FEATURES_H
+#undef HAVE_FEATURES_H
+#endif
+#ifdef HAVE_FEATURES_H
+#  include <features.h>
+#endif
+
+#ifndef HAVE_SYS_CDEFS_H
+#undef HAVE_SYS_CDEFS_H
+#endif
+/*
+ * sys/cdefs.h is often included by features.h
+ */
+#if !defined(_SYS_CDEFS_H) && defined(HAVE_SYS_CDEFS_H)
+#  include <sys/cdefs.h>
+#endif
+
+/*
+ * if the system has own idea of what __P should be we use it
+ */
+#ifndef __P
+#  define __P(x) x
+#endif
+
+#ifndef __BEGIN_DECLS
+#  ifdef __cplusplus
+#    define __BEGIN_DECLS  extern "C" {
+#    define __END_DECLS    }
+#  else
+#    define __BEGIN_DECLS
+#    define __END_DECLS
+#  endif
+#endif
+
+#endif /* __DCETHREADS_CONF_H */
