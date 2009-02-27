@@ -77,7 +77,7 @@
 
 typedef unsigned char       unsigned8;
 typedef unsigned short int  unsigned16;
-typedef unsigned long int   unsigned32;
+typedef unsigned int        unsigned32;
 
 typedef unsigned8 boolean;
 #define true 1
