@@ -13,6 +13,7 @@ missing
 install-sh
 libtool
 freedce.spec
+dcethreads.spec
 *.tar.bz2
 ltconfig
 *.lo

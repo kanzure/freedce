@@ -1,0 +1,7 @@
+#!/bin/sh
+# this is used to invert the results of a test file
+ret=0
+run=`echo $0 | cut -f2 -d-`
+./$run && ret=1
+echo "returning $ret"
+exit $ret
