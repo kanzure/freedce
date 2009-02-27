@@ -289,6 +289,8 @@ unsigned32                      *st;
 /***********************************************************************/
 
 
+void rpc__ncacn_common_init (void);
+
 #include <comp.h>
 #ifdef HAVE_OS_WIN32
 void rpc__cn_module_init_func(void)

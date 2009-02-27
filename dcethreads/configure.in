@@ -82,7 +82,7 @@ AC_CHECK_FUNCS(gettimeofday)
 
 AC_DEFINE(YIELD_AFTER_PTHREAD_CREATE, 1)
 
-AC_DEFINE(USE_CANCELATION_WRAPPER, 1)
+AC_DEFINE(USE_CANCELATION_WRAPPER, 0)
 
 dnl check if glibc functions are true cancellation points
 dnl
