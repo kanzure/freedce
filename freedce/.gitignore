@@ -34,3 +34,4 @@ include/dce/pthreads_rename.h
 include/dce/sec_authn.h
 ltmain.sh
 ylwrap
+.*.sw?
