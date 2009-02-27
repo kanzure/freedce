@@ -35,6 +35,8 @@
 **
 */
 
+#include <dce/dce.h>
+
 #include <perf_c.h>
 #include <string.h>
 #include <malloc.h>
@@ -815,11 +817,11 @@ char *name;
         exit(1);
     }
 
-    printf ("%ld interface ids returned for %s.\n", if_ids->count, pstring);
+    printf ("%d interface ids returned for %s.\n", if_ids->count, pstring);
     for (i = 0; i < if_ids->count; i++)
     {
         uuid_to_string (&if_ids->if_id[i]->uuid, &uuid_string, &st);
-        printf ("%ld:\tuuid:\t%s\n\tvers_major:\t%d\tvers_minor\t%d\n",
+        printf ("%d:\tuuid:\t%s\n\tvers_major:\t%d\tvers_minor\t%d\n",
             (i+1), uuid_string, if_ids->if_id[i]->vers_major,
             if_ids->if_id[i]->vers_minor );
         rpc_string_free (&uuid_string, &temp_status);
@@ -890,10 +892,10 @@ char *name;
     if (name != NULL)
         rpc_string_free(&pstring, &st);
 
-    printf("    Calls sent:   %9lu\n", stats->stats[rpc_c_stats_calls_out]);
-    printf("    Calls rcvd:   %9lu\n", stats->stats[rpc_c_stats_calls_in]);
-    printf("    Packets sent: %9lu\n", stats->stats[rpc_c_stats_pkts_out]);
-    printf("    Packets rcvd: %9lu\n", stats->stats[rpc_c_stats_pkts_in]);
+    printf("    Calls sent:   %9u\n", stats->stats[rpc_c_stats_calls_out]);
+    printf("    Calls rcvd:   %9u\n", stats->stats[rpc_c_stats_calls_in]);
+    printf("    Packets sent: %9u\n", stats->stats[rpc_c_stats_pkts_out]);
+    printf("    Packets rcvd: %9u\n", stats->stats[rpc_c_stats_pkts_in]);
 
     rpc_mgmt_stats_vector_free (&stats, &st);
     if (st != rpc_s_ok)
@@ -1088,7 +1090,7 @@ char                *argv[];
             perfb_in(rh, d, FSIZE, true, &sum);
             if (sum != rsum)
             {
-                fprintf(stderr, "*** Sum mismatch in large forwarded call (%lu, %lu)\n",
+                fprintf(stderr, "*** Sum mismatch in large forwarded call (%u, %u)\n",
                     sum, rsum);
             }
             else
@@ -1252,7 +1254,7 @@ unsigned32       *c;
 
 {
     *c = ++callback_count;
-    printf("    ...in callback %lu\n", *c);
+    printf("    ...in callback %u\n", *c);
 }
 
 void perfc_cb_idem (h, c)
@@ -1262,7 +1264,7 @@ unsigned32       *c;
 
 {
     *c = ++callback_count;
-    printf("    ...in idempotent callback %lu\n", *c);
+    printf("    ...in idempotent callback %u\n", *c);
 }
 
 perfc_v2_0_epv_t perfc_v2_mgr_epv =
@@ -1360,7 +1362,7 @@ char                *argv[];
 
     if (x != 34)
     {
-        fprintf(stderr, "*** op1 on Foo1 returned %lu instead of 34\n", x);
+        fprintf(stderr, "*** op1 on Foo1 returned %u instead of 34\n", x);
     }
 
     rh = binding_from_string_binding((uuid_p_t) &BarObj2, argv[2]);
@@ -1368,7 +1370,7 @@ char                *argv[];
 
     if (x != 15)
     {
-        fprintf(stderr, "*** op2 on Bar2 returned %lu instead of 15\n", x);
+        fprintf(stderr, "*** op2 on Bar2 returned %u instead of 15\n", x);
     }
 
     rh = binding_from_string_binding((uuid_p_t) &FooObj2, argv[2]);
@@ -1376,7 +1378,7 @@ char                *argv[];
 
     if (x != 222)
     {
-        fprintf(stderr, "*** op1 on Foo2 returned %lu instead of 222\n", x);
+        fprintf(stderr, "*** op1 on Foo2 returned %u instead of 222\n", x);
     }
 
     rh = binding_from_string_binding((uuid_p_t) &BarObj1, argv[2]);
@@ -1384,7 +1386,7 @@ char                *argv[];
 
     if (x != 65)
     {
-        fprintf(stderr, "*** op2 on Bar1 returned %lu instead of 65\n", x);
+        fprintf(stderr, "*** op2 on Bar1 returned %u instead of 65\n", x);
     }
 
     TRY {
@@ -1808,7 +1810,7 @@ char                *argv[];
 
         if (rdata != data)
         {
-            fprintf (stderr, "*** data mismatch on data returned by perf_get_context; %lu != %lu\n",
+            fprintf (stderr, "*** data mismatch on data returned by perf_get_context; %u != %u\n",
                 rdata, data);
         }
 
@@ -1828,7 +1830,7 @@ char                *argv[];
 
             if (rdata != data)
             {
-                fprintf (stderr, "*** data mismatch on data returned by perf_free_context; %lu != %lu\n",
+                fprintf (stderr, "*** data mismatch on data returned by perf_free_context; %u != %u\n",
                     rdata, data);
             }
         }
@@ -1962,7 +1964,7 @@ char                *argv[];
                 usage(test);
             }
             len = atoi(argv[7]) / 4;
-            printf("; bytes/call: %ld", len * 4);
+            printf("; bytes/call: %d", len * 4);
             break;
         case 10:
             if (argc < 8)
@@ -1984,7 +1986,7 @@ char                *argv[];
                     usage(test);
                 }
             }
-            printf("; sleep secs: %ld; mode: %s",
+            printf("; sleep secs: %d; mode: %s",
                    slow_secs, slow_mode_names[slow_mode]);
             break;
     }
@@ -2061,7 +2063,7 @@ char                *argv[];
                     {
                         if (sum != rsum)
                         {
-                            fprintf(stderr, "*** Sum mismatch (%lu, %lu)\n",
+                            fprintf(stderr, "*** Sum mismatch (%u, %u)\n",
                                 sum, rsum);
                         }
                     }
@@ -2084,7 +2086,7 @@ char                *argv[];
                     if (len != tlen)
                     {
                         fprintf(stderr,
-"*** Output length (%lu) is not equal to input length (%lu)\n", tlen, len);
+"*** Output length (%u) is not equal to input length (%u)\n", tlen, len);
                         exit(1);
                     }
 
@@ -2101,7 +2103,7 @@ char                *argv[];
                         sum &= (unsigned long) 0xffffffff;
                         if (sum != rsum)
                         {
-                            fprintf(stderr, "*** Sum mismatch (%lu, %lu)\n",
+                            fprintf(stderr, "*** Sum mismatch (%u, %u)\n",
                                 sum, rsum);
                         }
                     }
@@ -2177,13 +2179,13 @@ char                *argv[];
             perf_info(rh, &n_calls, &n_brd, &n_maybe, &n_brd_maybe);
             if (n_calls != cpp)
             {
-                fprintf(stderr, "*** Call count mismatch (%lu, %d)\n",
+                fprintf(stderr, "*** Call count mismatch (%u, %d)\n",
                     n_calls, cpp);
             }
         }
 
 #ifdef NO_TIMES
-        printf("        pass %3d; ms/call: %lu.%03u",
+        printf("        pass %3d; ms/call: %u.%03u",
                 pass, avg_time.msec, avg_time.usec);
 
         if (len > 0 && avg_time.msec > 0)
@@ -2266,7 +2268,7 @@ char                *argv[];
     end_timing(&start_time, 1, &avg_time);
 
 #ifdef NO_TIMES
-    printf("        ms: %lu.%03u\n", avg_time.msec, avg_time.usec);
+    printf("        ms: %u.%03lu\n", avg_time.msec, avg_time.usec);
 #else
     printf("        ms: %lu.%03lu (%lu/%lu)\n",
            avg_time.r_msec, avg_time.r_usec,
@@ -2278,6 +2280,8 @@ char                *argv[];
  * Start test.  Catch and print any exceptions that are raised.
  */
 
+#if 0
+/* these are dynamically loadable now - cannot be called direct */
 void rpc__cn_set_sock_buffsize (
         unsigned32	  /* rsize */,
         unsigned32	  /* ssize */,
@@ -2286,6 +2290,7 @@ void rpc__cn_inq_sock_buffsize (
         unsigned32	* /* rsize */,
         unsigned32	* /* ssize */,
         error_status_t  * /* st */);
+#endif
 
 static void start_test(test, argc, argv)
 
@@ -2296,26 +2301,29 @@ char *argv[];
     unsigned32 rsize, ssize;
     error_status_t status;
 
+/* these are dynamically loadable now - cannot be called direct */
+#if 0
     rpc__cn_set_sock_buffsize(socket_buf_size, socket_buf_size, &status);
     if (status != rpc_s_ok)
     {
-	fprintf(stderr,"*** rpc__cn_set_sock_buffsize failed (0x%lx)\n", status);
+	fprintf(stderr,"*** rpc__cn_set_sock_buffsize failed (0x%x)\n", status);
         exit(1);
     }
 
     rpc__cn_inq_sock_buffsize(&rsize, &ssize, &status);
     if (status != rpc_s_ok)
     {
-	fprintf(stderr,"*** rpc__cn_inq_sock_buffsize failed (0x%lx)\n", status);
+	fprintf(stderr,"*** rpc__cn_inq_sock_buffsize failed (0x%x)\n", status);
         exit(1);
     }
     if (socket_buf_size != rsize || socket_buf_size != ssize)
     {
         fprintf(stderr, "*** CN socket buffer sizes dont match:\n");
-        fprintf(stderr, "*** READ desired: %lu   actual: %lu\n", socket_buf_size, rsize);
-        fprintf(stderr, "*** WRITE desired: %lu  actual: %lu\n", socket_buf_size, ssize);
+        fprintf(stderr, "*** READ desired: %u   actual: %u\n", socket_buf_size, rsize);
+        fprintf(stderr, "*** WRITE desired: %u  actual: %u\n", socket_buf_size, ssize);
         exit(1);
     }
+#endif
 
     TRY
     {
@@ -2447,7 +2455,7 @@ char                *argv[];
         info->argv   = argv;
 
         TRY {
-            sys_pthread_create(&tasks[i], sys_pthread_attr_default,
+            sys_pthread_create(&tasks[i], &sys_pthread_attr_default,
                 (pthread_startroutine_t) multi_task, (pthread_addr_t) info);
         } CATCH_ALL {
             exc_report(THIS_CATCH);
@@ -2734,7 +2742,7 @@ fork_test_replay:
     if (fork_count != 0 || do_fork != 6)
     {
 #ifdef _POSIX_THREADS
-        pthread_mutex_init(&global_mutex, sys_pthread_mutexattr_default);
+        pthread_mutex_init(&global_mutex, &sys_pthread_mutexattr_default);
 
         if (multithread)
         {

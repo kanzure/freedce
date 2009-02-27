@@ -71,7 +71,7 @@ void perfb_init
 #endif
 {
     print_binding_info ("perfb_init", h);
-    gethostname(name, 256);
+    gethostname((char*)name, 256);
 }
 
 /***************************************************************************/
@@ -113,7 +113,7 @@ void perfb_brd
 #endif
 {
     print_binding_info ("perfb_brd", h);
-    gethostname(name, 256);
+    gethostname((char*)name, 256);
 }
 
 /***************************************************************************/

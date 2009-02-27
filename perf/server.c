@@ -100,7 +100,7 @@ unsigned32          *st;
 
     b = (op == rpc_c_mgmt_stop_server_listen) ? shut_ok : true;
 
-    VRprintf (1, ("+ In management authorization function: op=%lu, returning \"%s\"\n",
+    VRprintf (1, ("+ In management authorization function: op=%u, returning \"%s\"\n",
                 op, b ? "true" : "false"));
 
     *st = b ? rpc_s_ok : rpc_s_mgmt_op_disallowed;
@@ -393,7 +393,7 @@ unsigned32          max_calls;
 
     if (st != rpc_s_ok)
     {
-        fprintf(stderr, "*** Can't inq_bindings - %lx\n", st);
+        fprintf(stderr, "*** Can't inq_bindings - %x\n", st);
         exit(1);
     }
 
@@ -405,7 +405,7 @@ unsigned32          max_calls;
 
         if (st != rpc_s_ok)
         {
-            fprintf(stderr, "*** Can't get string binding - %lx\n", st);
+            fprintf(stderr, "*** Can't get string binding - %x\n", st);
             exit(1);
         }
 
@@ -556,6 +556,8 @@ extern void rpc__dbg_set_switches    (
         char            * /*s*/,
         unsigned32      * /*st*/
     );
+#if 0
+/* cannot use these direct, they are dynamically loaded now */
 void rpc__cn_set_sock_buffsize (
         unsigned32	  /* rsize */,
         unsigned32	  /* ssize */,
@@ -564,7 +566,7 @@ void rpc__cn_inq_sock_buffsize (
         unsigned32	* /* rsize */,
         unsigned32	* /* ssize */,
         error_status_t  * /* st */);
-
+#endif
 
 extern int lookup_name(char *table[], char *s);
 
@@ -696,6 +698,7 @@ char                *argv[];
         dump_stg_info();
     }
 
+#if 0
     rpc__cn_set_sock_buffsize(socket_buf_size, socket_buf_size, &st);
     if (st != rpc_s_ok)
     {
@@ -716,6 +719,7 @@ char                *argv[];
         fprintf(stderr, "*** WRITE desired: %lu  actual: %lu\n", socket_buf_size, ssize);
 	exit(1);
     }
+#endif
 
     rpc_mgmt_set_authorization_fn(mgmt_auth_fn, &st);
 

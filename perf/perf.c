@@ -35,6 +35,7 @@
 **
 **
 */
+#include <dce/dce.h>
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
@@ -285,7 +286,7 @@ void perf_brd
     print_binding_info ("perf_brd", h);
     common();
     n_brd++; 
-    gethostname(name, 256);
+    gethostname((char*)name, 256);
 }
 
 /***************************************************************************/
@@ -583,13 +584,13 @@ static void slow
         switch ((int) mode)
         {
             case perf_slow_sleep:
-                printf("+ Sleeping for %lu seconds...\n", secs);
+                printf("+ Sleeping for %u seconds...\n", secs);
                 SLEEP(secs);
                 printf("    ...awake!\n");
                 break;
 
             case perf_slow_cpu: 
-                printf("+ CPU looping for %lu seconds...\n", secs);
+                printf("+ CPU looping for %u seconds...\n", secs);
                 while ((unsigned32)(time(0) - start_time) < secs)
                 {
                     ;
@@ -607,7 +608,7 @@ static void slow
                 char TempFileName [] = "/tmp/perfXXXXXX";
 
                 t = (char *) mktemp(TempFileName);
-                printf("+ Writing file \"%s\" (size=%ld bytes)\n", t, secs);
+                printf("+ Writing file \"%s\" (size=%d bytes)\n", t, secs);
                 f = open(t, (O_TRUNC | O_RDWR | O_CREAT), 0777);
                 if (f < 0)
                 {
@@ -650,8 +651,8 @@ DONE:
                 pid_t   cpid;
                 pid_t   pid;
                 char    buf[16];
-                printf("+ Forking sleep for %lu seconds...\n", secs);
-                sprintf(buf, "%lu", secs);
+                printf("+ Forking sleep for %u seconds...\n", secs);
+                sprintf(buf, "%u", secs);
                 cpid = fork();
                 if (cpid == 0)
                 {
@@ -789,7 +790,7 @@ static void *shutdown_thread
 
     printf ("+ Shutdown thread...\n");
 
-    printf ("  sleeping for %lu seconds\n", p->secs);
+    printf ("  sleeping for %u seconds\n", p->secs);
     SLEEP (p->secs);
 
     if (use_reserved_threads)
@@ -830,9 +831,9 @@ void perf_shutdown2
     p = (struct shutdown_info *) malloc (sizeof *p);
     p->secs = secs;
 
-    sys_pthread_create (&thread, sys_pthread_attr_default, 
+    sys_pthread_create (&thread, &sys_pthread_attr_default, 
 	shutdown_thread, (void *) p);
-    sys_pthread_detach (&thread);
+    sys_pthread_detach (thread);
 }
 
 
@@ -875,7 +876,7 @@ void perf_call_callback
 
     if ((! idem) && c != passes)
     {
-        printf("    ...count mismatch [%lu, %lu]\n", c, passes);
+        printf("    ...count mismatch [%u, %u]\n", c, passes);
         st = 1;
 #ifdef NOTDEF
         pfm_$signal(st);
