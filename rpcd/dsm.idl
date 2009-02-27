@@ -106,21 +106,21 @@
 
 */
 
-const long dsm_mod                    = 0x1C0B0000;
+const unsigned32 dsm_mod                    = 0x1C0B0000;
 
-const long dsm_err_create_failed      = 0x1C0B0001;
-const long dsm_err_file_io_error      = 0x1C0B0002;
-const long dsm_err_open_failed        = 0x1C0B0003;
-const long dsm_err_version            = 0x1C0B0004;
-const long dsm_err_no_memory          = 0x1C0B0005;
-const long dsm_err_duplicate_write    = 0x1C0B0006;
-const long dsm_err_header_too_long    = 0x1C0B0007;
-const long dsm_err_no_more_entries    = 0x1C0B0008;
-const long dsm_err_invalid_handle     = 0x1C0B0009;
-const long dsm_err_invalid_pointer    = 0x1C0B000A;
-const long dsm_err_info_too_long      = 0x1C0B000B;
-const long dsm_err_file_busy          = 0x1C0B000C;
-const long dsm_err_invalid_marker     = 0x1C0B000D;
+const unsigned32 dsm_err_create_failed      = 0x1C0B0001;
+const unsigned32 dsm_err_file_io_error      = 0x1C0B0002;
+const unsigned32 dsm_err_open_failed        = 0x1C0B0003;
+const unsigned32 dsm_err_version            = 0x1C0B0004;
+const unsigned32 dsm_err_no_memory          = 0x1C0B0005;
+const unsigned32 dsm_err_duplicate_write    = 0x1C0B0006;
+const unsigned32 dsm_err_header_too_long    = 0x1C0B0007;
+const unsigned32 dsm_err_no_more_entries    = 0x1C0B0008;
+const unsigned32 dsm_err_invalid_handle     = 0x1C0B0009;
+const unsigned32 dsm_err_invalid_pointer    = 0x1C0B000A;
+const unsigned32 dsm_err_info_too_long      = 0x1C0B000B;
+const unsigned32 dsm_err_file_busy          = 0x1C0B000C;
+const unsigned32 dsm_err_invalid_marker     = 0x1C0B000D;
  
 typedef void          * dsm_handle_t;
 typedef unsigned long   dsm_marker_t;
@@ -131,9 +131,9 @@ typedef struct dsm_stats_t {        /* returned from dsm_get_stats */
     unsigned long   largest_free;   /* size of largest free block */
 } dsm_stats_t;
 
-const long dsm_version       = 1;
-const long dsm_hdr_size      = 48;           /* amount you can write_hdr */
-const long dsm_magic_marker  = 0xF000000F;   /* value of reset marker */
+const unsigned32 dsm_version       = 1;
+const unsigned32 dsm_hdr_size      = 48;           /* amount you can write_hdr */
+const unsigned32 dsm_magic_marker  = 0xF000000F;   /* value of reset marker */
 
 /** dsm_create(fname, &dsh, &st)
 

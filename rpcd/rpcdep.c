@@ -177,7 +177,7 @@ INTERNAL int is_remote_handle( handle_t h, error_status_t *st )
     *st = rpc_s_ok;
     for ( i=0; i < addr_count; i++ )
     {
-        if(strcmp(client_netaddr,local_netaddr[i]) == 0)
+        if(strcmp((char*)client_netaddr,local_netaddr[i]) == 0)
         {
             rpc_string_free(&client_netaddr,&status1);
             return(0);
@@ -289,7 +289,7 @@ error_status_t      *status;
                max_ents, num_ents, entries, status);
 
     if (dflag)
-        printf("ept_lookup  entry_handle %p  *entry_handle %p  *num_ents %ld\n", 
+        printf("ept_lookup  entry_handle %p  *entry_handle %p  *num_ents %d\n", 
             entry_handle, *entry_handle, *num_ents);
 }
 
@@ -333,7 +333,7 @@ error_status_t      *status;
 #endif
 
     if (dflag)
-        printf("ept_map  entry_handle %p  *entry_handle %p  *num_towers %ld\n", 
+        printf("ept_map  entry_handle %p  *entry_handle %p  *num_towers %d\n", 
             entry_handle, *entry_handle, *num_towers);
 }
 

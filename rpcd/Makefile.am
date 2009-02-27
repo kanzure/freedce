@@ -3,7 +3,7 @@ include $(top_srcdir)/include.mk
 
 
 C_FLAGS=-DNCK -D_POSIX_SOURCE=1 -I$(top_srcdir)/ncklib/include -I$(top_srcdir)/ncklib/include/$(target_os)
-CFLAGS+=$(C_FLAGS)
+AM_CFLAGS+=$(C_FLAGS)
 CXXFLAGS+=$(C_FLAGS)
 
 IDLFLAGS+=-keep c_source -v -no_mepv -cepv -client none -server none -I. -I$(IDL_INCLUDE_DIR)/.. $(DCETHREADINCLUDES)

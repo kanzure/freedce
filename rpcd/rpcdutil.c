@@ -67,7 +67,7 @@ int             line;
 {
     unsigned32 i;
 
-    fprintf(stderr, "Bad tower (%s, line %d); length=%lu\n    octets=", 
+    fprintf(stderr, "Bad tower (%s, line %d); length=%u\n    octets=", 
         file, line, tower->tower_length);
 
     for (i = 0; i < tower->tower_length; i++)   

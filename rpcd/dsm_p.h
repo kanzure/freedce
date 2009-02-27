@@ -92,7 +92,7 @@
 #endif
 
 #define INFOSZ      256                 /* space reserved for client header info */
-#define PREHEADER   16                  /* length of preheader */
+#define PREHEADER   24                  /* length of preheader */
 #define UNIT        64                  /* 1st UNIT of each block should fit within a page */
 #define USER_HDR    (UNIT-PREHEADER)    /* leaving this for a user header */
 #define MINBLOCK    (PREHEADER+8)       /* we'll deal with blocks as small as this */
@@ -157,13 +157,13 @@ typedef struct page_t {     /* generic page */
     structure!  The important thing is that it the 'data' field be
     naturally aligned for all potential user data (8-byte alignment),
     and the preheader should occupy the PREHEADER bytes just before
-    the user data.  It currently looks like: (16 bytes)
+    the user data.  It currently looks like: (24 bytes)
 
         +--------+--------+--------+--------+  \
-        |         space for link ptr        |   |
+        |         space for link ptr        |   | 4 - 8 bytes
         +--------+--------+--------+--------+   |
         |         size of user data         |   |    
-        +--------+--------+--------+--------+    > preheader (16 bytes)
+        +--------+--------+--------+--------+    > preheader (24 bytes)
         |     offset in file of preheader   |   |
         +--------+--------+--------+--------+   |
         |  FREE  | cookie |    (unused)     |   |
@@ -174,18 +174,19 @@ typedef struct page_t {     /* generic page */
 
 typedef struct block_t {        /* block preheader */
     struct block_t *link;       /* link to next block on (free) list [meaningless in file] */                    
-    unsigned long   size;       /* size of user data */
-    unsigned long   loc;        /* location (offset) of preheader in file */
+    unsigned int    size;       /* size of user data */
+    unsigned int    loc;        /* location (offset) of preheader in file */
     boolean         isfree;     /* true iff free */
     unsigned char   cookie;     /* magic number basic identification */
     unsigned char   unused[2];  /* preheader ends here */
+    unsigned char   unused1[4]; /* 8-byte align */
     double          data;       /* user data begins here -- double to align */
 } block_t;
 
 typedef struct file_hdr_t {     /* first page of file contains global info */
-    long            version;    /* file format version */
-    long            pages;      /* number of initialized data pages */
-    long            pad1[20];   /* reserve for DSM header expansion */
+    int             version;    /* file format version */
+    int             pages;      /* number of initialized data pages */
+    int             pad1[20];   /* reserve for DSM header expansion */
     unsigned char   info[INFOSZ];   /* space for client info */
     page_t          padding;    /* pad out past page boundary */
 } file_hdr_t;
@@ -200,8 +201,8 @@ typedef struct file_hdr_t {     /* first page of file contains global info */
 typedef struct file_map_t {     /* file chunk descriptor */
     struct file_map_t  *link;   /* next in list */
     block_t            *ptr;    /* pointer to first block in chunk */
-    unsigned long       loc;    /* location in file (should be on page boundary) */
-    unsigned long       size;   /* bytes total (should be in page multiple) */
+    unsigned int        loc;    /* location in file (should be on page boundary) */
+    unsigned int        size;   /* bytes total (should be in page multiple) */
 } file_map_t;
 
 typedef struct cache_t {        /* dsm_read cache element */
@@ -214,8 +215,8 @@ typedef struct dsm_db_t {       /* dsm handle info (what dsm_handle_t really poi
     int             fd;         /* the file descriptor */
     char           *fname;      /* pointer to malloc'd copy of filename */
     file_map_t     *map;        /* the file map (head of list) */
-    long            pages;      /* initialized pages (from file header) */
-    long            cookie;     /* magic cookie for detecting bogus dsh's */
+    int             pages;      /* initialized pages (from file header) */
+    int             cookie;     /* magic cookie for detecting bogus dsh's */
     int             pending;    /* # blocks allocated but not written */
     cache_t         cache;      /* dsm_read cache */
     boolean         coalesced;  /* true once coalesced */
@@ -229,10 +230,10 @@ typedef struct dsm_db_t * dsm_handle;   /* internal version of opaque handle */
 */
 
 #ifdef _I_AM_DSM_C_
-private block_t *   get_free_block      _DCE_PROTOTYPE_((dsm_handle,unsigned long));
-private block_t *   grow_file           _DCE_PROTOTYPE_((dsm_handle,unsigned long, error_status_t *));
+private block_t *   get_free_block      _DCE_PROTOTYPE_((dsm_handle,unsigned int ));
+private block_t *   grow_file           _DCE_PROTOTYPE_((dsm_handle,unsigned int , error_status_t *));
 private void        write_header        _DCE_PROTOTYPE_((dsm_handle,block_t *, error_status_t *));
-private void        write_block         _DCE_PROTOTYPE_((dsm_handle,block_t *,unsigned long, error_status_t *));
+private void        write_block         _DCE_PROTOTYPE_((dsm_handle,block_t *,unsigned int , error_status_t *));
 private void        update_file_header  _DCE_PROTOTYPE_((dsm_handle, error_status_t *));
 private int         create_file         _DCE_PROTOTYPE_((unsigned char *));
 private void        make_free           _DCE_PROTOTYPE_((dsm_handle,block_t *, error_status_t *));

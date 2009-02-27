@@ -216,7 +216,7 @@ error_status_t  *st;
     int             tmp_st;
 
     dce_error_inq_text(*st, estr, &tmp_st);
-    fprintf(stderr, "(rpcd) %s: (0x%lx) %s\n", str, *st, estr);
+    fprintf(stderr, "(rpcd) %s: (0x%x) %s\n", str, *st, estr);
 }
 
 INTERNAL void usage()

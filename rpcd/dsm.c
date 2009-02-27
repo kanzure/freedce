@@ -61,7 +61,7 @@
 **  the record beyond the amount of space requested, for alignment.  The
 **  preheader and the data portion of the record are both aligned to an 8-byte
 **  boundary.  The first 64 bytes of each record, including the preheader,
-**  fit within a page, so the preheader (16 bytes currently) and the first
+**  fit within a page, so the preheader (20 bytes currently) and the first
 **  48 bytes of the user data can be atomically updated.
 **  
 **  When initially created, no data pages are allocated to the file (just
@@ -86,6 +86,8 @@
 **
 **
 */
+
+#define DSM_DEBUG
 
 #include <dce/dce.h>
 #include <string.h>
@@ -129,6 +131,8 @@ error_status_t *st;         /* (output) status */
     int                 fd = -1;            /* file descriptor of created file */
     dsm_handle          dsh;                /* allocated data store handle */
     file_hdr_t          fhdr;               /* file header (first page) */
+
+    memset(&fhdr, 0, sizeof(fhdr));
 
     CLEANUP {      /* upon errors */
         if (fd != -1) close(fd);            /* if file is open close it */
@@ -457,7 +461,7 @@ error_status_t *st;     /* (output) status */
 {
     dsm_handle dsh = (dsm_handle)dsx;
     block_t            *p;          /* the actual record */
-    unsigned long       sp,ep;      /* base of start page, end page */
+    unsigned int        sp,ep;      /* base of start page, end page */
 
     CLEANUP {  /* upon errors */
         return;                         /* and just return with fault status */
@@ -999,7 +1003,7 @@ error_status_t *st;
 
     verify_dsh(dsh);                    /* reality check */
 
-    printf("DSM map; %d initialized pages of %d bytes; %d allocations pending\n",
+    printf("DSM map; %d initialized pages of %ld bytes; %d allocations pending\n",
            dsh->pages, PAGE_SIZE, dsh->pending);
 
     for (map = dsh->map; map != NULL; map = map->link) {    /* for each file chunk */
@@ -1008,7 +1012,7 @@ error_status_t *st;
         this = map->ptr;    /* first block in chunk */
 
         for (;;) {  /* until explicit break at end of chunk */
-            printf("    %08x %08x: (page %d offset %d) %d bytes ",
+            printf("    %p %08x: (page %ld offset %ld) %d bytes ",
                    this,this->loc,this->loc/PAGE_SIZE,MOD(this->loc,PAGE_SIZE),this->size);
 
             if (MOD(this->size,8) != 0) printf(" *** NOT 8-BYTE ALIGNED *** ");
@@ -1039,7 +1043,7 @@ error_status_t *st;
 
 private block_t *get_free_block(dsh,min_size)
 dsm_handle     dsh;        /* data store handle */
-unsigned long   min_size;   /* requested size */
+unsigned int    min_size;   /* requested size */
 {
     block_t    *p,*pp;  /* list traversers */
 
@@ -1071,13 +1075,13 @@ unsigned long   min_size;   /* requested size */
 
 private block_t *grow_file(dsh, min_size, st)
 dsm_handle     dsh;        /* handle to file to grow */
-unsigned long   min_size;   /* size of requested block (minimum grow amount) in bytes */
+unsigned int    min_size;   /* size of requested block (minimum grow amount) in bytes */
 error_status_t *st;
 {
-    unsigned long       grow_pages,grow_bytes;  /* number of pages, bytes to grow */
+    unsigned int        grow_pages,grow_bytes;  /* number of pages, bytes to grow */
     block_t            *p = NULL;               /* new header */
     file_map_t         *map = NULL;             /* file map entry */
-    long                flen;                   /* file length/offset of new chunk */
+    int                 flen;                   /* file length/offset of new chunk */
 
     CLEANUP {
         if (p != NULL) sys_free(p);                 /* free allocated memory if any */
@@ -1092,6 +1096,8 @@ error_status_t *st;
 
     p = (block_t *)sys_malloc(grow_bytes);      /* allocate the memory chunk */
     if (p == NULL) SIGNAL(dsm_err_no_memory);
+
+    memset(p, 0, grow_bytes);
 
     map = NEW(file_map_t);                  /* get new file map entry */
     if (map == NULL) SIGNAL(dsm_err_no_memory);
@@ -1168,7 +1174,7 @@ error_status_t *st;
 private void write_block(dsh, p, size, st)
 dsm_handle     dsh;    /* data store handle */
 block_t        *p;      /* block in question */
-unsigned long   size;   /* how much to write */
+unsigned int    size;   /* how much to write */
 error_status_t *st;
 {
     CLEAR_ST;
@@ -1433,8 +1439,8 @@ block_t        *this;
 {
     file_map_t     *map;        /* for traversing chunk list */
     block_t        *next;       /* next block */
-    unsigned long   next_loc;   /* file location of next block */
-    unsigned long   offset;     /* offset within a chunk */
+    unsigned int    next_loc;   /* file location of next block */
+    unsigned int    offset;     /* offset within a chunk */
 
     next_loc = this->loc+PREHEADER+this->size;              /* where next block is in the file */
 
@@ -1558,7 +1564,7 @@ dsm_marker_t   mkr;
 {
     if (dsh->cache.loc == mkr) return dsh->cache.p; /* in the cache? */
     else if (!dsh->coalesced && dsh->map != NULL && dsh->map->link == NULL) {
-        long offset;
+        int  offset;
 
         offset = mkr - dsh->map->loc;   /* bytes into chunk */
         return (block_t *)((char *)dsh->map->ptr + offset);
