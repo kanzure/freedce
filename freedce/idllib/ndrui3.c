@@ -242,7 +242,7 @@ static void rpc_ss_ndr_unmar_union_body
         defn_vec_ptr += arm_count * IDL_UNION_ARM_DESC_WIDTH;
         if (*defn_vec_ptr == IDL_DT_DOES_NOT_EXIST)
 	{
-		fprintf(stderr, "rpc_ss_ndr_unmar_union_body: switch %04lx not matched\n", switch_value);
+		fprintf(stderr, "rpc_ss_ndr_unmar_union_body: switch %04x not matched\n", switch_value);
 		fflush(stderr);
 
             RAISE( rpc_x_invalid_tag );

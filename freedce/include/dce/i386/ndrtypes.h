@@ -63,9 +63,9 @@ typedef short int 		ndr_short_int ;
 
 typedef unsigned short int	ndr_ushort_int ;
 
-typedef long int 		ndr_long_int ;
+typedef int      		ndr_long_int ;
 
-typedef unsigned long int 	ndr_ulong_int ;
+typedef unsigned int      	ndr_ulong_int ;
 
 /* 
  * the reps for hyper must match the little-endian NDR rep since

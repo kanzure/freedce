@@ -2,7 +2,7 @@
 include $(top_srcdir)/include.mk
 
 IDL_FLAGS=-I$(IDL_INCLUDE_DIR)/.. -I$(top_builddir)/include $(DCETHREADINCLUDES)
-IDLCC=-no_mepv -cc_cmd "$(CC) -D_BSD $(IDL_FLAGS) $(IDL_CFLAGS) -c" $(IDL_INCS)
+IDLCC=-I../include -no_mepv -cc_cmd "$(CC) -D_BSD $(IDL_FLAGS) $(IDL_CFLAGS) -c" $(IDL_INCS)
 
 libs=$(top_builddir)/dcelib/libdcerpc.la \
 	$(top_builddir)/uuid/libuuid.la -lstdc++ 

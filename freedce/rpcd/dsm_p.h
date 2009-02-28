@@ -84,11 +84,7 @@
 #if defined (vms)
 #   define PAGE_SIZE   512              /* length of system page */
 #else 
-#if defined(__linux__)
-#include <asm/page.h>
-#else
 #   define PAGE_SIZE   1024             /* length of system page */
-#endif
 #endif
 
 #define INFOSZ      256                 /* space reserved for client header info */

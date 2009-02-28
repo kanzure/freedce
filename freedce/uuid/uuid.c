@@ -801,7 +801,7 @@ unsigned32              *status;
 
     UUID_SPRINTF(
         (char *) *uuid_string,
-        "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         uuid->time_low, uuid->time_mid, uuid->time_hi_and_version,
         uuid->clock_seq_hi_and_reserved, uuid->clock_seq_low,
         (unsigned8) uuid->node[0], (unsigned8) uuid->node[1],
