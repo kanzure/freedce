@@ -13,8 +13,8 @@ libdcethreads_la_SOURCES = \
     pthread_dceexc.c
 
 if TARGET_OS_LINUX
-    libdcethreads_la_SOURCES+=pthread_dce_atfork.c 
-#                              pthd4_libc_wrapers.c
+    libdcethreads_la_SOURCES+=pthread_dce_atfork.c \
+                              pthd4_libc_wrapers.c
 
 endif
 

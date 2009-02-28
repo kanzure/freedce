@@ -2724,11 +2724,11 @@ rpc_call_rep_p_t        call;
     {
 #ifndef _PTHREAD_NO_CANCEL_SUPPORT
     		oc = sys_pthread_setcancel(CANCEL_ON);
-        TRY	
+        TRY	{
             sys_pthread_testcancel();
-        CATCH_ALL
+        } CATCH_ALL {
             call->u.server.cancel.had_pending = true;
-        ENDTRY
+        } ENDTRY
     		sys_pthread_setcancel(oc);
 #else
         /*

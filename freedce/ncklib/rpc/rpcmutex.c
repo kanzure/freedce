@@ -440,7 +440,7 @@ int line;
     cp->stats.wait++;
     cond_stats.wait++;
     dbg = RPC_DBG(rpc_es_dbg_mutex, 5);
-    if (dbg)
+    if (1)
     {
         if (! rpc__mutex_lock_assert(mp))
         {
@@ -458,9 +458,9 @@ int line;
         mp->owner = NULL_THREAD;
     }
     mp->is_locked = false;
-    TRY
+    TRY {
         sys_pthread_cond_wait(&cp->c, &mp->m);
-    CATCH_ALL
+    } CATCH_ALL {
         mp->is_locked = true;
         if (dbg)
         {
@@ -469,7 +469,7 @@ int line;
             mp->locker_line = line;
         }
         RERAISE;
-    ENDTRY
+    } ENDTRY
     mp->is_locked = true;
     if (dbg)
     {
