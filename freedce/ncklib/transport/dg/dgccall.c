@@ -1153,7 +1153,7 @@ unsigned32 *st;
     }
     else
     {
-        boolean insert_in_ccallt;
+        boolean insert_in_ccallt = false;
 
         ccall = ccall_reinit(h, options, ifspec, opnum, &insert_in_ccallt, st);
         if (*st != rpc_s_ok)

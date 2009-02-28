@@ -203,7 +203,8 @@ unsigned32              *status;
     loc_uxd_addr.len = sizeof (rpc_uxd_addr_t);
     RPC_SOCKET_FIX_ADDRLEN(&loc_uxd_addr);
 
-    if (getsockname (desc, (struct sockaddr *)&loc_uxd_addr.sa, (int *)&loc_uxd_addr.len) < 0)
+    if (getsockname (desc, (struct sockaddr *)&loc_uxd_addr.sa,
+                     (unsigned int *)&loc_uxd_addr.len) < 0)
     {
         *status = -1;   /* !!! */
         return;

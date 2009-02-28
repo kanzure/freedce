@@ -274,7 +274,7 @@ rpc_dg_pkt_hdr_p_t hdrp;
 
 #else
 
-    RPC__DG_ACT_SEQ_SPRINTF(act_seq_string_buff, "%s, %lu.%u",
+    RPC__DG_ACT_SEQ_SPRINTF(act_seq_string_buff, "%s, %u.%u",
             rpc__uuid_string(&hdrp->actuid), hdrp->seq, hdrp->fragnum);
     return(act_seq_string_buff);
 

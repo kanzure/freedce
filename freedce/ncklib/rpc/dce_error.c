@@ -203,9 +203,9 @@ int                     *status;
     component_name[0] = alphabet[component_code / 40];
 
     if (fname != NULL)
-        sprintf (fname, "%3s", facility_name);
+        sprintf ((char*)fname, "%3s", facility_name);
     if (cname != NULL)
-        sprintf (cname, "%3s", component_name);
+        sprintf ((char*)cname, "%3s", component_name);
 
     sprintf (filename_prefix, "%3s%3s", facility_name, component_name);
 

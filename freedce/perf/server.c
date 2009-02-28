@@ -568,7 +568,7 @@ void rpc__cn_inq_sock_buffsize (
         error_status_t  * /* st */);
 #endif
 
-extern int lookup_name(char *table[], char *s);
+extern unsigned int lookup_name(char *table[], char *s);
 
 int main (argc, argv)
 

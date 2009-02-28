@@ -177,7 +177,7 @@ INTERNAL int is_remote_handle( handle_t h, error_status_t *st )
     *st = rpc_s_ok;
     for ( i=0; i < addr_count; i++ )
     {
-        if(strcmp((char*)client_netaddr,local_netaddr[i]) == 0)
+        if(strcmp((char*)client_netaddr,(char*)local_netaddr[i]) == 0)
         {
             rpc_string_free(&client_netaddr,&status1);
             return(0);

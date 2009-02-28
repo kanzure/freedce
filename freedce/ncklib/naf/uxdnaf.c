@@ -755,7 +755,7 @@ unsigned32              *status;
         return;
     }
 
-    if (strlen(endpoint) > sizeof(uxd_addr->sa.sun_path) - strlen(PIPE_PREFIX))
+    if (strlen((char*)endpoint) > sizeof(uxd_addr->sa.sun_path) - strlen(PIPE_PREFIX))
     {
         *status = rpc_s_invalid_endpoint_format;
         return;
@@ -965,7 +965,7 @@ unsigned32              *status;
         return;
     }
 
-    if (strcmp(".", netaddr) != 0)
+    if (strcmp((char*)".", (char*)netaddr) != 0)
     {
         *status = rpc_s_inval_net_addr;
         return;

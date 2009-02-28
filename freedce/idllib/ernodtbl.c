@@ -2039,13 +2039,13 @@ byte_p_t rpc_ss_inquire_pointer_to_node
 #ifdef IDL_PROTOTYPES
 (
     rpc_ss_node_table_t tab,
-    unsigned long *num,
+    unsigned int *num,
     long *has_been_unmarshalled
 )
 #else
 (tab, num, has_been_unmarshalled)
     rpc_ss_node_table_t tab;
-    unsigned long *num;
+    idl_ulong_int *num;
     long *has_been_unmarshalled;
 #endif
 {

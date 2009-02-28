@@ -1003,7 +1003,7 @@ error_status_t *st;
 
     verify_dsh(dsh);                    /* reality check */
 
-    printf("DSM map; %d initialized pages of %ld bytes; %d allocations pending\n",
+    printf("DSM map; %d initialized pages of %d bytes; %d allocations pending\n",
            dsh->pages, PAGE_SIZE, dsh->pending);
 
     for (map = dsh->map; map != NULL; map = map->link) {    /* for each file chunk */
@@ -1012,7 +1012,7 @@ error_status_t *st;
         this = map->ptr;    /* first block in chunk */
 
         for (;;) {  /* until explicit break at end of chunk */
-            printf("    %p %08x: (page %ld offset %ld) %d bytes ",
+            printf("    %p %08x: (page %d offset %d) %d bytes ",
                    this,this->loc,this->loc/PAGE_SIZE,MOD(this->loc,PAGE_SIZE),this->size);
 
             if (MOD(this->size,8) != 0) printf(" *** NOT 8-BYTE ALIGNED *** ");
@@ -1023,7 +1023,7 @@ error_status_t *st;
 
             next = (block_t *) (((char *)this)+this->size+PREHEADER);   /* find next block */
 
-            if ((char *)next-(char *)map->ptr >= map->size) break;      /* is this the last block? */
+            if ((unsigned)((char *)next-(char *)map->ptr) >= map->size) break;      /* is this the last block? */
             else this = next;   /* if more, iterate with next block */
         }
     }
