@@ -65,8 +65,8 @@ PRIVATE pthread_t rpc_g_null_thread_handle;
  * Some package wide statistics.
  */
 
-INTERNAL rpc_mutex_stats_t mutex_stats = {0};
-INTERNAL rpc_cond_stats_t cond_stats = {0};
+INTERNAL rpc_mutex_stats_t mutex_stats = RPC_MUTEX_STATUS_INITIALIZER;
+INTERNAL rpc_cond_stats_t cond_stats = RPC_COND_STATS_INITIALIZER;
 
 
 /*
@@ -88,14 +88,14 @@ rpc_mutex_p_t mp;
     mp->stats.try_lock = 0;
     mp->stats.unlock = 0;
     mp->stats.init = 1;
-    mp->stats.delete = 0;
+    mp->stats.deletes = 0;
     mp->stats.lock_assert = 0;
     mp->stats.unlock_assert = 0;
     mp->is_locked = false;
     mp->owner = NULL_THREAD;
     mp->locker_file = "never_locked";
     mp->locker_line = 0;
-    pthread_mutex_init(&mp->m, sys_pthread_mutexattr_default);
+    pthread_mutex_init(&mp->m, &sys_pthread_mutexattr_default);
     mutex_stats.init++;
     return(true);
 }
@@ -115,8 +115,8 @@ PRIVATE boolean rpc__mutex_delete
 rpc_mutex_p_t mp;
 #endif
 {
-    mp->stats.delete++;
-    mutex_stats.delete++;
+    mp->stats.deletes++;
+    mutex_stats.deletes++;
     pthread_mutex_destroy(&mp->m);
     return(true);
 }
@@ -379,11 +379,11 @@ rpc_mutex_p_t mp;
 #endif
 {
     cp->stats.init = 1;
-    cp->stats.delete = 0;
+    cp->stats.deletes = 0;
     cp->stats.wait = 0;
     cp->stats.signals = 0;
     cp->mp = mp;
-    sys_pthread_cond_init(&cp->c, sys_pthread_condattr_default);
+    sys_pthread_cond_init(&cp->c, &sys_pthread_condattr_default);
     cond_stats.init++;
     return(true);
 }
@@ -405,8 +405,8 @@ rpc_cond_p_t cp;
 rpc_mutex_p_t mp;
 #endif
 {
-    cp->stats.delete++;
-    cond_stats.delete++;
+    cp->stats.deletes++;
+    cond_stats.deletes++;
     sys_pthread_cond_destroy(&cp->c);
     return(true);
 }
