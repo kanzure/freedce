@@ -80,6 +80,8 @@ static char rcsid [] __attribute__((__unused__)) = "$Id: pthd4_libc_wrapers.c,v 
 const int __dcethread_provide_wrappers = 0;
 #endif
 
+#if USE_CANCELATION_WRAPPER
+ 
 
 /*############################################################################
   NON CANCELABLE SYSTEM CALLS
@@ -297,8 +299,6 @@ NON_CANCELABLE_SYSCALL (pid_t, waitpid,
 
 */
 
-#if USE_CANCELATION_WRAPPER
- 
 #define CANCELABLE_SYSCALL(res_type, name, param_list, params)		\
      res_type								\
   name param_list							\
