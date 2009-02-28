@@ -51,7 +51,7 @@
 **
 */
 
-#define NON_CANCELLABLE_IO_SELECT
+/*#define NON_CANCELLABLE_IO_SELECT*/
 
 #include <commonp.h>
 #include <com.h>
