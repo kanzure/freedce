@@ -1,0 +1,9 @@
+[auto_handle]
+interface lsarpc {
+
+  LsarOpenPolicy(  );
+  LsarOpenPolicy2(  );
+  LsarChangePassword(  );
+  LsarGetUserName(  );
+
+}

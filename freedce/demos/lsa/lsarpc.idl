@@ -1,0 +1,634 @@
+/* 
+ FreeDCE / TNG Local Security Authority Implementation
+ Version 0.0
+
+ Copyright (C) Luke Kenneth Casson Leighton 1996-2001
+ Copyright (C) Paul Ashton		       1997
+ Copyright (C) Elrond			    2000
+ Copyright (C) Matthew Chapman	      1999-2000
+ Copyright (C) Andrew Tridgell	      1992-2000,
+ Copyright (C) Jean Francois Micouleau      1998-2000.
+ Copyright (C) PADL Software Pty Ltd 2001
+ 
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*/
+/*
+**
+**  NAME:
+**
+**      lsarpc.idl
+**
+**  FACILITY:
+**
+**      Local Security Authority
+**
+**  ABSTRACT:
+**
+**  This module contains definitions pertaining to interoperability with
+**  Windows NT RPC clients and servers.
+**
+*/
+
+
+/* LSA IDL Reconstructed by Matt Chapman <matthewc@cse.unsw.edu.au> 
+ *
+ * Modified for use with FreeDCE IDL by Luke Kenneth Casson Leighton
+ */
+
+[ uuid(12345778-1234-abcd-ef00-0123456789ab),
+version(0.0),
+pointer_default(ptr)
+] interface lsarpc
+{
+
+import "wtypes.idl";
+import "winnt.idl";
+
+/* LSA ACE permissions */
+
+const unsigned long POLICY_VIEW_LOCAL_INFORMATION    = 0x00000001;
+const unsigned long POLICY_VIEW_AUDIT_INFORMATION    = 0x00000002;
+const unsigned long POLICY_GET_PRIVATE_INFORMATION   = 0x00000004;
+const unsigned long POLICY_TRUST_ADMIN	       = 0x00000008;
+const unsigned long POLICY_CREATE_ACCOUNT	    = 0x00000010;
+const unsigned long POLICY_CREATE_SECRET	     = 0x00000020;
+const unsigned long POLICY_CREATE_PRIVILEGE	  = 0x00000040;
+const unsigned long POLICY_SET_DEFAULT_QUOTA_LIMITS  = 0x00000080;
+const unsigned long POLICY_SET_AUDIT_REQUIREMENTS    = 0x00000100;
+const unsigned long POLICY_AUDIT_LOG_ADMIN	   = 0x00000200;
+const unsigned long POLICY_SERVER_ADMIN	      = 0x00000400;
+const unsigned long POLICY_LOOKUP_NAMES	      = 0x00000800;
+
+const unsigned long POLICY_ALL_ACCESS = (STANDARD_RIGHTS_REQUIRED	  |
+			    POLICY_VIEW_LOCAL_INFORMATION    |
+			    POLICY_VIEW_AUDIT_INFORMATION    |
+			    POLICY_GET_PRIVATE_INFORMATION   |
+			    POLICY_TRUST_ADMIN	       |
+			    POLICY_CREATE_ACCOUNT	    |
+			    POLICY_CREATE_SECRET	     |
+			    POLICY_CREATE_PRIVILEGE	  |
+			    POLICY_SET_DEFAULT_QUOTA_LIMITS  |
+			    POLICY_SET_AUDIT_REQUIREMENTS    |
+			    POLICY_AUDIT_LOG_ADMIN	   |
+			    POLICY_SERVER_ADMIN	      |
+			    POLICY_LOOKUP_NAMES );
+
+
+const unsigned long POLICY_READ       = (STANDARD_RIGHTS_READ	      |
+			    POLICY_VIEW_AUDIT_INFORMATION    |
+			    POLICY_GET_PRIVATE_INFORMATION);
+
+const unsigned long POLICY_WRITE      = (STANDARD_RIGHTS_WRITE	     |
+			    POLICY_TRUST_ADMIN	       |
+			    POLICY_CREATE_ACCOUNT	    |
+			    POLICY_CREATE_SECRET	     |
+			    POLICY_CREATE_PRIVILEGE	  |
+			    POLICY_SET_DEFAULT_QUOTA_LIMITS  |
+			    POLICY_SET_AUDIT_REQUIREMENTS    |
+			    POLICY_AUDIT_LOG_ADMIN	   |
+			    POLICY_SERVER_ADMIN);
+
+const unsigned long POLICY_EXECUTE    = (STANDARD_RIGHTS_EXECUTE	   |
+			    POLICY_VIEW_LOCAL_INFORMATION    |
+			    POLICY_LOOKUP_NAMES );
+
+typedef [context_handle] HANDLE LSA_HANDLE;
+
+/* Function 0x00 */
+NTSTATUS LsarClose(
+	[in, out] LSA_HANDLE *hnd
+);
+
+/* Function 0x01 */
+NTSTATUS LsarDelete(
+	[in] LSA_HANDLE hnd
+);
+
+/* Function 0x02 */
+NTSTATUS LsarEnumeratePrivileges(
+	[in] LSA_HANDLE hnd,
+	[in, out, ref] ULONG *count,
+	[out, ref] LSA_PRIVILEGES *privs,
+	[in] ULONG size
+);
+
+/* Function 0x03 */
+NTSTATUS LsarQuerySecurityObject(
+	[in] LSA_HANDLE hnd,
+	[in] ULONG info_type,
+	[out, ref] LSA_SECURITY_DESCRIPTOR **sec_info
+);
+
+/* Function 0x04 */
+NTSTATUS LsarSetSecurityObject(
+	[in] LSA_HANDLE hnd,
+	[in] ULONG info_type,
+	[in, ref] LSA_SECURITY_DESCRIPTOR *sec_info
+);
+
+/* Function 0x05 */
+NTSTATUS LsarChangePassword(
+	[in, ref] LSA_UNICODE_STRING *server,
+	[in, ref] LSA_UNICODE_STRING *domain,
+	[in, ref] LSA_UNICODE_STRING *user,
+	[in, ref] LSA_UNICODE_STRING *old_passwd,
+	[in, ref] LSA_UNICODE_STRING *new_passwd
+);
+
+/* Function 0x06 */
+NTSTATUS LsarOpenPolicy(
+	[in, unique, string] WCHAR *server, /* optional */
+	[in, ref] LSA_OBJECT_ATTRIBUTES *attribs,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+typedef enum {
+	PolicyAuditLogInformation = 1,
+	PolicyAuditEventsInformation = 2,
+	PolicyPrimaryDomainInformation = 3,
+	PolicyPdAccountInformation = 4,
+	PolicyAccountDomainInformation = 5,
+	PolicyLsaServerRoleInformation = 6,
+	PolicyReplicaSourceInformation = 7,
+	PolicyDefaultQuotaInformation = 8,
+	PolicyModificationInformation = 9,
+	PolicyAuditFullSetInformation = 10,
+	PolicyAuditFullQueryInformation = 11,
+	PolicyDnsDomainInformation = 12
+} POLICY_INFORMATION_CLASS;
+
+typedef union switch(POLICY_INFORMATION_CLASS level) contents {
+	case PolicyAuditLogInformation: POLICY_AUDIT_LOG_INFO audit_log;
+	case PolicyAuditEventsInformation: POLICY_AUDIT_EVENTS_INFO audit_settings;
+	case PolicyPrimaryDomainInformation: POLICY_PRIMARY_DOMAIN_INFO primary_domain;
+	case PolicyAccountDomainInformation: POLICY_ACCOUNT_DOMAIN_INFO account_domain;
+	case PolicyPdAccountInformation: LSA_UNICODE_STRING account;
+	case PolicyLsaServerRoleInformation: POLICY_LSA_SERVER_ROLE_INFO server_role;
+	case PolicyReplicaSourceInformation: POLICY_REPLICA_SOURCE_INFO replica_source;
+	case PolicyDefaultQuotaInformation: POLICY_DEFAULT_QUOTA_INFO default_quota;
+	case PolicyModificationInformation: POLICY_MODIFICATION_INFO history;
+	case PolicyAuditFullSetInformation: POLICY_AUDIT_FULL_SET_INFO audit_set;
+	case PolicyAuditFullQueryInformation: POLICY_AUDIT_FULL_QUERY_INFO audit_query;
+	case PolicyDnsDomainInformation: POLICY_DNS_DOMAIN_INFO dns_info;
+} POLICY_INFORMATION;
+
+/* Function 0x07 */
+NTSTATUS LsarQueryInformationPolicy(
+	[in] LSA_HANDLE hnd,
+	[in] POLICY_INFORMATION_CLASS level,
+	[out, ref] POLICY_INFORMATION *info
+);
+
+/* Function 0x08 */
+NTSTATUS LsarSetInformationPolicy(
+	[in] LSA_HANDLE hnd,
+	[in] POLICY_INFORMATION_CLASS level,
+	[in, ref] POLICY_INFORMATION *info
+);
+
+/* Function 0x09 */
+NTSTATUS LsarClearAuditLog(
+	[in] LSA_HANDLE hnd
+);
+
+/* Function 0x0a */
+NTSTATUS LsarCreateAccount(
+	[in] LSA_HANDLE hnd_pol,
+	[in, ref] SID *account,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+/* Function 0x0b */
+NTSTATUS LsarEnumerateAccounts(
+	[in] LSA_HANDLE hnd,
+	[in,out, ref] LSA_ENUMERATION_HANDLE *resume_hnd,
+	[out, ref] PSID_ARRAY **accounts,
+	[in] ULONG pref_maxlen
+);
+
+/* Function 0x0c */
+NTSTATUS LsarCreateTrustedDomain(
+	[in] LSA_HANDLE hnd_pol,
+	[in, ref] LSA_TRUST_INFORMATION *domain,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+/* Function 0x0d */
+NTSTATUS LsarEnumerateTrustedDomains(
+	[in] LSA_HANDLE hnd,
+	[in, out, ref] LSA_ENUMERATION_HANDLE *resume_hnd,
+	[out, ref] LSA_REFERENCED_DOMAIN_LIST *domains,
+	[in] ULONG pref_maxlen
+);
+
+/* Function 0x0e */
+NTSTATUS LsarLookupNames(
+	[in] LSA_HANDLE hnd,
+	[in] ULONG count,
+	[in, size_is(count), ref] LSA_UNICODE_STRING *names,
+	[out, ref] LSA_REFERENCED_DOMAIN_LIST *domains,
+	[in, out, ref] LSA_TRANSLATED_SIDS *rids,
+	[in] /* enum */ USHORT level,
+	[in, out, ref] ULONG *num_mapped
+);
+
+/* Function 0x0f */
+NTSTATUS LsarLookupSids(
+	[in] LSA_HANDLE hnd,
+	[in, ref] PSID_ARRAY **sids,
+	[out, ref] LSA_REFERENCED_DOMAIN_LIST *domains,
+	[in, out, ref] LSA_TRANSLATED_NAMES *names,
+	[in] /* enum */ USHORT level,
+	[in, out, ref] ULONG *num_mapped
+);
+
+/* Function 0x10 */
+NTSTATUS LsarCreateSecret(
+	[in] LSA_HANDLE hnd_pol,
+	[in, ref] LSA_UNICODE_STRING *name,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+/* Function 0x11 */
+NTSTATUS LsarOpenAccount(
+	[in] LSA_HANDLE hnd_pol,
+	[in, ref] SID *account,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+/* Function 0x12 */
+NTSTATUS LsarEnumeratePrivilegesAccount(
+	[in] LSA_HANDLE hnd,
+	[out, ref] LUID_AND_ATTRIBUTES_ARRAY * *privs
+);
+
+/* Function 0x13 */
+NTSTATUS LsarAddPrivilegesToAccount(
+	[in] LSA_HANDLE hnd,
+	[in, ref] LUID_AND_ATTRIBUTES_ARRAY * privs
+);
+
+/* Function 0x14 */
+NTSTATUS LsarRemovePrivilegesFromAccount(
+	[in] LSA_HANDLE hnd,
+	[in] char unknown,
+	[in, unique] LUID_AND_ATTRIBUTES_ARRAY * privs
+);
+
+/* Function 0x15 */
+NTSTATUS LsarGetQuotasForAccount(
+	[in] LSA_HANDLE hnd,
+	[out, ref] POLICY_DEFAULT_QUOTA_INFO *quotas
+);
+
+/* Function 0x16 */
+NTSTATUS LsarSetQuotasForAccount(
+	[in] LSA_HANDLE hnd,
+	[in, ref] POLICY_DEFAULT_QUOTA_INFO *quotas
+);
+
+/* Function 0x17 */
+NTSTATUS LsarGetSystemAccessAccount(
+	[in] LSA_HANDLE hnd,
+	[out, ref] ULONG *rid
+);
+
+/* Function 0x18 */
+NTSTATUS LsarSetSystemAccessAccount(
+	[in] LSA_HANDLE hnd,
+	[in] ULONG rid
+);
+
+/* Function 0x19 */
+NTSTATUS LsarOpenTrustedDomain(
+	[in] LSA_HANDLE hnd_pol,
+	[in, ref] SID *sid,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+typedef enum {
+	TrustedDomainNameInformation = 1,
+	TrustedControllersInformation = 2,
+	TrustedPosixOffsetInformation = 3,
+	TrustedPasswordInformation = 4,
+	TrustedDomainInformationBasic = 5,
+	TrustedDomainInformationEx = 6,
+	TrustedDomainAuthInformation = 7,
+	TrustedDomainFullInformation = 8,
+	/* a wild guess */
+	TrustedDomainSecurityDescriptor = 9,
+	TrustedDomainPrivateInformation = 10
+} TRUSTED_INFORMATION_CLASS, *PTRUSTED_INFORMATION_CLASS;
+
+typedef union switch(TRUSTED_INFORMATION_CLASS level) contents {
+	case TrustedDomainNameInformation: LSA_UNICODE_STRING name;
+	case TrustedControllersInformation: LSA_UNICODE_STRING_ARRAY names;
+	case TrustedPosixOffsetInformation: TRUSTED_POSIX_OFFSET_INFO posix;
+	case TrustedPasswordInformation: TRUSTED_PASSWORD_INFO secret;
+	case TrustedDomainInformationBasic: TRUSTED_DOMAIN_INFORMATION_BASIC basic;
+	case TrustedDomainInformationEx: TRUSTED_DOMAIN_INFORMATION_EX ex;
+	case TrustedDomainAuthInformation: TRUSTED_DOMAIN_AUTH_INFORMATION auth;
+	case TrustedDomainFullInformation: TRUSTED_DOMAIN_FULL_INFORMATION full;
+	/* wild guess */
+	case TrustedDomainSecurityDescriptor: LSA_SECURITY_DESCRIPTOR sd;
+	case TrustedDomainPrivateInformation: TRUSTED_DOMAIN_PRIVATE_INFORMATION priv;
+} TRUSTED_DOMAIN_INFORMATION;
+typedef TRUSTED_DOMAIN_INFORMATION *PTRUSTED_DOMAIN_INFOMATION;
+
+/* Function 0x1a */
+NTSTATUS LsarQueryInfoTrustedDomain(
+	[in] LSA_HANDLE hnd,
+	[in] TRUSTED_INFORMATION_CLASS level,
+	[out, ref] TRUSTED_DOMAIN_INFORMATION *info
+);
+
+/* Function 0x1b */
+NTSTATUS LsarSetInformationTrustedDomain(
+	[in] LSA_HANDLE hnd,
+	[in] TRUSTED_INFORMATION_CLASS level,
+	[in, ref] TRUSTED_DOMAIN_INFORMATION *info
+);
+
+/* Function 0x1c */
+NTSTATUS LsarOpenSecret(
+	[in] LSA_HANDLE hnd_pol,
+	[in, ref] LSA_UNICODE_STRING *name,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+/* Function 0x1d */
+/* CHECK: are these unicode strings or strings? */
+NTSTATUS LsarSetSecret(
+	[in] LSA_HANDLE hnd,
+	[in, unique] LSA_SECRET *new_val,
+	[in, unique] LSA_SECRET *old_val
+);
+
+/* Function 0x1e */
+NTSTATUS LsarQuerySecret(
+	[in] LSA_HANDLE hnd,
+	[in, out, unique] LSA_SECRET *curr_val,
+	[in, out, unique] LARGE_INTEGER *curr_mtime,
+	[in, out, unique] LSA_SECRET *old_val,
+	[in, out, unique] LARGE_INTEGER *old_mtime
+);
+
+/* Function 0x1f */
+NTSTATUS LsarLookupPrivilegeValue(
+	[in] LSA_HANDLE hnd,
+	[in, ref] LSA_UNICODE_STRING *name,
+	[out, ref] LUID *value
+);
+
+/* Function 0x20 */
+NTSTATUS LsarLookupPrivilegeName(
+	[in] LSA_HANDLE hnd,
+	[in, ref] LUID *value,
+	[out, ref] LSA_UNICODE_STRING **name
+);
+
+/* Function 0x21 */
+NTSTATUS LsarLookupPrivilegeDisplayName(
+	[in] LSA_HANDLE hnd,
+	[in, ref] LSA_UNICODE_STRING *name,
+	[in] USHORT unknown,
+	[in] USHORT size,
+	[out, ref] LSA_UNICODE_STRING **disp_name,
+	[out, ref] USHORT *size_needed
+);
+
+/* Function 0x22 */
+NTSTATUS LsarDeleteObject(
+	[in] LSA_HANDLE hnd
+);
+
+/* Function 0x23 */
+NTSTATUS LsarEnumerateAccountsWithUserRight(
+	[in] LSA_HANDLE hnd,
+	[in, unique] LSA_UNICODE_STRING *rights,
+	[out, ref] LSA_UNICODE_STRING_ARRAY *accounts
+);
+
+/* Function 0x24 */
+NTSTATUS LsarEnumerateAccountRights(
+	[in] LSA_HANDLE hnd,
+	[in, ref] SID *account,
+	[out, ref] LSA_UNICODE_STRING_ARRAY *rights
+);
+
+/* Function 0x25 */
+NTSTATUS LsarAddAccountRights(
+	[in] LSA_HANDLE hnd,
+	[in, ref] SID *account,
+	[in, ref] LSA_UNICODE_STRING_ARRAY *rights
+);
+
+/* Function 0x26 */
+NTSTATUS LsarRemoveAccountRights(
+	[in] LSA_HANDLE hnd,
+	[in, ref] SID *account,
+	[in] BOOLEAN remove_all,
+	[in, ref] LSA_UNICODE_STRING_ARRAY *rights
+);
+
+/* Function 0x27 */
+NTSTATUS LsarQueryTrustedDomainInfo(
+	[in] LSA_HANDLE hnd,
+	[in, ref] SID *sid,
+	[in] TRUSTED_INFORMATION_CLASS level,
+	[out, ref] TRUSTED_DOMAIN_INFORMATION *info
+);
+
+/* Function 0x28 */
+NTSTATUS LsarSetTrustedDomainInfo(
+	[in] LSA_HANDLE hnd,
+	[in, ref] SID *sid,
+	[in] TRUSTED_INFORMATION_CLASS level,
+	[in, ref] TRUSTED_DOMAIN_INFORMATION *info
+);
+
+/* Function 0x29 */
+NTSTATUS LsarDeleteTrustedDomain(
+	[in] LSA_HANDLE hnd,
+	[in, ref] SID *sid
+);
+
+/* Function 0x2a */
+NTSTATUS LsarStorePrivateData(
+	[in] LSA_HANDLE hnd,
+	[in, ref] LSA_UNICODE_STRING *key,
+	[in, unique] LSA_SECRET **data
+);
+
+/* Function 0x2b */
+NTSTATUS LsarRetrievePrivateData(
+	[in] LSA_HANDLE hnd,
+	[in, ref] LSA_STRING *key,
+	[in, out, ref] LSA_SECRET **data
+);
+
+/* Function 0x2c */
+NTSTATUS LsarOpenPolicy2(
+	[in, unique, string] WCHAR *server,
+	[in, ref] LSA_OBJECT_ATTRIBUTES *attribs,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *hnd
+);
+
+/* Function 0x2d */
+NTSTATUS LsarGetUserName(
+	[in, unique, string] WCHAR *server,
+	[in, out, ref] LSA_UNICODE_STRING **user,
+	[in, out, unique] LSA_UNICODE_STRING **domain
+);
+
+/* New for Windows 2000 */
+
+/* Function 0x2e */
+NTSTATUS Function_2e(
+	[in] LSA_HANDLE hnd,
+	[in] POLICY_INFORMATION_CLASS level,
+	[out, ref] POLICY_INFORMATION *info);
+
+/* Function 0x2f */
+NTSTATUS Function_2f(
+	[in] LSA_HANDLE hnd,
+	[in] POLICY_INFORMATION_CLASS level,
+	[in, ref] POLICY_INFORMATION *info);
+
+/*
+ * I am confused between the levels of indirection on
+ * non-context handle arguments as outputted by muddle
+ * and by lkcl's decoded IDLs. 
+ */
+
+/* Function 0x30 */
+NTSTATUS LsarQueryTrustedDomainInfoByName(
+	[in] LSA_HANDLE handle,
+	[in, ref] LSA_UNICODE_STRING *name,
+	[in] TRUSTED_INFORMATION_CLASS level,
+	[out, ref] TRUSTED_DOMAIN_INFORMATION *info);
+
+/* Function 0x31 */
+NTSTATUS LsarSetTrustedDomainInfoByName(
+	[in] LSA_HANDLE handle,
+	[in, ref] LSA_UNICODE_STRING *name,
+	[in] TRUSTED_INFORMATION_CLASS level,
+	[in, ref] TRUSTED_DOMAIN_INFORMATION *info);
+
+/* Function 0x32 */
+NTSTATUS LsarEnumerateTrustedDomainsEx(
+	[in] LSA_HANDLE hnd,
+	[in, out, ref] LSA_ENUMERATION_HANDLE *resume_hnd,
+	[out, ref] TRUSTED_DOMAIN_INFORMATION_LIST_EX *domains,
+	[in] ULONG pref_maxlen
+);
+
+/* Function 0x33 */
+NTSTATUS LsarCreateTrustedDomainEx(
+	[in] LSA_HANDLE hnd,
+	[in, ref] TRUSTED_DOMAIN_INFORMATION_EX *info,
+	[in, ref] TRUSTED_DOMAIN_AUTH_INFORMATION *auth,
+	[in] ACCESS_MASK mask,
+	[out] LSA_HANDLE *tdHnd);
+
+/* Function 0x34 */
+/* Wild guess */
+NTSTATUS LsarCloseTrustedDomainEx(
+	[in, out] LSA_HANDLE *tdHnd
+);
+
+typedef enum {
+	PolicyDomainQualityOfServiceInformation = 1,
+	PolicyDomainEfsInformation = 2,
+	PolicyDomainKerberosTicketInformation = 3
+} POLICY_DOMAIN_INFORMATION_CLASS, *PPOLICY_DOMAIN_INFORMATION_CLASS;
+
+typedef union switch(POLICY_DOMAIN_INFORMATION_CLASS level) contents {
+	case PolicyDomainQualityOfServiceInformation: POLICY_DOMAIN_QUALITY_OF_SERVICE_INFO qos;
+	case PolicyDomainEfsInformation: POLICY_DOMAIN_EFS_INFO efs;
+	case PolicyDomainKerberosTicketInformation: POLICY_DOMAIN_KERBEROS_TICKET_INFO krb;
+} POLICY_DOMAIN_INFORMATION;
+typedef POLICY_DOMAIN_INFORMATION *PPOLICY_DOMAIN_INFORMATION;
+
+/* Function 0x35 */
+NTSTATUS LsarQueryDomainInformationPolicy(
+	[in] LSA_HANDLE handle,
+	[in] POLICY_DOMAIN_INFORMATION_CLASS level,
+	[out, ref] POLICY_INFORMATION *info);
+
+/* Function 0x36 */
+NTSTATUS LsarSetDomainInformationPolicy(
+	[in] LSA_HANDLE handle,
+	/* refparam or no */
+	[in] POLICY_INFORMATION_CLASS level,
+	[in, ref] POLICY_INFORMATION *info);
+
+/* Function 0x37 */
+NTSTATUS LsarOpenTrustedDomainByName(
+	[in] LSA_HANDLE handle,
+	[in, ref] LSA_UNICODE_STRING *name,
+	[in] ACCESS_MASK access,
+	[out] LSA_HANDLE *phnd);
+
+/* Function 0x38 */
+NTSTATUS Function_38(
+	[in] LSA_HANDLE handle,
+	[in] USHORT flag,
+	[in, ref] LSA_SECURITY_DESCRIPTOR *sd,
+	[out, ref] LSA_SECURITY_DESCRIPTOR **psd);
+
+/* Function 0x39 */
+NTSTATUS LsarLookupSids2(
+	[in] LSA_HANDLE handle,
+	[in, ref] PSID_ARRAY **sids,
+	[out, ref] LSA_REFERENCED_DOMAIN_LIST *domains,
+	[in, out, ref] LSA_TRANSLATED_NAMES_EX *names,
+	[in] /* enum */ USHORT level,
+	[in, out, ref] ULONG *num_mapped,
+	[in] ULONG unknown1,
+	[in] ULONG unknown2);
+
+/* Function 0x3a */
+/* wild guess */
+NTSTATUS LsarLookupNames2(
+	[in] LSA_HANDLE hnd,
+	[in] ULONG count,
+	[in, size_is(count), ref] LSA_UNICODE_STRING *names,
+	[out, ref] LSA_REFERENCED_DOMAIN_LIST *domains,
+	[in, out, ref] LSA_TRANSLATED_SIDS_EX *rids,
+	[in] /* enum */ USHORT level,
+	[in, out, ref] ULONG *num_mapped,
+	[in] ULONG unknown1,
+	[in] ULONG unknown2
+);
+
+/* Function 0x3b */
+NTSTATUS Function_3b(
+	[in] LSA_HANDLE hnd,
+	[in, ref] TRUSTED_DOMAIN_INFORMATION_EX *info,
+	[in, ref] LSA_SECURITY_DESCRIPTOR *sd,
+	[in] ULONG unknown,
+	[out] LSA_HANDLE *h2);
+
+
+}

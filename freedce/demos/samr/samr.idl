@@ -1,0 +1,880 @@
+[ uuid(12345778-1234-abcd-ef00-0123456789ac),
+  version(1.0),
+  pointer_default(unique)
+] interface samr
+{
+  const long MAX_SIZE = 1000;
+  typedef [context_handle] void *connect_hnd_t;
+  typedef [context_handle] void *domain_hnd_t;
+  typedef [context_handle] void *user_hnd_t;
+  typedef [context_handle] void *group_hnd_t;
+  typedef [context_handle] void *alias_hnd_t;
+  typedef [context_handle] void *obj_hnd_t;
+  typedef [context_handle] void *unknown_hnd_t;
+
+  /* Function 0x00 */
+  long SamrConnect(
+        [in] handle_t h ,
+        [in]  unsigned short server,
+       [out] connect_hnd_t *hnd,
+        [in] long access
+  );
+
+  /* Function 0x01 */
+  long SamrCloseHandle(
+    [in,out] connect_hnd_t *hnd
+  );
+
+  typedef struct {
+    long size;
+    [size_is(size), ptr]  char *buffer;
+  } BUFFER;
+
+  /* Function 0x02 */
+  long SamrSetSecurityObject(
+        [in] obj_hnd_t hnd,
+        [in] long info_type,
+        [in, ref] BUFFER *sec_info
+  );
+
+  /* Function 0x03 */
+  long SamrQuerySecurityObject(
+        [in] obj_hnd_t hnd,
+        [in] long info_type,
+       [out, ref] BUFFER **sec_info
+  );
+
+  /* Function 0x04 */
+  long SamrShutdownSamServer(
+        [in] connect_hnd_t hnd
+  );
+
+  typedef struct {
+    short length;
+    short size;
+    [size_is(size / 2), length_is(length / 2), ptr] unsigned short *string;
+  } UNICODE_STRING;
+
+  typedef struct {
+    char value[6];
+  } SID_IDENTIFIER_AUTHORITY;
+
+  typedef struct {
+    char revision;
+    small subauth_count;
+    SID_IDENTIFIER_AUTHORITY authority;
+    [size_is(subauth_count)] long subauth[];
+  } SID;
+
+  /* Function 0x05 */
+  long SamrLookupDomainInSamServer(
+        [in] connect_hnd_t hnd,
+        [in, ref] UNICODE_STRING *domain,
+       [out, ref] SID **sid
+  );
+
+  typedef struct {
+    long index;
+    UNICODE_STRING name;
+  } IDX_AND_NAME;
+
+  typedef struct {
+    long count;
+    [size_is(count), ref]  IDX_AND_NAME *entry;
+  } IDX_AND_NAME_ARRAY;
+
+  /* Function 0x06 */
+  long SamrEnumerateDomainsInSamServer(
+        [in] connect_hnd_t hnd,
+    [in,out, ref] long *resume_hnd,
+       [out, ref] IDX_AND_NAME_ARRAY **domains,
+        [in] long pref_maxlen,
+       [out, ref] long *entries
+  );
+
+  /* Function 0x07 */
+  long SamrOpenDomain(
+        [in] connect_hnd_t sam_hnd,
+        [in] long access,
+        [in, ref] SID *domain,
+       [out] domain_hnd_t *hnd
+  );
+
+  typedef struct {
+    long low;
+    long high;
+  } NTTIME;
+
+  typedef struct {
+    short min_pwd_len;
+    short pwd_history_len;
+    long unknown;
+    NTTIME max_pwd_age;
+    NTTIME min_pwd_age;
+  } DOMAIN_INFO_1;
+
+  typedef struct {
+    NTTIME unknown1;
+    UNICODE_STRING unknown2;
+    UNICODE_STRING domain;
+    UNICODE_STRING controller;
+    NTTIME seq_no;
+    long unknown3;
+    long unknown4;
+    char unknown5;
+    long num_users;
+    long num_groups;
+    long num_aliases;
+  } DOMAIN_INFO_2;
+
+  typedef struct {
+    NTTIME max_pwd_age;
+    NTTIME min_pwd_age;
+  } DOMAIN_INFO_8;
+
+  typedef struct {
+    hyper value;
+  } LARGE_INTEGER;
+
+  typedef struct {
+    LARGE_INTEGER unknown1;
+    LARGE_INTEGER unknown2;
+    short unknown3;
+  } REPLICATION_STATUS;
+
+  typedef struct {
+    DOMAIN_INFO_2 info;
+    REPLICATION_STATUS repl;
+  } DOMAIN_INFO_11;
+
+  typedef struct {
+    NTTIME unknown1;
+    NTTIME unknown2;
+    NTTIME seq_no;
+  } DOMAIN_INFO_13;
+
+  typedef [switch_type(unsigned short)] union {
+    [case(1)] DOMAIN_INFO_1 di1;
+    [case(2)] DOMAIN_INFO_2 di2;
+    [case(3)] NTTIME unknown1;
+    [case(4)] UNICODE_STRING unknown2;
+    [case(5)] UNICODE_STRING domain;
+    [case(6)] UNICODE_STRING controller;
+    [case(7)] /* enum */ unsigned short unknown3;
+    [case(8)] DOMAIN_INFO_8 di8;
+    [case(9)] /* enum */ unsigned short unknown4;
+    [case(11)] DOMAIN_INFO_11 di11;
+    [case(12)] REPLICATION_STATUS repl;
+    [case(13)] DOMAIN_INFO_13 di13;
+  } DOMAIN_INFO;
+
+  /* Function 0x08 */
+  long SamrQueryInformationDomain(
+        [in] domain_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+       [out, switch_is(level)] DOMAIN_INFO *info
+  );
+
+  /* Function 0x09 */
+  long SamrSetInformationDomain(
+        [in] domain_hnd_t hnd,
+        [in] /* enum */ unsigned short level,
+        [in, ref, switch_is(level)] DOMAIN_INFO *info
+  );
+
+  /* Function 0x0a */
+  long SamrCreateGroupInDomain(
+        [in] domain_hnd_t hnd_dom,
+        [in, ref] UNICODE_STRING *name,
+        [in] long access,
+       [out] group_hnd_t *hnd,
+       [out, ref] long *rid
+  );
+
+  /* Function 0x0b */
+  long SamrEnumerateGroupsInDomain(
+        [in] domain_hnd_t hnd,
+    [in,out, ref] long *resume_hnd,
+        [in] long mask,
+       [out, ref] IDX_AND_NAME_ARRAY **groups,
+        [in] long pref_maxlen,
+       [out, ref] long *entries
+  );
+
+  /* Function 0x0c */
+  long SamrCreateUserInDomain(
+        [in] domain_hnd_t hnd_dom,
+        [in, ref] UNICODE_STRING *name,
+        [in] long access,
+       [out] user_hnd_t *hnd,
+       [out, ref] long *rid
+  );
+
+  /* Function 0x0d */
+  long SamrEnumerateUsersInDomain(
+        [in] domain_hnd_t hnd,
+    [in,out, ref] long *resume_hnd,
+        [in] long mask,
+       [out, ref] IDX_AND_NAME_ARRAY **groups,
+        [in] long pref_maxlen,
+       [out, ref] long *entries
+  );
+
+  /* Function 0x0e */
+  long SamrCreateAliasInDomain(
+        [in] domain_hnd_t hnd_dom,
+        [in, ref] UNICODE_STRING *name,
+        [in] long access,
+       [out] alias_hnd_t *hnd,
+       [out, ref] long *rid
+  );
+
+  /* Function 0x0f */
+  long SamrEnumerateAliasesInDomain(
+        [in] domain_hnd_t hnd,
+    [in,out, ref] long *resume_hnd,
+        [in] long mask,
+       [out, ref] IDX_AND_NAME_ARRAY **groups,
+        [in] long pref_maxlen,
+       [out, ref] long *entries
+  );
+
+  typedef struct {
+     [unique] SID *sid;
+  } PSID;
+
+  typedef struct {
+    long count;
+    [size_is(count), unique]  PSID *sids;
+  } PSID_ARRAY;
+
+  typedef struct {
+    long count;
+    [size_is(count), unique]  long *value;
+  } INDEX_ARRAY;
+
+  /* Function 0x10 */
+  long SamrGetAliasMembersip(
+        [in] alias_hnd_t hnd,
+        [in, ref] PSID_ARRAY *sids,
+       [out, ref] INDEX_ARRAY *aliases
+  );
+
+  /* Function 0x11 */
+  long SamrLookupNamesInDomain(
+        [in] domain_hnd_t hnd,
+        [in] long count,
+         /*max_is(MAX_SIZE) */ [in, ref, size_is(count)] UNICODE_STRING *names,
+       [out, ref] INDEX_ARRAY *rids,
+       [out, ref] INDEX_ARRAY *types
+  );
+
+  typedef struct {
+    long count;
+    [size_is(count), unique]  UNICODE_STRING *string;
+  } UNICODE_STRING_ARRAY;
+
+  /* Function 0x12 */
+  long SamrLookupIdsInDomain(
+        [in] domain_hnd_t hnd,
+        [in] long count,
+         /*max_is(MAX_SIZE), */ [in, ref, size_is(count)] long *rids,
+       [out, ref] UNICODE_STRING_ARRAY *names,
+       [out, ref] INDEX_ARRAY *types
+  );
+
+  /* Function 0x13 */
+  long SamrOpenGroup(
+        [in] domain_hnd_t hnd_dom,
+        [in] long access,
+        [in] long rid,
+       [out] group_hnd_t *hnd
+  );
+
+  typedef struct {
+    UNICODE_STRING name;
+    long rid;
+    long attrib;
+    UNICODE_STRING desc;
+  } GROUP_INFO_1;
+
+  typedef [switch_type(unsigned short)] union {
+    [case(1)] GROUP_INFO_1 gi1;
+    [case(2)] UNICODE_STRING name;
+    [case(3)] long attrib;
+    [case(4)] UNICODE_STRING desc;
+  } GROUP_INFO;
+
+  /* Function 0x14 */
+  long SamrQueryInformationGroup(
+        [in] group_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+       [out, ref, switch_is(level)] GROUP_INFO *info
+  );
+
+  /* Function 0x15 */
+  long SamrSetInformationGroup(
+        [in] group_hnd_t hnd,
+        [in] /* enum */ unsigned short level,
+        [in, ref, switch_is(level)] GROUP_INFO *info
+  );
+
+  /* Function 0x16 */
+  long SamrAddMemberToGroup(
+        [in] group_hnd_t hnd,
+        [in] long group,
+        [in] long rid
+  );
+
+  /* Function 0x17 */
+  long SamrDeleteGroup(
+        [in] group_hnd_t hnd
+  );
+
+  /* Function 0x18 */
+  long SamrRemoveMemberFromGroup(
+        [in] group_hnd_t hnd,
+        [in] long group,
+        [in] long rid
+  );
+
+  typedef struct {
+    long count;
+    [size_is(count), ptr]  long *rid;
+    [size_is(count), ptr]  long *types;
+  } MEMBER_ARRAY;
+
+  /* Function 0x19 */
+  long SamrGetMembersInGroup(
+        [in] group_hnd_t hnd,
+       [out, ref] MEMBER_ARRAY **members
+  );
+
+  /* Function 0x1a */
+  long SamrSetMemberAttributesOfGroup(
+        [in] group_hnd_t hnd,
+        [in] long attrib
+  );
+
+  /* Function 0x1b */
+  long SamrOpenAlias(
+        [in] domain_hnd_t hnd_dom,
+        [in] long access,
+        [in] long rid,
+       [out] alias_hnd_t *hnd
+  );
+
+  typedef struct {
+    UNICODE_STRING name;
+    long rid;
+    UNICODE_STRING desc;
+  } ALIAS_INFO_1;
+
+  typedef [switch_type(unsigned short)] union {
+    [case(1)] ALIAS_INFO_1 ai1;
+    [case(2)] UNICODE_STRING name;
+    [case(3)] UNICODE_STRING desc;
+  } ALIAS_INFO;
+
+  /* Function 0x1c */
+  long SamrQueryInformationAlias(
+        [in] alias_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+       [out, ref, switch_is(level)] ALIAS_INFO *info
+  );
+
+  /* Function 0x1d */
+  long SamrSetInformationAlias(
+        [in] alias_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+        [in, ref, switch_is(level)] ALIAS_INFO *info
+  );
+
+  /* Function 0x1e */
+  long SamrDeleteAlias(
+        [in] alias_hnd_t hnd
+  );
+
+  /* Function 0x1f */
+  long SamrAddMemberToAlias(
+        [in] alias_hnd_t hnd,
+        [in, ref] SID *member
+  );
+
+  /* Function 0x20 */
+  long SamrRemoveMemberFromAlias(
+        [in] alias_hnd_t hnd,
+        [in, ref] SID *member
+  );
+
+  /* Function 0x21 */
+  long SamrGetMembersInAlias(
+        [in] alias_hnd_t hnd,
+       [out, ref] PSID_ARRAY *members
+  );
+
+  /* Function 0x22 */
+  long SamrOpenUser(
+        [in] domain_hnd_t hnd_dom,
+        [in] long access,
+        [in] long rid,
+       [out] user_hnd_t *hnd
+  );
+
+  /* Function 0x23 */
+  long SamrDeleteUser(
+        [in] user_hnd_t hnd
+  );
+
+  typedef struct {
+    UNICODE_STRING acct_name;
+    UNICODE_STRING full_name;
+    long acct_ctrl;
+    UNICODE_STRING home;
+    UNICODE_STRING script;
+  } USER_INFO_1;
+
+  typedef struct {
+    UNICODE_STRING acct_name;
+    UNICODE_STRING full_name;
+    short bad_pwd_count;
+    short logon_count;
+  } USER_INFO_2;
+
+  typedef struct {
+    short divisions;
+    /* [size_is(1260)] */[size_is(divisions), ptr]  char *hours;
+  } LOGON_HOURS;
+
+  typedef struct {
+    UNICODE_STRING acct_name;
+    UNICODE_STRING full_name;
+    long user_rid;
+    long group_rid;
+    UNICODE_STRING home;
+    UNICODE_STRING home_drive;
+    UNICODE_STRING script;
+    UNICODE_STRING acct_desc;
+    UNICODE_STRING workstations;
+    NTTIME logon_time;
+    NTTIME logoff_time;
+    NTTIME pwd_last_set_time;
+    NTTIME pwd_can_change_time;
+    NTTIME pwd_must_change_time;
+    LOGON_HOURS hours;
+    short logon_count;
+    short bad_pw_count;
+    long acct_ctrl;
+  } USER_INFO_3;
+
+  typedef struct {
+    UNICODE_STRING acct_name;
+    UNICODE_STRING full_name;
+    long user_rid;
+    long group_rid;
+    short country;
+    short codepage;
+    UNICODE_STRING home;
+    UNICODE_STRING home_drive;
+    UNICODE_STRING script;
+    UNICODE_STRING acct_desc;
+    UNICODE_STRING workstations;
+    NTTIME logon_time;
+    NTTIME logoff_time;
+    LOGON_HOURS hours;
+    short bad_pwd_count;
+    short logon_count;
+    NTTIME pwd_last_set_time;
+    NTTIME acct_expiry_time;
+    long acct_ctrl;
+  } USER_INFO_5;
+
+  typedef struct {
+    UNICODE_STRING acct_name;
+    UNICODE_STRING full_name;
+  } USER_INFO_6;
+
+  typedef struct {
+    char hash[16];
+  } CRYPT_HASH;
+
+  typedef struct {
+    CRYPT_HASH nt_hash;
+    CRYPT_HASH lm_hash;
+    char unknown1;
+    char unknown2;
+    char unknown3;
+  } USER_INFO_18;
+
+  typedef struct {
+    long acct_ctrl;
+    NTTIME logon_time;
+    NTTIME logoff_time;
+    short bad_pwd_count;
+    short logon_count;
+  } USER_INFO_19;
+
+  typedef struct {
+    NTTIME logon_time;
+    NTTIME logoff_time;
+    NTTIME kickoff_time;
+    NTTIME pwd_last_set_time;
+    NTTIME pwd_can_change_time;
+    NTTIME pwd_must_change_time;
+    UNICODE_STRING acct_name;
+    UNICODE_STRING full_name;
+    UNICODE_STRING home;
+    UNICODE_STRING home_drive;
+    UNICODE_STRING script;
+    UNICODE_STRING profile;
+    UNICODE_STRING acct_desc;
+    UNICODE_STRING workstations;
+    UNICODE_STRING comment;
+    UNICODE_STRING parameters;
+    UNICODE_STRING reserved1;
+    UNICODE_STRING reserved2;
+    UNICODE_STRING reserved3;
+    BUFFER sec_desc;
+    long user_rid;
+    long group_rid;
+    long acct_ctrl;
+    long unknown1;
+    LOGON_HOURS hours;
+    short bad_pwd_count;
+    short logon_count;
+    short country;
+    short codepage;
+    char nt_pwd_set;
+    char lm_pwd_set;
+    char pwd_expired;
+    char unknown2;
+  } USER_INFO_21;
+
+  typedef struct {
+    USER_INFO_21 info;
+    LARGE_INTEGER revision;
+  } USER_INFO_22;
+
+  typedef struct {
+    char password[516];
+  } CRYPT_PASSWORD;
+
+  typedef struct {
+    USER_INFO_21 info;
+    CRYPT_PASSWORD pwd;
+  } USER_INFO_23;
+
+  typedef struct {
+    CRYPT_PASSWORD pwd;
+    char unknown;
+  } USER_INFO_24;
+
+  typedef [switch_type(unsigned short)] union {
+    [case(1)] USER_INFO_1 ui1;
+    [case(2)] USER_INFO_2 ui2;
+    [case(3)] USER_INFO_3 ui3;
+    [case(4)] LOGON_HOURS hours;
+    [case(5)] USER_INFO_5 ui5;
+    [case(6)] USER_INFO_6 ui6;
+    [case(7)] UNICODE_STRING full_name;
+    [case(8)] UNICODE_STRING acct_desc;
+    [case(9)] long unknown1;
+    [case(10)] USER_INFO_6 ui10;
+    [case(11)] UNICODE_STRING home;
+    [case(12)] UNICODE_STRING home_drive;
+    [case(13)] UNICODE_STRING script;
+    [case(14)] UNICODE_STRING workstations;
+    [case(16)] long unknown2;
+    [case(17)] NTTIME unknown3;
+    [case(18)] USER_INFO_18 ui18;
+    [case(19)] USER_INFO_19 ui19;
+    [case(20)] UNICODE_STRING profile;
+    [case(21)] USER_INFO_21 ui21;
+    [case(22)] USER_INFO_22 ui22;
+    [case(23)] USER_INFO_23 ui23;
+    [case(24)] USER_INFO_24 ui24;
+  } USER_INFO;
+
+  /* Function 0x24 */
+  long SamrQueryInformationUser(
+        [in] user_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+       [out, ref, switch_is(level)] USER_INFO *info
+  );
+
+  /* Function 0x25 */
+  long SamrSetInformationUser(
+        [in] user_hnd_t hnd,
+        [in] /* enum */ unsigned short level,
+        [in, ref, switch_is(level)] USER_INFO *info
+  );
+
+  /* Function 0x26 */
+  long SamrChangePasswordUser(
+        [in] user_hnd_t hnd,
+        [in] char unknown1,
+        [in, unique]  CRYPT_HASH *hash1,
+        [in, unique]  CRYPT_HASH *hash2,
+        [in] char unknown2,
+        [in, unique]  CRYPT_HASH *hash3,
+        [in, unique]  CRYPT_HASH *hash4,
+        [in] char unknown3,
+        [in, unique]  CRYPT_HASH *hash5,
+        [in] char unknown4,
+        [in, unique]  CRYPT_HASH *hash6
+  );
+
+  typedef struct {
+    long rid;
+    long attrib;
+  } USER_GROUP;
+
+  typedef struct {
+    long count;
+    [size_is(count), unique]  USER_GROUP *groups;
+  } USER_GROUP_ARRAY;
+
+  /* Function 0x27 */
+  long SamrGetGroupsForUser(
+        [in] user_hnd_t hnd,
+       [out, ref] USER_GROUP_ARRAY **groups
+  );
+
+  typedef struct {
+    long index;
+    long user_rid;
+    long acct_ctrl;
+    UNICODE_STRING acct_name;
+    UNICODE_STRING full_name;
+    UNICODE_STRING acct_desc;
+  } USER_DISPINFO_1;
+
+  typedef struct {
+    long count;
+    [size_is(count), ptr]  USER_DISPINFO_1 *users;
+  } USER_DISPINFO_1_ARRAY;
+
+  typedef struct {
+    long index;
+    long user_rid;
+    long acct_ctrl;
+    UNICODE_STRING acct_name;
+    UNICODE_STRING acct_desc;
+  } USER_DISPINFO_2;
+
+  typedef struct {
+    long count;
+    [size_is(count), ptr]  USER_DISPINFO_2 *users;
+  } USER_DISPINFO_2_ARRAY;
+
+  typedef struct {
+    long index;
+    long rid;
+    long attrib;
+    UNICODE_STRING name;
+    UNICODE_STRING desc;
+  } GROUP_DISPINFO;
+
+  typedef struct {
+    long count;
+    [size_is(count), ptr]  GROUP_DISPINFO *groups;
+  } GROUP_DISPINFO_ARRAY;
+
+  typedef struct {
+    short length;
+    short size;
+    [size_is(size), length_is(length), ptr]  char *string;
+  } STRING;
+
+  typedef struct {
+    long index;
+    STRING name;
+  } ASCII_DISPINFO;
+
+  typedef struct {
+    long count;
+    [size_is(count), ptr]  ASCII_DISPINFO *info;
+  } ASCII_DISPINFO_ARRAY;
+
+  typedef [switch_type(unsigned short)] union {
+    [case(1)] USER_DISPINFO_1_ARRAY users1;
+    [case(2)] USER_DISPINFO_2_ARRAY users2;
+    [case(3)] GROUP_DISPINFO_ARRAY groups;
+    [case(4)] ASCII_DISPINFO_ARRAY ausers;
+    [case(5)] ASCII_DISPINFO_ARRAY agroups;
+  } DISPLAY_INFO;
+
+  /* Function 0x28 */
+  long SamrQueryDisplayInformation(
+        [in] domain_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+        [in] long start_idx,
+        [in] long max_entries,
+        [in] long pref_maxsize,
+       [out, ref] long *total_size,
+       [out, ref] long *ret_size,
+       [out, ref, switch_is(level)] DISPLAY_INFO *info
+  );
+
+  /* Function 0x29 */
+  long SamrGetDisplayEnumerationIndex(
+        [in] domain_hnd_t hnd,
+        [in] /* enum */ unsigned short level,
+        [in, ref] UNICODE_STRING *name,
+       [out, ref] long *index
+  );
+
+  /* Function 0x2a */
+  long SamrTestPrivateFunctionsDomain(
+        [in] connect_hnd_t hnd
+  );
+
+  /* Function 0x2b */
+  long SamrTestPrivateFunctionsUser(
+        [in] user_hnd_t hnd
+  );
+
+  typedef struct {
+    short unknown1;
+    long unknown2;
+  } PASSWORD_INFO;
+
+  /* Function 0x2c */
+  long SamrGetUserDomPasswordInfo(
+        [in] user_hnd_t *hnd,
+       [out, ref] PASSWORD_INFO *info
+  );
+
+  /* Function 0x2d */
+  long SamrRemoveMemFromForeignDom(
+        [in] unknown_hnd_t hnd,
+        [in, ref] SID *member
+  );
+
+  /* Function 0x2e */
+  long SamrQueryInformationDomain2(
+        [in] domain_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+       [out, ref, switch_is(level)] DOMAIN_INFO *info
+  );
+
+  /* Function 0x2f */
+  long SamrQueryInformationUser2(
+        [in] user_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+       [out, ref, switch_is(level)] USER_INFO *info
+  );
+
+  /* Function 0x30 */
+  long SamrQueryDisplayInformation2(
+        [in] domain_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+        [in] long start_idx,
+        [in] long max_entries,
+        [in] long pref_maxsize,
+       [out, ref] long *total_size,
+       [out, ref] long *ret_size,
+       [out, ref, switch_is(level)] DISPLAY_INFO *info
+  );
+
+  /* Function 0x31 */
+  long SamrGetDisplayEnumerationIndex2(
+        [in] domain_hnd_t hnd,
+        [in] /* enum */ unsigned short level,
+        [in, ref] UNICODE_STRING *name,
+       [out, ref] long *index
+  );
+
+  /* Function 0x32 */
+  long SamrCreateUser2InDomain(
+        [in] domain_hnd_t hnd_dom,
+        [in, ref] UNICODE_STRING *name,
+        [in] long acct_ctrl,
+        [in] long access,
+       [out] user_hnd_t *hnd,
+       [out, ref] long *unknown,
+       [out, ref] long *rid
+  );
+
+  /* Function 0x33 */
+  long SamrQueryDisplayInformation3(
+        [in] domain_hnd_t hnd,
+        [in, out, ref] /* enum */ unsigned short *level,
+        [in] long start_idx,
+        [in] long max_entries,
+        [in] long pref_maxsize,
+       [out, ref] long *total_size,
+       [out, ref] long *ret_size,
+       [out, ref, switch_is(level)] DISPLAY_INFO *info
+  );
+
+  /* Function 0x34 */
+  long SamrAddMultipleMembersToAlias(
+        [in] alias_hnd_t hnd,
+        [in, ref] PSID_ARRAY *sids
+  );
+
+  /* Function 0x35 */
+  long SamrRemoveMultMemsFromAlias(
+        [in] alias_hnd_t hnd,
+        [in, ref] PSID_ARRAY *sids
+  );
+
+  /* Function 0x36 */
+  long SamrOemChangePasswordUser2(
+        [in] handle_t hnd,
+        [in]  STRING *server,
+        [in, ref] STRING *user,
+        [in]  CRYPT_PASSWORD *lm_newpass,
+        [in]  CRYPT_HASH *lm_oldhash
+  );
+
+  /* Function 0x37 */
+  long SamrUniChangePasswordUser2(
+        [in] handle_t hnd,
+        [in, unique]  UNICODE_STRING *server,
+        [in, ref] UNICODE_STRING *user,
+        [in, unique]  CRYPT_PASSWORD *nt_newpass,
+        [in, unique]  CRYPT_HASH *nt_oldhash,
+        [in] char lm_change,
+        [in, unique]  CRYPT_PASSWORD *lm_newpass,
+        [in, unique]  CRYPT_HASH *lm_oldhash
+  );
+
+  /* Function 0x38 */
+  long SamrGetDomainPasswordInfo(
+        [in] handle_t hnd,
+        [in, unique]  UNICODE_STRING *domain,
+       [out, ref] PASSWORD_INFO *info
+  );
+
+  /* Function 0x39 */
+  long SamrConnect2(
+        [in] handle_t h ,
+        [in, string, unique] unsigned short *server,
+       [out] connect_hnd_t *hnd,
+        [in] long access
+  );
+
+  /* Function 0x3a */
+  long SamrSetInformationUser2(
+        [in] user_hnd_t hnd,
+        [in] /* enum */ unsigned short level,
+        [in,ref, switch_is(level)] USER_INFO *info
+  );
+
+  /* Function 0x3b */
+  long Function_3b(
+        [in] unknown_hnd_t element_570,
+        [in] /* enum */ unsigned short element_571,
+        [in, unique]  UNICODE_STRING *element_572,
+        [in, unique]  UNICODE_STRING *element_573
+  );
+
+  /* Function 0x3c */
+  long Function_3c(
+        [in] unknown_hnd_t element_574,
+       [out, ref] /* enum */ unsigned short *element_575
+  );
+
+}
