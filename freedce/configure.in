@@ -45,11 +45,8 @@ if test "x$have_win32" = "x1"; then
 	AC_SUBST(WIN32_PROG_PREFIX)
 fi
 
-dnl NON_CANCELLABLE_IO="1"
-dnl AC_SUBST(NON_CANCELLABLE_IO)
-
-dnl NON_CANCELLABLE_IO_SELECT="1"
-dnl AC_SUBST(NON_CANCELLABLE_IO_SELECT)
+AC_DEFINE(NON_CANCELLABLE_IO, 1, [non-cancellable io])
+AC_DEFINE(NON_CANCELLABLE_IO_SELECT, 1, [non-cancellable select])
 
 # show the user what we do
 echo "########################################"
