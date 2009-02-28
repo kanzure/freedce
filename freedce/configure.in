@@ -32,7 +32,7 @@ case "$target_os" in
 esac
 
 dnl there are much better ways to do this...
-if test "x$target_cpu" = "x86_64"; then
+if test "x$target_cpu" = "xx86_64"; then
 	AC_DEFINE(ARCH_WORD_SIZE, 8, [Word Size in bytes])
 else
 	AC_DEFINE(ARCH_WORD_SIZE, 4, [Word Size in bytes])

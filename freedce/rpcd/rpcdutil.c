@@ -38,7 +38,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <dce/config.h>
 #endif
 
 #ifdef HAVE_OS_WIN32

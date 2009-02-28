@@ -1,0 +1,604 @@
+/*
+ * (c) Copyright 2001 PADL Software Pty Ltd
+ * To anyone who acknowledges that this file is provided "AS IS"
+ * without any express or implied warranty:
+ *                 permission to use, copy, modify, and distribute this
+ * file for any purpose is hereby granted without fee, provided that
+ * the above copyright notices and this notice appears in all source
+ * code copies, and that the name PADL Software Pty Ltd not be used in
+ * advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.  PADL Software Pty Ltd
+ * makes no representation about the suitability of this software for
+ * any purpose.
+ *
+ */
+/*
+**
+**  NAME:
+**
+**      winnt.idl
+**
+**  FACILITY:
+**
+**      Windows NT RPC Interoperability
+**
+**  ABSTRACT:
+**
+**  This module contains definitions pertaining to interoperability with
+**  Windows NT RPC clients and servers.
+**
+*/
+
+[uuid(04fe1c9e-c91f-11d5-af4f-00608c83e51e),
+ pointer_default(ptr)]
+interface FreeDCEOWinNTTypes
+{
+import "wtypes.idl";
+
+/*
+ * NT status code
+ */
+typedef LONG NTSTATUS, *PNTSTATUS;
+
+/*
+ * Access mask
+ */
+typedef DWORD ACCESS_MASK, *PACCESS_MASK;
+
+/*
+ * Local UID
+ */
+typedef struct {
+	DWORD low;
+	LONG high;
+} LUID, *PLUID;
+
+typedef struct {
+	LUID luid;
+	DWORD attr;
+} LUID_AND_ATTRIBUTES, *PLUID_AND_ATTRIBUTES;
+
+typedef struct {
+	DWORD count;
+	DWORD control;
+	[size_is(count)] PLUID_AND_ATTRIBUTES luids;
+} PRIVILEGE_SET, *PPRIVILEGE_SET;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PLUID_AND_ATTRIBUTES luids;
+} LUID_AND_ATTRIBUTES_ARRAY, *PLUID_AND_ATTRIBUTES_ARRAY;
+
+typedef LUID_AND_ATTRIBUTES_ARRAY TOKEN_PRIVILEGES;
+typedef PLUID_AND_ATTRIBUTES_ARRAY PTOKEN_PRIVILEGES;
+
+/*
+ * A Unicode (UCS-2) string.
+ */
+typedef struct {
+	USHORT length;
+	USHORT size;
+	[size_is(size / 2), length_is(length / 2)] WCHAR *string;
+} UNICODE_STRING, *PUNICODE_STRING;
+
+typedef UNICODE_STRING LSA_UNICODE_STRING;
+typedef PUNICODE_STRING PLSA_UNICODE_STRING;
+
+typedef struct {   
+	long count;
+	[size_is(count)] PUNICODE_STRING string;
+} UNICODE_STRING_ARRAY, *PUNICODE_STRING_ARRAY;
+
+typedef UNICODE_STRING_ARRAY LSA_UNICODE_STRING_ARRAY;
+typedef PUNICODE_STRING_ARRAY PLSA_UNICODE_STRING_ARRAY;
+
+/*
+ * An ASCII string.
+ */
+typedef struct {
+	USHORT length;
+	USHORT size;
+	[size_is(size), length_is(length)] CHAR *string;
+} STRING, *PSTRING;
+
+typedef STRING LSA_STRING;
+typedef PSTRING PLSA_STRING;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PSTRING string;
+} STRING_ARRAY, *PSTRING_ARRAY;
+
+typedef STRING_ARRAY LSA_STRING_ARRAY;
+typedef PSTRING_ARRAY PLSA_STRING_ARRAY;
+
+/*
+ * Security-related constants
+ */
+
+/* Generic access masks & rights. */
+const unsigned long SPECIFIC_RIGHTS_MASK = 0x0000FFFF;
+const unsigned long STANDARD_RIGHTS_MASK = 0x00FF0000;
+const unsigned long DELETE_ACCESS        = 0x00010000;
+const unsigned long READ_CONTROL_ACCESS  = 0x00020000;
+const unsigned long WRITE_DAC_ACCESS     = 0x00040000;
+const unsigned long WRITE_OWNER_ACCESS   = 0x00080000;
+const unsigned long SYNCHRONIZE_ACCESS   = 0x00100000;
+
+
+const unsigned long SYSTEM_SECURITY_ACCESS = 0x01000000;
+const unsigned long MAXIMUM_ALLOWED_ACCESS = 0x02000000;
+const unsigned long GENERIC_ALL_ACCESS     = 0x08000000;
+const unsigned long GENERIC_EXECUTE_ACCESS = 0x10000000;
+const unsigned long GENERIC_WRITE_ACCESS   = 0x20000000;
+const unsigned long GENERIC_READ_ACCESS    = 0x40000000;
+
+const unsigned long STANDARD_RIGHTS_READ		= READ_CONTROL_ACCESS;
+const unsigned long STANDARD_RIGHTS_WRITE		= STANDARD_RIGHTS_READ;
+const unsigned long STANDARD_RIGHTS_EXECUTE		= STANDARD_RIGHTS_READ;
+const unsigned long STANDARD_RIGHTS_REQUIRED	= 0x000F0000;
+
+/* security descriptor specific access masks and rights */
+
+const unsigned long SEC_RIGHTS_QUERY_VALUE      = 0x00000001;
+const unsigned long SEC_RIGHTS_SET_VALUE        = 0x00000002;
+const unsigned long SEC_RIGHTS_CREATE_SUBKEY    = 0x00000004;
+const unsigned long SEC_RIGHTS_ENUM_SUBKEYS     = 0x00000008;
+const unsigned long SEC_RIGHTS_NOTIFY           = 0x00000010;
+const unsigned long SEC_RIGHTS_CREATE_LINK      = 0x00000020;
+const unsigned long SEC_RIGHTS_DELETE           = DELETE_ACCESS;
+const unsigned long SEC_RIGHTS_READ_CONTROL     = READ_CONTROL_ACCESS;
+const unsigned long SEC_RIGHTS_WRITE_DAC        = WRITE_DAC_ACCESS;
+const unsigned long SEC_RIGHTS_WRITE_OWNER      = WRITE_OWNER_ACCESS;
+const unsigned long SEC_RIGHTS_MAXIMUM_ALLOWED  = MAXIMUM_ALLOWED_ACCESS;
+
+const unsigned long SEC_RIGHTS_READ             = (SEC_RIGHTS_READ_CONTROL|
+						SEC_RIGHTS_ENUM_SUBKEYS|
+						SEC_RIGHTS_QUERY_VALUE);
+
+const unsigned long SEC_RIGHTS_FULL_CONTROL     = (SEC_RIGHTS_QUERY_VALUE |
+                                   SEC_RIGHTS_SET_VALUE        |
+                                   SEC_RIGHTS_CREATE_SUBKEY    |
+                                   SEC_RIGHTS_ENUM_SUBKEYS     |
+                                   SEC_RIGHTS_NOTIFY           |
+                                   SEC_RIGHTS_CREATE_LINK      |
+                                   SEC_RIGHTS_DELETE           |
+                                   SEC_RIGHTS_READ_CONTROL     |
+                                   SEC_RIGHTS_WRITE_DAC        |
+                                   SEC_RIGHTS_WRITE_OWNER);
+
+/* ACE and Security Descriptor constants */
+
+const unsigned small SEC_ACE_TYPE_ACCESS_ALLOWED	  = 0x0;
+const unsigned small SEC_ACE_TYPE_ACCESS_DENIED	  = 0x1;
+const unsigned small SEC_ACE_TYPE_SYSTEM_AUDIT	  = 0x2;
+const unsigned small SEC_ACE_TYPE_SYSTEM_ALARM	  = 0x3;
+
+const unsigned small SEC_ACE_FLAG_OBJECT_INHERIT	  = 0x1;
+const unsigned small SEC_ACE_FLAG_CONTAINER_INHERIT	  = 0x2;
+const unsigned small SEC_ACE_FLAG_NO_PROPAGATE_INHERIT	  = 0x4;
+const unsigned small SEC_ACE_FLAG_INHERIT_ONLY	     = 0x8;
+const unsigned small SEC_ACE_FLAG_INHERITED_ACE	  = 0x10; /* New for Windows 2000 */
+const unsigned small SEC_ACE_FLAG_VALID_INHERIT	     = 0x0f;
+const unsigned small SEC_ACE_FLAG_SUCCESSFUL_ACCESS  = 0x40;
+const unsigned small SEC_ACE_FLAG_FAILED_ACCESS	     = 0x80;
+
+const unsigned short SEC_DESC_OWNER_DEFAULTED	  = 0x0001;
+const unsigned short SEC_DESC_GROUP_DEFAULTED	  = 0x0002;
+const unsigned short SEC_DESC_DACL_PRESENT	  = 0x0004;
+const unsigned short SEC_DESC_DACL_DEFAULTED	  = 0x0008;
+const unsigned short SEC_DESC_SACL_PRESENT	  = 0x0010;
+const unsigned short SEC_DESC_SACL_DEFAULTED	  = 0x0020;
+/*
+ * New Windows 2000 bits.
+ */
+const unsigned short SE_DESC_DACL_AUTO_INHERIT_REQ   = 0x0100;
+const unsigned short SE_DESC_SACL_AUTO_INHERIT_REQ   = 0x0200;
+const unsigned short SE_DESC_DACL_AUTO_INHERITED   = 0x0400;
+const unsigned short SE_DESC_SACL_AUTO_INHERITED   = 0x0800;
+const unsigned short SE_DESC_DACL_PROTECTED		  = 0x1000;
+const unsigned short SE_DESC_SACL_PROTECTED		  = 0x2000;
+
+const unsigned short SEC_DESC_SELF_RELATIVE		  = 0x8000;
+
+/* security information */
+
+const unsigned long OWNER_SECURITY_INFORMATION   = 0x00000001;
+const unsigned long GROUP_SECURITY_INFORMATION   = 0x00000002;
+const unsigned long DACL_SECURITY_INFORMATION    = 0x00000004;
+const unsigned long SACL_SECURITY_INFORMATION    = 0x00000008;
+
+const unsigned long ALL_SECURITY_INFORMATION = (OWNER_SECURITY_INFORMATION |
+                                                GROUP_SECURITY_INFORMATION |
+                                                DACL_SECURITY_INFORMATION  |
+                                                SACL_SECURITY_INFORMATION);
+
+
+const unsigned short NT4_ACL_REVISION   = 0x2;
+const unsigned short ACL_REVISION   = 0x3;
+
+const unsigned short SEC_DESC_REVISION   = 0x1;
+
+/* Security descriptor buffer */
+typedef struct {
+	ULONG size;
+	[size_is(size)] BYTE *buffer;
+} LSA_SECURITY_DESCRIPTOR, *PLSA_SECURITY_DESCRIPTOR;
+
+typedef struct {
+	LSA_SECURITY_DESCRIPTOR sd;
+	BOOL inherit;
+} SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES;
+ 
+/*
+ * SID identifier authority
+ */
+typedef struct {
+	BYTE value[6];
+} SID_IDENTIFIER_AUTHORITY;
+
+/*
+ * Security Identifier
+ */
+typedef struct {
+	BYTE revision;
+	BYTE subauth_count;
+	SID_IDENTIFIER_AUTHORITY authority;
+	[size_is(subauth_count)] DWORD subauth[*];
+} SID, *PISID;
+
+typedef struct {
+	SID *sid;   
+} PSID;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PSID *sids;
+} PSID_ARRAY;
+
+/*
+ * Different types of SID
+ */
+const long SidTypeUser = 1;
+const long SidTypeGroup = 2;
+const long SidTypeDomain = 3;
+const long SidTypeAlias = 4;
+const long SidTypeWellKnownGroup = 5;
+const long SidTypeDeletedAccount = 6;
+const long SidTypeInvalid = 7;
+const long SidTypeUnknown = 8;
+const long SidTypeComputer = 9;
+typedef USHORT SID_NAME_USE;
+
+typedef struct {
+	SID_NAME_USE use;
+	ULONG rid;
+	LONG index;
+} LSA_TRANSLATED_SID, *PLSA_TRANSLATED_SID;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PLSA_TRANSLATED_SID rids;
+} LSA_TRANSLATED_SIDS, *PLSA_TRANSLATED_SIDS;
+
+typedef struct {
+	SID_NAME_USE usd;
+	ULONG rid;
+	LONG index;
+	ULONG unknown;
+} LSA_TRANSLATED_SID_EX, *PLSA_TRANSLATED_SID_EX;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PLSA_TRANSLATED_SID_EX rids;
+} LSA_TRANSLATED_SIDS_EX, *PLSA_TRANSLATED_SIDS_EX;
+
+typedef struct {
+	SID_NAME_USE use;
+	LSA_UNICODE_STRING name;
+	LONG index;
+} LSA_TRANSLATED_NAME, *PLSA_TRANSLATED_NAME;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PLSA_TRANSLATED_NAME domains;
+} LSA_TRANSLATED_NAMES, *PLSA_TRANSLATED_NAMES;
+
+typedef struct {
+	SID_NAME_USE use;
+	LSA_UNICODE_STRING name;
+	LONG index;
+	ULONG unknown;
+} LSA_TRANSLATED_NAME_EX, *PLSA_TRANSLATED_NAME_EX;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PLSA_TRANSLATED_NAME_EX domains;
+} LSA_TRANSLATED_NAMES_EX, *PLSA_TRANSLATED_NAMES_EX;
+
+typedef struct {
+	LSA_UNICODE_STRING name;
+	LUID luid;
+} LSA_PRIVILEGE, *PLSA_PRIVILEGE;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PLSA_PRIVILEGE info;
+} LSA_PRIVILEGES, *PLSA_PRIVILEGES;
+
+typedef ULONG LSA_ENUMERATION_HANDLE, *PLSA_ENUMERATION_HANDLE;
+
+typedef struct {
+	PISID sid;
+} LSA_ENUMERATION_INFORMATION, *PLSA_ENUMERATION_INFORMATION;
+
+typedef struct {
+	ULONG percent_full;
+	ULONG log_size;
+	LARGE_INTEGER retention_period;
+	BOOLEAN shutdown_in_progress;
+	LARGE_INTEGER time_to_shutdown;
+	ULONG next_audit_record;
+} POLICY_AUDIT_LOG_INFO, *PPOLICY_AUDIT_LOG_INFO;
+
+typedef struct {
+	LSA_UNICODE_STRING name;
+} POLICY_PD_ACCOUNT_INFO, *PPOLICY_PD_ACCOUNT_INFO;
+
+typedef struct {
+	BOOLEAN enabled;
+	[size_is(count)] ULONG *settings;
+	ULONG count;
+} POLICY_AUDIT_EVENTS_INFO, *PPOLICY_AUDIT_EVENTS_INFO;
+
+typedef struct {
+	LSA_UNICODE_STRING domain;
+	PISID sid;
+} POLICY_PRIMARY_DOMAIN_INFO, *PPOLICY_PRIMARY_DOMAIN_INFO;
+
+typedef struct {
+	LSA_UNICODE_STRING name;
+	PISID sid;
+} POLICY_ACCOUNT_DOMAIN_INFO, *PPOLICY_ACCOUNT_DOMAIN_INFO;
+
+typedef struct {
+	ULONG rid_offset;
+} TRUSTED_POSIX_OFFSET_INFO, *PTRUSTED_POSIX_OFFSET_INFO;
+
+typedef LSA_STRING LSA_SECRET;
+
+typedef struct {
+	LSA_SECRET current;
+	LSA_SECRET old;
+} TRUSTED_PASSWORD_INFO, *PTRUSTED_PASSWORD_INFO;
+
+/*
+ * SID with attributes
+ */
+typedef struct {
+	PISID sid;
+	DWORD attrib;
+} SID_AND_ATTRIBUTES, *PSID_AND_ATTRIBUTES;
+
+typedef struct {
+	ULONG count;
+	[size_is(count)] PSID_AND_ATTRIBUTES sids;
+} SID_AND_ATTRIBUTES_ARRAY, *PSID_AND_ATTRIBUTES_ARRAY;
+
+typedef SID_AND_ATTRIBUTES_ARRAY TOKEN_GROUPS;
+typedef PSID_AND_ATTRIBUTES_ARRAY PTOKEN_GROUPS;
+
+/*
+ * An access control entry
+ */
+typedef struct {
+	UCHAR revision;
+	UCHAR reserved;
+	USHORT size;
+	USHORT count;
+	USHORT reserved2;
+/*	[size_is(size)] BYTE data[*]; */
+} ACL, *PACL;
+
+/*
+ * A security descriptor
+ */
+typedef struct {
+	UCHAR revision;
+	UCHAR reserved;
+	USHORT control;
+	PISID owner;
+	PISID group;
+	PACL sacl;
+	PACL dacl;
+} SECURITY_DESCRIPTOR, *PISECURITY_DESCRIPTOR;
+
+typedef LPVOID PSECURITY_DESCRIPTOR;
+
+const ULONG SecurityAnonymous = 0;
+const ULONG SecurityIdentification = 1;
+const ULONG SecurityImpersonation = 2;
+const ULONG SecurityDelegation = 3;
+typedef ULONG SECURITY_IMPERSONATION_LEVEL, *PSECURITY_IMPERSONATION_LEVEL;
+
+typedef BOOLEAN SECURITY_CONTEXT_TRACKING_MODE, *PSECURITY_CONTEXT_TRACKING_MODE;
+
+typedef struct {
+	DWORD length;
+	SECURITY_IMPERSONATION_LEVEL imp_level;
+	SECURITY_CONTEXT_TRACKING_MODE track_context;
+	BOOLEAN effective_only;
+} SECURITY_QUALITY_OF_SERVICE, *PSECURITY_QUALITY_OF_SERVICE;
+
+/*
+ * Authentication identity for NTLM authentication.
+ * A pointer to this can be passed in as a 
+ * rpc_auth_identity_handle_t for the WINNT
+ * authentication flavour.
+ */
+typedef struct
+{
+	[size_is(user_length)] WCHAR *user;
+	ULONG user_length;
+	[size_is(domain_length)] WCHAR *domain;
+	ULONG domain_length;
+	[size_is(password_length)] WCHAR *password;
+	ULONG password_length;
+	ULONG flags;
+} COAUTHIDENTITY;
+
+/* For RPC */
+typedef COAUTHIDENTITY SEC_WINNT_AUTH_IDENTITY;
+
+/* local group membership */
+typedef struct {
+	ULONG rid;
+	ULONG attrib;
+} GROUP_MEMBERSHIP, *PGROUP_MEMBERSHIP;
+
+typedef struct {
+	LSA_UNICODE_STRING name;
+	PISID sid;
+} LSA_TRUST_INFORMATION, *PLSA_TRUST_INFORMATION;
+typedef LSA_TRUST_INFORMATION TRUSTED_DOMAIN_INFORMATION_BASIC;
+typedef PLSA_TRUST_INFORMATION PTRUSTED_DOMAIN_INFORMATION_BASIC;
+
+typedef struct {
+	LSA_UNICODE_STRING name;  
+	LUID luid;
+} LSA_ACCOUNT, *PLSA_ACCOUNT;
+
+typedef struct {
+	ULONG entries;
+	[size_is (entries)] PLSA_TRUST_INFORMATION domains;
+	ULONG maxEntries;  
+} LSA_REFERENCED_DOMAIN_LIST, *PLSA_REFERENCED_DOMAIN_LIST;
+
+const ULONG TRUST_DIRECTION_DISABLED = 0x00000000;
+const ULONG TRUST_DIRECTION_INBOUND = 0x00000001;
+const ULONG TRUST_DIRECTION_OUTBOUND = 0x00000002;
+const ULONG TRUST_TYPE_DOWNLEVEL = 0x00000001;
+const ULONG TRUST_TYPE_UPLEVEL = 0x00000002;
+const ULONG TRUST_TYPE_MIT = 0x00000003;
+const ULONG TRUST_TYPE_DCE = 0x00000004;
+const ULONG TRUST_ATTRIBUTE_NON_TRANSITIVE = 0x00000001;
+const ULONG TRUST_ATTRIBUTE_UPLEVEL_ONLY = 0x00000002;
+const ULONG TRUST_ATTRIBUTE_TREE_PARENT = 0x00400000;
+const ULONG TRUST_ATTRIBUTE_TREE_ROOT = 0x00800000;
+
+/* W2K trust information */
+typedef struct {
+	LSA_UNICODE_STRING name;
+	LSA_UNICODE_STRING flat_name;
+	PISID sid;
+	ULONG direction;
+	ULONG type;
+	ULONG attr;
+} TRUSTED_DOMAIN_INFORMATION_EX, *PTRUSTED_DOMAIN_INFORMATION_EX;
+
+typedef struct {
+	ULONG entries;
+	[size_is (entries)] PTRUSTED_DOMAIN_INFORMATION_EX domains;
+	ULONG maxEntries;
+} TRUSTED_DOMAIN_INFORMATION_LIST_EX, *PTRUSTED_DOMAIN_INFORMATION_LIST_EX;
+
+typedef struct {
+	LARGE_INTEGER update;
+	ULONG type;
+	ULONG len;
+	[size_is(len)] BYTE *info;
+} LSA_AUTH_INFORMATION, *PLSA_AUTH_INFORMATION;
+
+typedef struct {
+	ULONG element_275;
+	LSA_AUTH_INFORMATION *element_276;
+	LSA_AUTH_INFORMATION *element_277;
+	ULONG element_278;
+	LSA_AUTH_INFORMATION *element_279;
+	LSA_AUTH_INFORMATION *element_280;
+} TRUSTED_DOMAIN_AUTH_INFORMATION, *PTRUSTED_DOMAIN_AUTH_INFORMATION;
+
+typedef struct {
+	TRUSTED_DOMAIN_INFORMATION_EX info;
+	TRUSTED_POSIX_OFFSET_INFO posix;
+	TRUSTED_DOMAIN_AUTH_INFORMATION auth;
+} TRUSTED_DOMAIN_FULL_INFORMATION, *PTRUSTED_DOMAIN_FULL_INFORMATION;
+
+typedef struct {
+	TRUSTED_DOMAIN_INFORMATION_EX info;
+	TRUSTED_POSIX_OFFSET_INFO posix;
+	/* a wild guess */
+	LSA_SECURITY_DESCRIPTOR p1;
+} TRUSTED_DOMAIN_PRIVATE_INFORMATION, *PTRUSTED_DOMAIN_PRIVATE_INFORMATION;
+
+typedef struct {
+	ULONG length;
+	LPSTR *root_directory;
+	LSA_UNICODE_STRING *name;
+	ULONG attr;
+	SECURITY_DESCRIPTOR *sec_desc;
+	SECURITY_QUALITY_OF_SERVICE *sec_qos;
+} LSA_OBJECT_ATTRIBUTES, *PLSA_OBJECT_ATTRIBUTES;
+
+const USHORT PolicyServerRoleBackup = 2;
+const USHORT PolicyServerRolePrimary = 3;
+typedef struct {
+	USHORT role;
+} POLICY_LSA_SERVER_ROLE_INFO, *PPOLICY_LSA_SERVER_ROLE_INFO;
+
+typedef struct {
+	LSA_UNICODE_STRING source;
+	LSA_UNICODE_STRING account_name;
+} POLICY_REPLICA_SOURCE_INFO, *PPOLICY_REPLICA_SOURCE_INFO;
+
+typedef struct {
+	ULONG paged_pool;
+	ULONG non_paged_pool;
+	ULONG min_wss;
+	ULONG max_wss;
+	ULONG pagefile;
+	LARGE_INTEGER unknown;
+} POLICY_DEFAULT_QUOTA_INFO, *PPOLICY_DEFAULT_QUOTA_INFO;
+
+typedef struct {
+	BOOLEAN unknown1;
+} POLICY_AUDIT_FULL_SET_INFO, *PPOLICY_AUDIT_FULL_SET_INFO;
+
+typedef struct {
+	LARGE_INTEGER seq_no;
+	LARGE_INTEGER mtime;
+} POLICY_MODIFICATION_INFO, *PPOLICY_MODIFICATION_INFO;
+
+typedef struct {
+	BOOLEAN unknown1;
+	BOOLEAN unknown2;
+} POLICY_AUDIT_FULL_QUERY_INFO, *PPOLICY_AUDIT_FULL_QUERY_INFO;
+
+typedef struct {
+	LSA_UNICODE_STRING name;
+	LSA_UNICODE_STRING domain;
+	LSA_UNICODE_STRING forest;
+	GUID guid;
+	PISID sid;
+} POLICY_DNS_DOMAIN_INFO, *PPOLICY_DNS_DOMAIN_INFO;
+
+typedef struct {
+	ULONG qos;
+} POLICY_DOMAIN_QUALITY_OF_SERVICE_INFO, *PPOLICY_DOMAIN_QUALITY_OF_SERVICE_INFO;
+
+typedef struct {
+	ULONG length;
+	[size_is(length)] BYTE *blob;
+} POLICY_DOMAIN_EFS_INFO, *PPOLICY_DOMAIN_EFS_INFO;
+
+typedef struct {
+	ULONG opts;
+	LARGE_INTEGER stkt_age;
+	LARGE_INTEGER tkt_age;
+	LARGE_INTEGER renew_age;
+	LARGE_INTEGER clock_skew;
+	LARGE_INTEGER skew;
+} POLICY_DOMAIN_KERBEROS_TICKET_INFO, *PPOLICY_DOMAIN_KERBEROS_TICKET_INFO;
+
+}
+

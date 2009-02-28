@@ -39,7 +39,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <dce/config.h>
 #endif
 
 #define NCK_NEED_MARSHALLING 1

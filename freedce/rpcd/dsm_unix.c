@@ -45,7 +45,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <dce/config.h>
 #endif
 
 #include "dsm_p.h"      /* private include file */

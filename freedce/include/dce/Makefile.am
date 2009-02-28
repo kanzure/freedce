@@ -8,9 +8,9 @@ commonidl= codesets.idl conv.idl convc.idl ep.idl \
 		twr.idl uuid.idl obase.idl objex.idl wtypes.idl remact.idl objex.idl
 
 commonheaders=codesets_stub.h stubbase.h idl_es.h idlbase.h idlddefs.h \
-	rpcexc.h
+	rpcexc.h pthreads_rename.h config.h dce_config.h
 
-osdepheaders=dce_utils.h sec_authn.h dce.h dce_error.h
+osdepheaders=dce_utils.h sec_authn.h dce.h dce_error.h 
 
 cpudepheaders=marshall.h ndr_rep.h ndrtypes.h
 
