@@ -9,7 +9,7 @@ commonidl= codesets.idl conv.idl convc.idl ep.idl \
 		winnt.idl
 
 commonheaders=codesets_stub.h stubbase.h idl_es.h idlbase.h idlddefs.h \
-	rpcexc.h pthreads_rename.h config.h dce_config.h
+	rpcexc.h pthreads_rename.h config.h dce_config.h winerror.h
 
 osdepheaders=dce_utils.h sec_authn.h dce.h dce_error.h 
 

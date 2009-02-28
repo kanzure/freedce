@@ -1,0 +1,8 @@
+#!/bin/sh
+libtoolize --automake
+# avoid problems with libtool 1.4
+touch ltconfig
+aclocal
+echo "# This is a dummy file to make using automake more modular" > RPC_OUTPUT_FILES.in
+automake --foreign -a
+autoconf

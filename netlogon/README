@@ -1,0 +1,7 @@
+Windows NT RPC-based security services are in this module.
+
+FreeDCE must be installed.
+
+Additionally, Kerberos will be required for Windows 2000
+functionality.
+

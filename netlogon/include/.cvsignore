@@ -1,0 +1,12 @@
+Makefile
+.libs
+.deps
+.gdb_history
+*.la
+*.lo
+*~
+ntsec.h
+lsarpc.h
+netlogon.h
+stamp-h
+config.h

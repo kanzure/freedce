@@ -1,0 +1,1096 @@
+/*
+**
+**  NAME:
+**
+**	  netlogon.idl
+**
+**  FACILITY:
+**
+**	  Windows NT Network Logon Service
+**
+**  ABSTRACT:
+**
+**  This module contains definitions pertaining to interoperability with
+**  Windows NT RPC clients and servers.
+**
+*/
+[ uuid(12345678-1234-abcd-ef00-01234567cffb),
+version(1.0),
+pointer_default(ptr)
+] interface netlogon
+{
+
+/* netlogon idl file.
+ *
+ * reconstructed by Luke Kenneth Casson Leighton from:
+ *
+ * - netlogon type library
+ * - TNG include/rpc_netlogon.h
+ * - QuickView on nt dlls for function names.
+ *
+ * updated for Windows 2000 by Luke Howard using
+ * same tools and NETMON output
+ * 
+
+ remaining names not identified yet with functions:
+
+NetDatabaseDeltas
+NetDatabaseRedo
+NetDatabaseSync
+
+NetGetAnyDCName
+NetNameCanonicalize
+NetNameCompare
+NetNotifyDelta
+NetNotifyMachineAccount
+NetNotifyRole
+NetPathCanonicalize
+
+W2K ordinals >13
+
+NetLogonAppendChangeLog
+NetLogonCloseChangeLog
+NetLogonDirectDomainName
+NetLogonFree (??)
+NetLogonGetAuthData
+NetLogonGetDirectDomain
+NetLogonGetDomainInfo
+NetLogonGetIpAddresses
+NetLogonGetSerialNumber
+NetLogonLdapLookup
+NetLogonLdapLookupEx
+NetLogonNewChangeLog
+NetLogonReadChangeLog
+NetLogonSendToSamOnPdc
+NetLogonSetServiceBits
+
+NetNotifyDsChange
+NetNotifyMachineAccount
+NetNotifyNetlogonDllHandle
+NetNotifyNtdsDsaDeletion
+NetNotifyRole
+NetNotifyTrustedDomain
+
+NetServerSetServiceBitsEx
+
+DsrEnumerateDomainTrusts
+DsrAddressToSiteNames
+DsrEnumerateDomainTrusts
+DsrRoleGetPrimaryDomainInformation
+DsrGetDcSiteCoverage 
+
+DsrValidateSubnetName 
+x DsrGetSiteName 
+x DsrRoleGetPrimaryDomainInformation
+x DsrDeregisterDnsHostRecords 
+
+*/
+import "winnt.idl";
+
+/* string binding handle */
+typedef [unique, string] WCHAR *LOGONSRV_HANDLE;
+
+typedef struct {
+	ULONG len;
+	LSA_SECURITY_DESCRIPTOR sd;
+} NETLOGON_SECURITY_DESCRIPTOR;
+
+typedef struct {
+	[string] WCHAR *element_1;
+	ULONG element_2;
+	ULONG element_3;
+	ULONG element_4;
+	ULONG element_5;
+	ULONG element_6;
+	ULONG element_7;
+	ULONG element_8;
+	ULONG element_9;
+	ULONG element_10;
+	ULONG element_11;
+	ULONG element_12;
+	[string] WCHAR *element_13;
+	[string] WCHAR *element_14;
+	[string] WCHAR *element_15;
+	ULONG element_16;
+} TYPE_1;
+
+NTSTATUS Function_00(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, ref, string] WCHAR *element_18,
+	[in, ref, string] WCHAR *element_19,
+	[out, ref] TYPE_1 **element_20
+);
+
+typedef struct {
+	ULONG element_21;
+	USHORT element_22;
+} TYPE_2;
+
+NTSTATUS Function_01(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, ref, string] WCHAR *element_24,
+	[in, ref, string] WCHAR *element_25,
+	[out, ref] TYPE_2 *element_26
+);
+
+typedef struct {
+	CHAR data[8];
+} CYPHER_BLOCK;
+
+typedef CYPHER_BLOCK NETLOGON_CREDENTIAL;
+
+typedef struct {
+	NETLOGON_CREDENTIAL challenge;
+	DWORD timestamp;
+} NETLOGON_AUTHENTICATOR;
+
+typedef CYPHER_BLOCK LM_OWF_PASSWORD[2];
+typedef LM_OWF_PASSWORD *PLM_OWF_PASSWORD;
+
+typedef CYPHER_BLOCK NT_OWF_PASSWORD[2];
+typedef NT_OWF_PASSWORD *PNT_OWF_PASSWORD;
+
+typedef CYPHER_BLOCK USER_SESSION_KEY[2];
+typedef USER_SESSION_KEY *PUSER_SESSION_KEY;
+
+typedef CYPHER_BLOCK ENCRYPTED_LM_OWF_PASSWORD[2];
+typedef ENCRYPTED_LM_OWF_PASSWORD *PENCRYPTED_LM_OWF_PASSWORD;
+
+typedef CYPHER_BLOCK ENCRYPTED_NT_OWF_PASSWORD[2];
+typedef ENCRYPTED_NT_OWF_PASSWORD *PENCRYPTED_NT_OWF_PASSWORD;
+
+typedef struct {
+	UNICODE_STRING domain_name;
+	ULONG param_ctrl;
+	LARGE_INTEGER logon_id;
+	UNICODE_STRING user_name;
+	UNICODE_STRING wksta_name;
+} NETLOGON_LOGON_IDENTITY_INFO, *PNETLOGON_LOGON_IDENTITY_INFO;
+
+typedef struct {
+	NETLOGON_LOGON_IDENTITY_INFO identity;
+	LM_OWF_PASSWORD lm_owf;
+	NT_OWF_PASSWORD nt_owf;
+} NETLOGON_INTERACTIVE_INFO, *PNETLOGON_INTERACTIVE_INFO;
+
+typedef struct {
+	NETLOGON_LOGON_IDENTITY_INFO identity;
+	STRING nt_chal_resp;
+	STRING lm_chal_resp;
+} NETLOGON_NETWORK_INFO, *PNETLOGON_NETWORK_INFO;
+
+typedef enum {
+	NETLOGON_LOGON_INFO_CLASS_1 = 1,
+	NETLOGON_LOGON_INFO_CLASS_2 = 2,
+	NETLOGON_LOGON_INFO_CLASS_3 = 3,
+	NETLOGON_LOGON_INFO_CLASS_4 = 4,
+	NETLOGON_LOGON_INFO_CLASS_5 = 5,
+	NETLOGON_LOGON_INFO_CLASS_6 = 6,
+	NETLOGON_LOGON_INFO_CLASS_7 = 7
+} NETLOGON_LOGON_INFO_CLASS;
+
+typedef union switch(NETLOGON_LOGON_INFO_CLASS logon_level) contents {
+	case NETLOGON_LOGON_INFO_CLASS_1: PNETLOGON_INTERACTIVE_INFO id1; /* interactive logon */
+	case NETLOGON_LOGON_INFO_CLASS_2: PNETLOGON_NETWORK_INFO id2; /* network logon */
+	case NETLOGON_LOGON_INFO_CLASS_3: PNETLOGON_INTERACTIVE_INFO id3; /* errr... */
+/* level 4 no idea */
+	case NETLOGON_LOGON_INFO_CLASS_5: PNETLOGON_INTERACTIVE_INFO id5;
+	case NETLOGON_LOGON_INFO_CLASS_6: PNETLOGON_NETWORK_INFO id6; /* network logon */
+	case NETLOGON_LOGON_INFO_CLASS_7: PNETLOGON_INTERACTIVE_INFO id7;
+} NETLOGON_LEVEL, *PNETLOGON_INFO;
+
+typedef struct {
+	FILETIME logon_time;	        /* logon time */
+	FILETIME logoff_time;	       /* logoff time */
+	FILETIME kickoff_time;	      /* kickoff time */
+	FILETIME pass_last_set_time;	/* password last set time */
+	FILETIME pass_can_change_time;  /* password can change time */
+	FILETIME pass_must_change_time; /* password must change time */
+
+	UNICODE_STRING user_name;	/* username */
+	UNICODE_STRING full_name;	/* user's full name */
+	UNICODE_STRING logon_script; /* logon script */
+	UNICODE_STRING profile_path; /* profile path */
+	UNICODE_STRING home_dir;	 /* home directory */
+	UNICODE_STRING dir_drive;	/* home drive */
+
+	USHORT logon_count;  /* logon count */
+	USHORT bad_pw_count; /* bad password count */
+
+	ULONG user_id;	   /* User ID */
+	ULONG group_id;	  /* Group ID */
+	ULONG num_groups;
+	[size_is(num_groups), ptr] GROUP_MEMBERSHIP *element_143; /* User Groups */
+
+	ULONG user_flgs;	 /* user flags */
+	USER_SESSION_KEY user_session_key;
+	UNICODE_STRING logon_srv; /* logon server unicode string */
+	UNICODE_STRING logon_dom; /* logon domain unicode string */
+
+	PISID domain_sid;
+	ULONG padding[10];	/* expansion room */
+
+} NETLOGON_VALIDATION_SAM_INFO1;
+
+typedef struct {
+	FILETIME logon_time;	        /* logon time */
+	FILETIME logoff_time;	       /* logoff time */
+	FILETIME kickoff_time;	      /* kickoff time */
+	FILETIME pass_last_set_time;	/* password last set time */
+	FILETIME pass_can_change_time;  /* password can change time */
+	FILETIME pass_must_change_time; /* password must change time */
+
+	UNICODE_STRING user_name;	/* username */
+	UNICODE_STRING full_name;	/* user's full name */
+	UNICODE_STRING logon_script; /* logon script */
+	UNICODE_STRING profile_path; /* profile path */
+	UNICODE_STRING home_dir;	 /* home directory */
+	UNICODE_STRING dir_drive;	/* home drive */
+
+	USHORT logon_count;  /* logon count */
+	USHORT bad_pw_count; /* bad password count */
+
+	ULONG user_id;	   /* User ID */
+	ULONG group_id;	  /* Group ID */
+	ULONG num_groups;
+	[size_is(num_groups), ptr] GROUP_MEMBERSHIP *element_143; /* User Groups */
+
+	ULONG user_flgs;	 /* user flags */
+	USER_SESSION_KEY user_session_key;
+	UNICODE_STRING logon_srv; /* logon server unicode string */
+	UNICODE_STRING logon_dom; /* logon domain unicode string */
+
+	PISID domain_sid;
+	ULONG padding[10];	/* expansion room */
+
+	ULONG num_other_groups;
+	[size_is(num_other_groups), ptr] SID_AND_ATTRIBUTES *other_groups;
+
+} NETLOGON_VALIDATION_SAM_INFO2;
+
+typedef enum {
+	NETLOGON_VALIDATION_INFO_2 = 2,
+	NETLOGON_VALIDATION_INFO_3 = 3,
+	NETLOGON_VALIDATION_INFO_4 = 4,
+	NETLOGON_VALIDATION_INFO_5 = 5
+} NETLOGON_VALIDATION_INFO_CLASS;
+
+typedef union switch(NETLOGON_VALIDATION_INFO_CLASS logon_level) contents {
+	case NETLOGON_VALIDATION_INFO_2: [ptr] NETLOGON_VALIDATION_SAM_INFO1 *element_67;
+	case NETLOGON_VALIDATION_INFO_3: [ptr] NETLOGON_VALIDATION_SAM_INFO2 *element_68;
+	case NETLOGON_VALIDATION_INFO_4: [ptr] STRING *element_xx;
+	case NETLOGON_VALIDATION_INFO_5: [ptr] BLOB *element_yy;
+} NETLOGON_VALIDATION;
+
+NTSTATUS NetrLogonSamLogon(
+	[in] LOGONSRV_HANDLE server,
+	[in, unique, string] WCHAR *computer_name,
+	[in, unique] NETLOGON_AUTHENTICATOR *client_cred,
+	[in, out, unique] NETLOGON_AUTHENTICATOR *server_cred,
+	[in, ref] NETLOGON_LEVEL *id_ctr,
+	[out, ref] NETLOGON_VALIDATION *ctr,
+	[out, ref] BOOLEAN *authoritative
+);
+
+NTSTATUS NetrLogonSamLogoff(
+	[in] LOGONSRV_HANDLE server,
+	[in, unique, string] WCHAR *element_168,
+	[in, unique] NETLOGON_AUTHENTICATOR *client_cred,
+	[in,out, unique] NETLOGON_AUTHENTICATOR *server_cred,
+	[in, ref] NETLOGON_LEVEL *id_ctr
+);
+
+NTSTATUS NetrServerReqChallenge(
+	[in] LOGONSRV_HANDLE server,
+	[in, ref, string] WCHAR *logon_client,
+	[in, ref] NETLOGON_CREDENTIAL *client_chal,
+	[out, ref] NETLOGON_CREDENTIAL *server_chal
+);
+
+/* Secure Channel types.  used in NetrServerAuthenticate negotiation */
+const USHORT NETLOGON_SECURE_CHANNEL_WORKSTATION   = 2;
+const USHORT NETLOGON_SECURE_CHANNEL_DOMAIN  = 4;
+const USHORT NETLOGON_SECURE_CHANNEL_BDC	 = 6;
+typedef USHORT NETLOGON_SECURE_CHANNEL_TYPE;
+
+NTSTATUS NetrServerAuthenticate(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, ref, string] WCHAR *acct_name,
+	[in] NETLOGON_SECURE_CHANNEL_TYPE sec_chan,
+	[in, ref, string] WCHAR *comp_name,
+	[in, ref] NETLOGON_CREDENTIAL *client_chal,
+	[out, ref] NETLOGON_CREDENTIAL *server_chal
+);
+
+NTSTATUS NetrServerPasswordSet(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, ref, string] WCHAR *acct_name,
+	[in] NETLOGON_SECURE_CHANNEL_TYPE sec_chan,
+	[in, ref, string] WCHAR *comp_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_cred,
+	[out, ref] NETLOGON_AUTHENTICATOR *server_cred,
+	[in, ref] ENCRYPTED_LM_OWF_PASSWORD *hashed_pwd
+);
+
+typedef struct {
+	FILETIME element_190;
+} TYPE_16;
+
+typedef struct {
+	UNICODE_STRING domain_name;
+	UNICODE_STRING oem_info;
+
+	FILETIME force_logoff_time;
+
+	USHORT min_pwd_len;
+	USHORT pwd_history_len;
+
+	FILETIME max_pwd_age;
+	FILETIME min_pwd_age;
+	FILETIME dom_mod_count;
+	FILETIME creation_time;
+	
+	NETLOGON_SECURITY_DESCRIPTOR sec_desc;
+	UNICODE_STRING str4;
+	UNICODE_STRING str5;
+	UNICODE_STRING str6;
+	UNICODE_STRING str7;
+
+	ULONG element_261;
+	ULONG element_262;
+	ULONG element_263;
+	ULONG element_264;
+} NETLOGON_SAM_DOMAIN_INFO;
+
+typedef struct {
+	UNICODE_STRING group_name;
+	GROUP_MEMBERSHIP gid;
+	UNICODE_STRING group_desc;
+	NETLOGON_SECURITY_DESCRIPTOR sec_desc;
+	UNICODE_STRING reserved_str0;
+	UNICODE_STRING reserved_str1;
+	UNICODE_STRING reserved_str2;
+	UNICODE_STRING reserved_str3;
+	ULONG reserved0;
+	ULONG reserved1;
+	ULONG reserved2;
+	ULONG reserved3;
+} NETLOGON_SAM_GROUP_INFO;
+
+typedef struct {
+	UNICODE_STRING str1;
+	UNICODE_STRING str2;
+	UNICODE_STRING str3;
+	UNICODE_STRING str4;
+	UNICODE_STRING str5;
+	UNICODE_STRING str6;
+	ULONG element_310;
+	ULONG element_311;
+	ULONG element_312;
+	ULONG element_313;
+} TYPE_23;
+
+typedef struct {
+	UNICODE_STRING acct_name;
+	UNICODE_STRING full_name;
+	ULONG user_rid;
+	ULONG group_rid;
+	UNICODE_STRING home_dir;
+	UNICODE_STRING dir_drive;
+	UNICODE_STRING logon_script;
+	UNICODE_STRING acct_desc;
+	UNICODE_STRING workstations;
+	FILETIME logon_time;
+	FILETIME logoff_time;
+	USHORT logon_divs;
+	/*size_is(1260) */ [size_is(logon_divs/2), length_is(logon_divs/2), ptr] BYTE *logon_hrs;
+	USHORT bad_pwd_count;
+	USHORT logon_count;
+	FILETIME pwd_last_set_time;
+	FILETIME acct_expiry_time;
+	ULONG acb_info;
+	LM_OWF_PASSWORD nt_pwd;
+	NT_OWF_PASSWORD lm_pwd;
+	BOOLEAN nt_pwd_present;
+	BOOLEAN lm_pwd_present;
+	BOOLEAN pwd_expired;
+	UNICODE_STRING comment;
+	UNICODE_STRING parameters;
+	USHORT country;
+	USHORT codepage;
+	BYTE num_pwd_pairs; /* 0x02 - password history? */
+	LSA_SECRET sam_pwd; /*  sam passwords ( pairs of lm/nt passwords ) */
+	NETLOGON_SECURITY_DESCRIPTOR sec_desc; 
+	UNICODE_STRING profile;
+	UNICODE_STRING reserved_string1;
+	UNICODE_STRING reserved_string2;
+	UNICODE_STRING reserved_string3;
+	ULONG reserved0;
+	ULONG reserved1;
+	ULONG reserved2;
+	ULONG reserved3;
+} NETLOGON_SAM_ACCOUNT_INFO;
+
+typedef struct {
+	[size_is(num_rids), ptr] ULONG *rids;
+	[size_is(num_rids), ptr] ULONG *attribs;
+	ULONG num_rids;
+	ULONG reserved0;
+	ULONG reserved1;
+	ULONG reserved2;
+	ULONG reserved3;
+} NETLOGON_SAM_GROUP_MEM_INFO;
+
+typedef struct {
+	UNICODE_STRING alias_name;
+	ULONG alias_rid;
+	NETLOGON_SECURITY_DESCRIPTOR sec_desc;
+	UNICODE_STRING alias_description;
+	UNICODE_STRING reserved_string1;
+	UNICODE_STRING reserved_string2;
+	UNICODE_STRING reserved_string3;
+	ULONG reserved0;
+	ULONG reserved1;
+	ULONG reserved2;
+	ULONG reserved3;
+} NETLOGON_SAM_ALIAS_INFO;
+
+typedef struct {
+	PSID_ARRAY sids;
+	ULONG unknown0;
+	ULONG unknown1;
+	ULONG unknown2;
+	ULONG unknown3;
+} NETLOGON_SAM_ALIAS_MEM_INFO;
+
+typedef struct {
+	ULONG element_449;
+	ULONG element_450;
+	ULONG element_451;
+	ULONG element_452;
+	ULONG element_453;
+	FILETIME element_454;
+} TYPE_30;
+
+typedef struct {
+	ULONG element_418;
+	FILETIME element_419;
+	BOOLEAN element_420;
+	ULONG element_421;
+	[size_is(element_421), ptr] ULONG *element_422;
+	UNICODE_STRING str1;
+	PISID element_426;
+	TYPE_30 element_427;
+	FILETIME element_428;
+	FILETIME element_429;
+	NETLOGON_SECURITY_DESCRIPTOR sec_desc;
+	UNICODE_STRING str3;
+	UNICODE_STRING str4;
+	UNICODE_STRING str5;
+	UNICODE_STRING str6;
+	ULONG element_445;
+	ULONG element_446;
+	ULONG element_447;
+	ULONG element_448;
+} TYPE_29;
+
+typedef struct {
+	UNICODE_STRING str1;
+	STRING str2;
+	ULONG element_460;
+	STRING str3;
+	UNICODE_STRING str4;
+	UNICODE_STRING str5;
+	UNICODE_STRING str6;
+	UNICODE_STRING str7;
+	ULONG element_475;
+	ULONG element_476;
+	ULONG element_477;
+	ULONG element_478;
+} TYPE_31;
+
+typedef struct {
+	UNICODE_STRING str1;
+} TYPE_32;
+
+typedef struct {
+	ULONG count;
+	ULONG element_483;
+	[size_is(count), ptr] ULONG *attrs;
+	[size_is(count), ptr] TYPE_32 *names;
+	TYPE_30 element_486;
+	ULONG element_487;
+	ULONG element_488;
+	STRING str1;
+	UNICODE_STRING str2;
+	UNICODE_STRING str3;
+	UNICODE_STRING str4;
+	UNICODE_STRING str5;
+	ULONG element_503;
+	ULONG element_504;
+	ULONG element_505;
+	ULONG element_506;
+} TYPE_33;
+
+typedef struct {
+	STRING str1;
+	FILETIME element_510;
+	STRING str2;
+	FILETIME element_514;
+	ULONG element_515;
+	STRING str4;
+	UNICODE_STRING str5;
+	UNICODE_STRING str6;
+	UNICODE_STRING str7;
+	UNICODE_STRING str8;
+	ULONG element_530;
+	ULONG element_531;
+	ULONG element_532;
+	ULONG element_533;
+} TYPE_34;
+
+typedef struct {
+	[ptr, string] WCHAR *element_534;
+	UNICODE_STRING str1;
+	UNICODE_STRING str2;
+	UNICODE_STRING str3;
+	UNICODE_STRING str4;
+	ULONG element_547;
+	ULONG element_548;
+	ULONG element_549;
+	ULONG element_550;
+} TYPE_35;
+
+typedef union switch(USHORT element_193a)  contents {
+	case 1: ULONG element_196;
+	case 2: ULONG element_197;
+	case 3: ULONG element_198;
+	case 4: ULONG element_199;
+	case 5: ULONG element_200;
+	case 6: ULONG element_201;
+	case 7: ULONG element_202;
+	case 8: ULONG element_203;
+	case 9: ULONG element_204;
+	case 10: ULONG element_205;
+	case 11: ULONG element_206;
+	case 12: ULONG element_207;
+	case 20: ULONG element_208;
+	case 21: ULONG element_209;
+	case 13: PISID element_210;
+	case 14: PISID element_211;
+	case 15: PISID element_212;
+	case 16: PISID element_213;
+	case 17: PISID element_214;
+	case 18: [ptr, string] WCHAR *element_215;
+	case 19: [ptr, string] WCHAR *element_216;
+} TYPE_19;
+
+/* [switch_type(ULONG)] */
+typedef union switch(USHORT element_193)  contents {
+	case 1: [ptr] NETLOGON_SAM_DOMAIN_INFO *element_217;
+	case 2: [ptr] NETLOGON_SAM_GROUP_INFO *element_218;
+	case 4: [ptr] TYPE_23 *element_219;
+	case 5: [ptr] NETLOGON_SAM_ACCOUNT_INFO *element_220;
+	case 7: [ptr] TYPE_23 *element_221;
+	case 8: [ptr] NETLOGON_SAM_GROUP_MEM_INFO *element_222;
+	case 9: [ptr] NETLOGON_SAM_ALIAS_INFO *element_223;
+	case 11: [ptr] TYPE_23 *element_224;
+	case 12: [ptr] NETLOGON_SAM_ALIAS_MEM_INFO *element_225;
+	case 13: [ptr] TYPE_29 *element_226;
+	case 14: [ptr] TYPE_31 *element_227;
+	case 16: [ptr] TYPE_33 *element_228;
+	case 18: [ptr] TYPE_34 *element_229;
+	case 20: [ptr] TYPE_35 *element_230;
+	case 21: [ptr] TYPE_35 *element_231;
+	case 22: [ptr] TYPE_16 *element_232;
+} TYPE_20;
+
+typedef struct {
+	TYPE_19 element_194;
+	TYPE_20 element_195;
+} SAM_DELTA;
+
+typedef struct {
+	ULONG num_deltas;
+	[size_is(num_deltas), unique] SAM_DELTA *delta;
+} SAM_DELTA_ARRAY;
+
+NTSTATUS NetrSamDeltas(
+	[in, ref, string] WCHAR *srv_name,
+	[in, ref, string] WCHAR *cli_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_creds,
+	[in, out, ref] NETLOGON_AUTHENTICATOR *server_creds,
+	[in] ULONG database_id,
+	[in, out, ref] TYPE_16 *dom_mod_count,
+	[out, ref] SAM_DELTA_ARRAY **deltas,
+	[in] ULONG max_size
+);
+
+NTSTATUS Function_08(
+	[in, ref, string] WCHAR *srv_name,
+	[in, ref, string] WCHAR *cli_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_creds,
+	[in,out, ref] NETLOGON_AUTHENTICATOR *server_creds,
+	[in] ULONG element_563,
+	[in,out, ref] ULONG *element_564,
+	[out, ref] SAM_DELTA_ARRAY **element_565,
+	[in] ULONG element_566
+);
+
+typedef struct {
+	BYTE element_567[16];
+	ULONG element_568;
+	ULONG element_569;
+} TYPE_36;
+
+NTSTATUS Function_09(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, ref, string] WCHAR *cli_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_creds,
+	[in,out, ref] NETLOGON_AUTHENTICATOR *server_creds,
+	[in, ref] TYPE_36 *element_574,
+	[in] ULONG element_575,
+	[in] ULONG element_576,
+	[out, size_is(element_578), ref] BYTE *element_577,
+	[in] ULONG element_578,
+	[out, ref] ULONG *element_579,
+	[out, ref] ULONG *element_580,
+	[out, ref] TYPE_36 *element_581
+);
+
+NTSTATUS Function_0a(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, ref, string] WCHAR *cli_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_creds,
+	[in, out, ref] NETLOGON_AUTHENTICATOR *server_creds,
+	[in] ULONG element_586,
+	[in] ULONG element_587,
+	[out, size_is(element_589), ref] BYTE *element_588,
+	[in] ULONG element_589,
+	[out, ref] ULONG *element_590,
+	[out, ref] ULONG *element_591,
+	[out, ref] ULONG *element_592,
+	[out, ref] TYPE_36 *element_593
+);
+
+NTSTATUS Function_0b(
+	[in, ref, string] WCHAR *element_594,
+	[in, unique, string] WCHAR *element_595
+	/*
+	   [out, ref, string] WCHAR **element_596
+	 */
+);
+
+typedef struct {
+	DWORD flags;
+	DWORD status;
+} NETLOGON_INFO_1;
+
+typedef struct {
+	ULONG flags;
+	ULONG pdc_status;
+	[ptr, string] WCHAR *trusted_dc_name;
+	ULONG tc_status; /* 0x051f - ERROR_NO_LOGON_SERVERS */
+} NETLOGON_INFO_2;
+
+typedef struct {
+	ULONG flags;
+	ULONG logon_attempts;
+	ULONG element_607;
+	ULONG element_608;
+	ULONG element_609;
+	ULONG element_610;
+	ULONG element_611;
+} NETLOGON_INFO_3;
+
+typedef struct {
+	[ptr, string] WCHAR *trusted_dc_name;
+	[ptr, string] WCHAR *trusted_domain_name;
+} NETLOGON_INFO_4;
+
+const ULONG NETLOGON_CONTROL_QUERY	     = 1;
+const ULONG NETLOGON_CONTROL_REPLICATE	 = 2;
+const ULONG NETLOGON_CONTROL_SYNCHRONIZE   = 3;
+const ULONG NETLOGON_CONTROL_PDC_REPLICATE = 4;
+const ULONG NETLOGON_CONTROL_REDISCOVER	= 5;
+const ULONG NETLOGON_CONTROL_TC_QUERY	  = 6;
+const ULONG NETLOGON_CONTROL_TRANSPORT_NOTIFY = 7;
+const ULONG NETLOGON_CONTROL_FIND_USER	 = 8;
+const ULONG NETLOGON_CONTROL_CHANGE_PASSWORD = 9;
+const ULONG NETLOGON_CONTROL_SET_DBFLAG	  = 0xFFFE;
+
+typedef union switch(ULONG level) contents {
+	case 1: [ptr] NETLOGON_INFO_1 *nli1;
+	case 2: [ptr] NETLOGON_INFO_2 *nli2;
+	case 3: [ptr] NETLOGON_INFO_3 *nli3;
+	case 4: [ptr] NETLOGON_INFO_4 *nli4;
+} NETLOGON_INFO;
+
+NTSTATUS NetrLogonControl(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG code,
+	[in] ULONG level, 
+	[out, ref] NETLOGON_INFO *element_617
+);
+
+NTSTATUS Function_0d(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *element_619
+	/*
+	   [out, ref, string] WCHAR **element_620
+	 */
+);
+
+
+typedef union switch(ULONG element_627) contents {
+	case NETLOGON_CONTROL_REDISCOVER: [ptr, string] WCHAR *element_621;
+	case NETLOGON_CONTROL_TC_QUERY: [ptr, string] WCHAR *element_622;
+	case NETLOGON_CONTROL_SET_DBFLAG: ULONG element_623;
+	case NETLOGON_CONTROL_FIND_USER: [ptr, string] WCHAR *element_624;
+} NETLOGON_CONTROL_QUERY_INFO;
+
+NTSTATUS NetrLogonControl2(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG code,
+	[in] ULONG level,
+	[in, ref] NETLOGON_CONTROL_QUERY_INFO *element_628,
+	[out, ref] NETLOGON_INFO *element_629
+);
+
+NTSTATUS NetrServerAuthenticate2(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, ref, string] WCHAR *acct_name,
+	[in] /* enum */ NETLOGON_SECURE_CHANNEL_TYPE sec_chan,
+	[in, ref, string] WCHAR *comp_name,
+	[in, ref] NETLOGON_CREDENTIAL *client_chal,
+	[out, ref] NETLOGON_CREDENTIAL *server_chal,
+	[in, out, ref] ULONG *neg_flags
+);
+
+NTSTATUS NetrDatabaseSync2(
+	[in, ref, string] WCHAR *srv_name,
+	[in, ref, string] WCHAR *cli_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_creds,
+	[in,out, ref] NETLOGON_AUTHENTICATOR *srv_creds,
+	[in] ULONG database_state,
+	[in] /* enum */ USHORT restart_state,
+	[in,out, ref] ULONG *sync_context,
+	[out, ref] SAM_DELTA_ARRAY **deltas,
+	[in] ULONG max_size /* preferred maximum length */
+);
+
+NTSTATUS Function_11(
+	[in, ref, string] WCHAR *srv_name,
+	[in, ref, string] WCHAR *cli_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_creds,
+	[in,out, ref] NETLOGON_AUTHENTICATOR *srv_creds,
+	[in, size_is(element_651), ref] BYTE *element_650,
+	[in] ULONG element_651,
+	[out, ref] SAM_DELTA_ARRAY **deltas
+);
+
+NTSTATUS Function_12(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG element_654,
+	[in] ULONG level,
+	[in, ref] NETLOGON_CONTROL_QUERY_INFO *element_656,
+	[out, ref] NETLOGON_INFO *element_657
+);
+
+typedef struct {
+	ULONG length;
+	[size_is(length)] CHAR *buffer;
+} UNICODE_MULTI;
+
+NTSTATUS NetrTrustedDomainList(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[out, ref] UNICODE_MULTI *trust_dom_name_list
+);
+
+/*
+ * Windows 2000-specific RPCs start here.
+ */
+
+typedef struct {
+	[string] WCHAR *dc_name;
+	[string] WCHAR *dc_address;
+	ULONG dc_address_type;
+	GUID domain_guid;
+	[string] WCHAR *domain_name;
+	[string] WCHAR *dns_forest_name;
+	ULONG flags;
+	[string] WCHAR *dc_site_name;
+	[string] WCHAR *client_site_name;
+} DOMAIN_CONTROLLER_INFO;
+
+NTSTATUS DsrGetDcName2(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *domain,
+	[in, unique] GUID *domain_guid,
+	[in, unique] GUID *site_guid,
+	[in] ULONG flags,
+	[out, ref] DOMAIN_CONTROLLER_INFO **info
+);
+
+typedef union switch (ULONG level) contents {
+	case 1: ULONG element_700;
+} TYPE_44;
+
+NTSTATUS Function_15(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *cli_name,
+	[in] NETLOGON_AUTHENTICATOR client_creds,
+	[in, out] NETLOGON_AUTHENTICATOR *srv_creds,
+	[in] ULONG element_705,
+	[out] TYPE_44 *element_706
+);
+
+NTSTATUS Function_16(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG element_708,
+	[in] ULONG element_709
+);
+
+NTSTATUS Function_17(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *element_711,
+	[out] ULONG *element_712
+);
+
+NTSTATUS Function_18(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG element_714,
+	[in, size_is(element_716)] BYTE element_715[*],
+	[in] ULONG element_716,
+	[out] BYTE *element_717[16]
+);
+
+NTSTATUS Function_19(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *element_719,
+	[in, size_is(element_721)] BYTE element_720[*],
+	[in] ULONG element_721,
+	[out] BYTE *element_722[16]
+);
+
+/* 1a */
+NTSTATUS NetrServerAuthenticate3(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *acct_name,
+	[in] /* enum */ NETLOGON_SECURE_CHANNEL_TYPE element_725,
+	[in, unique, string] WCHAR *computer_name,
+	[in, ref] NETLOGON_CREDENTIAL *authenticator,
+	[out, ref] NETLOGON_CREDENTIAL *element_728,
+	[in, out] ULONG *negotiate_flags,
+	[out] ULONG *element_730
+);
+
+
+NTSTATUS DsrGetDcName(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *domain,
+	[in, unique] GUID *domain_guid,
+	[in, unique, string] WCHAR *site,
+	[in] ULONG flags,
+	[out, ref] DOMAIN_CONTROLLER_INFO **info
+);
+
+NTSTATUS DsrGetSiteName(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[out, ref] WCHAR *site
+);
+
+typedef struct {
+	ULONG element_741;
+	[size_is(element_741)] BYTE *element_742;
+
+	[string] WCHAR *element_743;
+	[string] WCHAR *element_744;
+	[string] WCHAR *element_745;
+	[string] WCHAR *element_746;
+	[string] WCHAR *element_747;
+	[string] WCHAR *element_748;
+
+	UNICODE_STRING unk1;
+	UNICODE_STRING unk2;
+	UNICODE_STRING unk3;
+	UNICODE_STRING unk4;
+
+	ULONG element_761;
+	ULONG element_762;
+	ULONG element_763;
+	ULONG element_764;
+} TYPE_46;
+
+/* trust info?? */
+typedef struct {
+	UNICODE_STRING unk1;
+	UNICODE_STRING unk2;
+	UNICODE_STRING unk3;
+
+	GUID domain_guid;
+	PISID domain_sid;
+
+	UNICODE_STRING unk4;
+	UNICODE_STRING unk5;
+	UNICODE_STRING unk6;
+	UNICODE_STRING unk7;
+
+	ULONG element_790;
+	ULONG element_791;
+	ULONG element_792;
+	ULONG element_793;
+
+	BLOB blob1;
+	BLOB blob2;
+
+	UNICODE_STRING unk8;
+	UNICODE_STRING unk9;
+	UNICODE_STRING unk10;
+	UNICODE_STRING unk11;
+
+	ULONG element_810;
+	ULONG element_811;
+	ULONG element_812;
+	ULONG element_8;
+} TYPE_48;
+
+typedef union switch (ULONG level) contents {
+	case 1: TYPE_46 *element_739;
+	case 2: TYPE_46 *element_740;
+} TYPE_45;
+
+typedef union switch (ULONG level) contents {
+	case 1: TYPE_48 *element_765;
+	case 2: UNICODE_MULTI *element_766;
+} TYPE_47;
+
+NTSTATUS Function_1d(
+	[in, unique, string] WCHAR *element_814,
+	[in, unique, string] WCHAR *element_815,
+	[in] NETLOGON_AUTHENTICATOR element_816,
+	[in, out] NETLOGON_AUTHENTICATOR *element_817,
+	[in] ULONG element_818,
+	[in] TYPE_45 element_819,
+	[out] TYPE_47 *element_820
+);
+
+typedef struct {
+	WCHAR element_821[512];
+	ULONG element_822;
+} UNICODE_STRING_512;
+
+NTSTATUS Function_1e(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *element_824,
+	[in] /* enum */ USHORT element_825,
+	[in, unique, string] WCHAR *element_826,
+	[in] NETLOGON_AUTHENTICATOR element_827,
+	[out] NETLOGON_AUTHENTICATOR *element_828,
+	[in] UNICODE_STRING_512 element_829
+);
+
+NTSTATUS NetrServerPasswordSet2(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *acct_name,
+	[in] /* enum */ NETLOGON_SECURE_CHANNEL_TYPE sec_chan,
+	[in, unique, string] WCHAR *comp_name,
+	[in, ref] NETLOGON_AUTHENTICATOR *client_cred,
+	[out, ref] NETLOGON_AUTHENTICATOR *server_cred,
+	[out, ref] LM_OWF_PASSWORD *server_pwd
+);
+
+NTSTATUS Function_20(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, string] WCHAR *element_838,
+	[in] NETLOGON_AUTHENTICATOR element_839,
+	[out] NETLOGON_AUTHENTICATOR *element_840,
+	[in, size_is(element_842)] BYTE element_841[*],
+	[in] ULONG element_842
+);
+
+typedef struct {
+	ULONG element_843;
+	[size_is(element_843), unique] BYTE *element_844;
+} TYPE_50;
+
+NTSTATUS Function_21(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG element_846,
+	[in, size_is(element_846)] BYTE element_847[*],
+	[out, ref] TYPE_50 ***element_848
+);
+
+NTSTATUS Function_22(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *element_850,
+	[in] ULONG element_851,
+	[in, unique, string] WCHAR *element_852,
+	[in, unique] GUID *element_853,
+	[in, unique, string] WCHAR *element_854,
+	[in] ULONG element_855,
+	[out, ref] DOMAIN_CONTROLLER_INFO ***element_856
+);
+
+NTSTATUS Function_23(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[out] WCHAR *element_858,
+	[out] ULONG *element_859
+);
+
+typedef struct {
+	ULONG element_860;
+	[size_is(element_860), unique] BYTE *element_861;
+} TYPE_51;
+
+NTSTATUS Function_24(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[out] TYPE_51 *element_863
+);
+
+typedef struct {
+	ULONG element_864;
+	[size_is(element_864), unique] BYTE *element_865;
+	[size_is(element_864), unique] BYTE *element_866;
+} TYPE_52;
+
+NTSTATUS Function_25(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG element_868,
+	[in, size_is(element_868)] BYTE element_869[*],
+	[out, ref] TYPE_52 ***element_870
+);
+
+NTSTATUS Function_26(
+	[in, unique, string] WCHAR *element_871,
+	[out, ref] TYPE_50 ***element_872
+);
+
+/* like sam logon */
+NTSTATUS Function_27(
+	[in, unique, string] WCHAR *element_873,
+	[in, unique, string] WCHAR *element_874,
+	[in] /* enum */ USHORT element_875,
+	[in] NETLOGON_LEVEL *element_876,
+	[in] /* enum */ USHORT element_877,
+	[out] NETLOGON_VALIDATION *element_878,
+	[out] BOOLEAN *element_879,
+	[in, out] ULONG *element_880
+);
+
+/* ?? */
+NTSTATUS DsrRoleGetPrimaryDomainInformation(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in] ULONG element_882,
+	[out] TYPE_51 *element_883
+);
+
+NTSTATUS DsrDeregisterDnsHostRecords(
+	[in] LOGONSRV_HANDLE logon_srv,
+	[in, unique, string] WCHAR *domain,
+	[in, unique] GUID *domain_guid,
+	[in, unique] GUID *dsa_guid,
+	[in, string] WCHAR *dns_host
+);
+
+}
