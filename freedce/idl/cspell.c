@@ -718,7 +718,7 @@ static void CSPELL_type_exp
 				else
 					fprintf (fid, ",\n");
 				spell_name (fid, ecp->name);
-				fprintf(fid, " = %ld", ecp->value.int_val);
+				fprintf(fid, " = %d", ecp->value.int_val);
 			}
 			fprintf (fid, "} ");
 			break;

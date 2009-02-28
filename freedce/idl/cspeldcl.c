@@ -71,7 +71,7 @@ void CSPELL_constant_val_to_string
                 sprintf (str, "ndr_false");
             break;
         case AST_int_const_k:
-            sprintf (str, "%ld", cp->value.int_val);
+            sprintf (str, "%l", cp->value.int_val);
             break;
         case AST_string_const_k:
             STRTAB_str_to_string (cp->value.string_val, &str2);
