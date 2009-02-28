@@ -35,6 +35,10 @@
 **
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <dce/dce.h>
 
 #include <perf_c.h>

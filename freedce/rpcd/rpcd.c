@@ -583,11 +583,9 @@ int main(int argc, char *argv[])
 
     /* begin */
 
-    /*
 #ifdef ENABLE_PTHREADS
     dcethreads_exc_lib_init();
 #endif
-*/
 
     setlocale(LC_ALL, "");
 

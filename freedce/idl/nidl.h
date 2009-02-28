@@ -44,8 +44,13 @@
 
 /* Base include files needed by all IDL compiler modules */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #ifdef DUMPERS
 # define DEBUG_VERBOSE 1

@@ -43,6 +43,10 @@
     extern "C" {
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <dce/dce.h>
 #include <dce/rpc.h>
 #include <dce/idl_es.h>

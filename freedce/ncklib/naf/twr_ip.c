@@ -20,7 +20,6 @@
  */
 /*
  */
-#ifdef NAF_IP
 /*
 **
 **  NAME
@@ -47,6 +46,7 @@
 #include <com.h>        /* Common communications services */
 #include <twrp.h>	/* Private tower services */
 
+#ifdef NAF_IP
         
 /*
  *  Include the Internet specific socket address

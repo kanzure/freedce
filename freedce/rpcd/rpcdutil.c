@@ -37,6 +37,10 @@
 **
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef HAVE_OS_WIN32
 typedef int pid_t;
 #endif

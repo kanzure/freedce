@@ -77,6 +77,10 @@
 #ifndef _COMMONP_H
 #define _COMMONP_H  1
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 /*
  * Include a OS / machine specific configuration file.  
  */

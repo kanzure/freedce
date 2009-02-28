@@ -178,6 +178,7 @@ typedef int rpc_socket_error_t;                 /* a UNIX errno */
 
 #ifdef __linux__
 #define _SOCKADDR_LEN
+#include <linux/types.h>
 #endif
 	
 #ifdef _SOCKADDR_LEN

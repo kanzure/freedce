@@ -48,7 +48,7 @@ touch README INSTALL
 
 aclocal || exit $?
 $LIBTOOLIZE --force || exit $?
-#autoheader || exit $?
+autoheader || exit $?
 automake --foreign --add-missing || exit $?
 autoconf || exit $?
 

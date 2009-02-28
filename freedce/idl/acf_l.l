@@ -42,6 +42,7 @@
  **
  */
 
+#include <dce/dce_config.h>
 #define PROCESSING_LEX          /* Define before including nidl.h */
 #define PROCESSING_ACF_LEX      /* Define before including nidl.h */
 #include <nidl.h>               /* IDL common defs */
