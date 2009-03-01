@@ -1841,7 +1841,7 @@ rpc_dg_recvq_elt_p_t rqe;
                 "(recv_pkt_private) blocking in recv_pkt\n"));
 
 #ifdef NON_CANCELLABLE_IO
-         sys_pthread_setasynccance(CANCEL_ON);
+         sys_pthread_setasynccancel(CANCEL_ON);
          sys_pthread_testcancel();
 #endif
 
@@ -1869,7 +1869,7 @@ rpc_dg_recvq_elt_p_t rqe;
     CATCH(pthread_cancel_e)
     {
 #ifdef NON_CANCELLABLE_IO
-			sys_pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+	sys_pthread_setasynccancel(CANCEL_OFF);
 #endif
 
         RPC_DG_CALL_LOCK(call);
