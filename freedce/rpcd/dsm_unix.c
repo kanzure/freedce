@@ -44,6 +44,10 @@
 **
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "dsm_p.h"      /* private include file */
 #include <stdio.h>
 #include <unistd.h>

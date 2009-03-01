@@ -170,6 +170,9 @@ typedef struct page_t {     /* generic page */
 
 typedef struct block_t {        /* block preheader */
     struct block_t *link;       /* link to next block on (free) list [meaningless in file] */                    
+#if (ARCH_WORD_SIZE == 4)
+    unsigned int    pad;        /* link padding*/
+#endif
     unsigned int    size;       /* size of user data */
     unsigned int    loc;        /* location (offset) of preheader in file */
     boolean         isfree;     /* true iff free */

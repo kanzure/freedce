@@ -37,5 +37,7 @@
 #define NDR_LOCAL_FLOAT_REP   ndr_c_float_ieee
 #define NDR_LOCAL_CHAR_REP    ndr_c_char_ascii
 
+#define WORD_SIZE_4
+
 #endif /* _NDR_REP_H */
 
